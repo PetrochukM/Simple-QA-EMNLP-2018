@@ -1,0 +1,18 @@
+setuptools
+numpy
+mock
+coverage
+nose
+git+https://github.com/pytorch/text.git@master
+dill
+tqdm
+pandas
+git+https://github.com/scikit-optimize/scikit-optimize.git@master
+nltk
+wrapt
+pyphen
+pyyaml
+# `torch` install from http://pytorch.org/
+psycopg2
+sh
+flask

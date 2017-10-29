@@ -1,0 +1,62 @@
+// cSpell Settings
+{
+  // Version of the setting file.  Always 0.1
+  "version": "0.1",
+  // language - current active spelling language
+  "language": "en",
+  // words - list of words to be always considered correct
+  "words": [
+    "CDLL",
+    "Hyperparameter",
+    "byref",
+    "chmod",
+    "ctypes",
+    "cuda",
+    "dylib",
+    "filecmp",
+    "freqs",
+    "getcwd",
+    "hacky",
+    "hdfs",
+    "isabs",
+    "isdir",
+    "isfile",
+    "ismethod",
+    "itos",
+    "jsonify",
+    "kgdaily",
+    "kwarg",
+    "lstm",
+    "matplotlib",
+    "nltk",
+    "noqa",
+    "numericalize",
+    "numpy",
+    "optim",
+    "pytorch",
+    "randn",
+    "recurse",
+    "rmtree",
+    "rnns",
+    "scipy",
+    "shutil",
+    "siri",
+    "skopt",
+    "stoi",
+    "tanh",
+    "tokenization",
+    "tokenized",
+    "tokenizer",
+    "tokenizers",
+    "tolist",
+    "topk",
+    "ujson",
+    "untokenized"
+  ],
+  // flagWords - list of words to be always considered incorrect
+  // This is useful for offensive words and common spelling errors.
+  // For example "hte" should be "the"
+  "flagWords": [
+    "hte"
+  ]
+}
