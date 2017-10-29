@@ -39,6 +39,7 @@ class Seq2seq(nn.Module):
                 *KEY_INPUT* : target outputs if provided for decoding,
                 *KEY_ATTN_SCORE* : list of sequences, where each list is of attention weights}
         """
+        # TODO: instead of taking a batch taking the tensors is more general and less dependent.
         input_, lengths = batch.input
         encoder_outputs, encoder_hidden = self.encoder(input_, lengths)
 

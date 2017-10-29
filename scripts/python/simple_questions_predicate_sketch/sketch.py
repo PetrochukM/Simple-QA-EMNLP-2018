@@ -7,7 +7,7 @@
 # to define the entirety of the model together. Does not allow for multiple configurations but it does
 # MISSING: Support for similar models and training procedures but different datasets
 
-configuration = {
+DEFAULT_CONFIGURATION = {
     'seq2seq':
         'models':
             'decoder_rnn.DecoderRNN.__init__':
@@ -61,6 +61,7 @@ configuration = {
             weight_decay: 0
             max_grad_norm: 0.65
 }
+add_config(DEFAULT_CONFIGURATION)
 
 # OTHER IDEA: Split this up into a model and a dataset that are not dependant. Models are depedent
 # on the dataset format on the data its self; therefore, there should be restriction on the 
@@ -77,85 +78,80 @@ configuration = {
 # solve those problems. We do not want to limit to configuration files; therefore, if you have 
 # to choose a model and configure it, it wont be helpful. We will provide model utils and a 
 
-class Model():
-    pass
+# NOTE: The configuration of the rest of the system is not set by the model. The model only
+# puts the components together. 
+# NOTE: Logs is where the model stores any logging or files it creates for the sake of
+# reproducibility.
 
+# MISSING: Passing a different configuration via hyperparameter tunning. The reason we have a 
+# global config is because otherwise, lots of variables have to be passed around and routed accross
+# everything.
+# The config can be changed. The training procedure does not define the size or parameters of the 
+# model. It just defines a scafold with the specific numbers being tunable. 
+# WHY NOT set the default configuration above, then if main is called, it is called after the import
+# and configuration happened; therefore, the configuration is overridden
 
-class ClassificationModel():
-    pass
+# The reason we have main is for hyperparameter tunning to override some of the configurations
+# but not all of them. 
 
-class Seq2SeqModel():
-    # NOTE: The configuration of the rest of the system is not set by the model. The model only
-    # puts the components together. 
-    # NOTE: Logs is where the model stores any logging or files it creates for the sake of
-    # reproducibility.
-    def __init__(load_checkpoint=None, save_directory=''):
-        if checkpoint:
-            model, text_encoder = checkpoint
-        else:
-            model = init_model()
-            text_encoder = init_text_encoder()
+def main(dataset=default_dataset, load_checkpoint=None, save_directory=''):
+    if checkpoint:
+        model, text_encoder = checkpoint
+    else:
+        model = init_model()
+        text_encoder = init_text_encoder()
 
-        self.model = model
-        self.text_encoder = text_encoder
+    self.model = model
+    self.text_encoder = text_encoder
 
-    def train(dataset=default_dataset):
-        # NOTE: Defining the metrics. The metrics are core with the task; therefore, they can be
-        # defined globally
-        self.metrics = []
+    # NOTE: Defining the metrics. The metrics are core with the task; therefore, they can be
+    # defined globally
+    self.metrics = []
 
-        train_dataset, dev_dataset, _ = load_datasets()
-        for dataset in (train_dataset, dev_dataset):
-            for i, item in dataset:
-                dataset[i] = text_encoder.encode(dataset[i])
-                # Everything in the dataset is in row tensor form, now it needs to be batched
+    train_dataset, dev_dataset, _ = load_datasets()
+    for dataset in (train_dataset, dev_dataset):
+        for i, item in dataset:
+            dataset[i] = text_encoder.encode(dataset[i])
+            # Everything in the dataset is in row tensor form, now it needs to be batched
 
-            # torch_iterator
-        for i in range(num_epochs):
-            model.train(mode=True)
-            # Train
-            for batch in iterator(train_dataset):
-                # Train on BATCH
+        # torch_iterator
+    for i in range(num_epochs):
+        model.train(mode=True)
+        # Train
+        for batch in iterator(train_dataset):
+            # Train on BATCH
 
-                # Forward propagation
-                outputs = model(batch)[0]
+            # Forward propagation
+            outputs = model(batch)[0]
 
-                # TODO: Consider using predictor?
-                # Compute batch-specific metrics
-                for metric in self.metrics:
-                    metric.eval_batch(outputs, batch)
+            # TODO: Consider using predictor?
+            # Compute batch-specific metrics
+            for metric in self.metrics:
+                metric.eval_batch(outputs, batch)
 
-                # Compute loss
-                self.loss.reset()
-                self.loss.eval_batch(outputs, batch)
+            # Compute loss
+            self.loss.reset()
+            self.loss.eval_batch(outputs, batch)
 
-                # Backward propagation
-                model.zero_grad()
-                self.loss.backward()
-                self.optimizer.step()
+            # Backward propagation
+            model.zero_grad()
+            self.loss.backward()
+            self.optimizer.step()
 
-            save(model, text_encoder)
+        save(model, text_encoder)
 
-            model.train(mode=False)
-            # Train then evaluate
-            for batch in iterator(dev_dataset):
-                # Compute batch-specific metrics
-                for metric in self.metrics:
-                    # MISSING: In an imperative style, how would the metrics decode the numbers for using.
-                    # Is it appropriate to pass them the text_encoder?
-                    # Can I look at other examples for this.
-                    metric.eval_batch(outputs, batch)
+        model.train(mode=False)
+        # Train then evaluate
+        for batch in iterator(dev_dataset):
+            # Compute batch-specific metrics
+            for metric in self.metrics:
+                # MISSING: In an imperative style, how would the metrics decode the numbers for using.
+                # Is it appropriate to pass them the text_encoder?
+                # Can I look at other examples for this.
+                metric.eval_batch(outputs, batch)
 
-            # MISSING: Printing the metrics and reseting them
+        # MISSING: Printing the metrics and reseting them
 
-    def predicate():
-        pass
-
-    def evaluate():
-        pass
-
-    def checkpoint():
-        pass
 
 
 if __name__ == '__main__':

@@ -7,6 +7,8 @@ logger = logging.getLogger(__name__)
 #   Metric Definitions
 ######################################################################
 
+# TODO: Have a smart iterator that can break down a batch into things.
+
 
 class Observer(object):
 
