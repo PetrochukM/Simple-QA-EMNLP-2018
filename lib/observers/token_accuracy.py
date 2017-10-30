@@ -1,5 +1,5 @@
-from seq2seq.metrics.metric import Metric
-from seq2seq.metrics.utils import flatten_batch
+from lib.observers.observer import Metric
+from lib.observers.utils import flatten_batch
 
 
 class TokenAccuracy(Metric):
@@ -11,13 +11,13 @@ class TokenAccuracy(Metric):
         Mask should be the same as the loss mask. If not, then your accuracy will be negatively
         affected by tokens loss does not optimize for like '<pad>'.
     Args:
-        mask (int, optional): index of masked token, i.e. weight[mask] = 0.
+        ignore_index (int, optional): specifies a target index that is ignored
     """
 
     COLUMNS = ['Accuracy', 'Num Correct', 'Total']
 
-    def __init__(self, mask=None):
-        self.mask = mask
+    def __init__(self, ignore_index=None):
+        self.ignore_index = ignore_index
         self.num_correct_tokens = 0.0
         self.total_tokens = 0.0
         super().__init__('Token Accuracy')
@@ -44,10 +44,11 @@ class TokenAccuracy(Metric):
 
     def eval(self, output, target):
         predictions = output.max(1)[1]
-        if self.mask:
-            mask = target.data.ne(self.mask)
-            self.num_correct_tokens += predictions.data.eq(target.data).masked_select(mask).sum()
-            self.total_tokens += mask.sum()
+        if self.ignore_index:
+            masked_arr = target.data.ne(self.ignore_index)
+            self.num_correct_tokens += predictions.data.eq(
+                target.data).masked_select(masked_arr).sum()
+            self.total_tokens += masked_arr.sum()
         else:
             self.total_tokens += len(target)
             self.num_correct_tokens += predictions.data.eq(target.data).sum()

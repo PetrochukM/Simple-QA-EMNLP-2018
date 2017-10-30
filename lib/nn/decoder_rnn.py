@@ -6,10 +6,11 @@ import torch.nn.functional as F
 
 from torch.autograd import Variable
 
-from seq2seq.models.attention import Attention
-from seq2seq.models.base_rnn import BaseRNN
-from seq2seq.fields import SeqField
-from seq2seq.config import configurable
+from lib.nn.attention import Attention
+from lib.nn.base_rnn import BaseRNN
+from lib.configurable import configurable
+from lib.text_encoders import EOS_INDEX
+from lib.text_encoders import SOS_INDEX
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +56,8 @@ class DecoderRNN(BaseRNN):
 
     @configurable
     def __init__(self,
-                 vocab,
+                 vocab_size,
+                 embeddings=None,
                  embedding_size=100,
                  rnn_size=128,
                  n_layers=2,
@@ -67,7 +69,8 @@ class DecoderRNN(BaseRNN):
                  scheduled_sampling=False,
                  freeze_embeddings=False):
         super().__init__(
-            vocab=vocab,
+            vocab_size=vocab_size,
+            embeddings=embeddings,
             embedding_size=embedding_size,
             embedding_dropout=embedding_dropout,
             rnn_dropout=rnn_dropout,
@@ -76,8 +79,6 @@ class DecoderRNN(BaseRNN):
         n_layers = int(n_layers)
         rnn_size = int(rnn_size)
 
-        self.eos_idx = self.vocab.stoi[SeqField.EOS_TOKEN]
-        self.sos_idx = self.vocab.stoi[SeqField.SOS_TOKEN]
         self.use_attention = use_attention
 
         self.rnn_size = rnn_size
@@ -87,7 +88,7 @@ class DecoderRNN(BaseRNN):
             # TODO: Add a mask to padding index?
             self.attention = Attention(rnn_size)
 
-        self.out = nn.Linear(rnn_size, len(self.vocab))
+        self.out = nn.Linear(rnn_size, vocab_size)
         self.scheduled_sampling = scheduled_sampling
 
     def _init_start_input(self, batch_size):
@@ -99,8 +100,7 @@ class DecoderRNN(BaseRNN):
         Returns:
             SOS (torch.LongTensor [1, batch_size]): Start of sequence token
         """
-        init_input = Variable(
-            torch.LongTensor(1, batch_size).fill_(self.sos_idx), requires_grad=False)
+        init_input = Variable(torch.LongTensor(1, batch_size).fill_(SOS_INDEX), requires_grad=False)
         if torch.cuda.is_available():
             init_input = init_input.cuda()
         return init_input
@@ -143,12 +143,10 @@ class DecoderRNN(BaseRNN):
         output_len = last_decoder_output.size(0)
         batch_size = last_decoder_output.size(1)
         rnn_size = self.rnn_size
-        vocab_size = len(self.vocab)
 
         embedded = self.embedding(last_decoder_output)
         embedded = self.embedding_dropout(embedded)
 
-        self.rnn.flatten_parameters()
         output, decoder_hidden_new = self.rnn(embedded, decoder_hidden)
         output = self.rnn_dropout(output)
 
@@ -165,7 +163,7 @@ class DecoderRNN(BaseRNN):
         output = self.out(output)
         predicted_softmax = F.log_softmax(output)
         # (batch_size * output_len, vocab_size) -> (batch_size, output_len, vocab_size)
-        predicted_softmax = predicted_softmax.view(batch_size, output_len, vocab_size)
+        predicted_softmax = predicted_softmax.view(batch_size, output_len, self.vocab_size)
         return predicted_softmax, decoder_hidden_new, attention_weights
 
     def _get_eos_indexes(self, decoder_output):
@@ -177,7 +175,7 @@ class DecoderRNN(BaseRNN):
             (list) indexes of EOS tokens
         """
         predictions = decoder_output.data.topk(1)[1]
-        eos_batches = predictions.view(-1).eq(self.eos_idx).nonzero()
+        eos_batches = predictions.view(-1).eq(EOS_INDEX).nonzero()
         if eos_batches.dim() > 0:
             return eos_batches.squeeze(1).tolist()
         else:

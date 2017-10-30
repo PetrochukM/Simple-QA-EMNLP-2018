@@ -22,7 +22,7 @@
     "*.egg-info": true,
     "log": true,
     "cover": true,
-    "experiments": true,
+    "experiments": false,
     ".vscode": false,
     ".coverage": true,
     ".travis.yml": true,

@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from seq2seq.config import configurable
+from lib.configurable import configurable
 
 
 class Attention(nn.Module):

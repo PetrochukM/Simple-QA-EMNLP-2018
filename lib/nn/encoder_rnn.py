@@ -1,8 +1,8 @@
 import torch
 import torch.nn as nn
 
-from seq2seq.models.base_rnn import BaseRNN
-from seq2seq.config import configurable
+from lib.nn.base_rnn import BaseRNN
+from lib.configurable import configurable
 
 
 class EncoderRNN(BaseRNN):
@@ -39,7 +39,8 @@ class EncoderRNN(BaseRNN):
 
     @configurable
     def __init__(self,
-                 vocab,
+                 vocab_size,
+                 embeddings=None,
                  embedding_size=100,
                  rnn_size=128,
                  embedding_dropout=0,
@@ -50,7 +51,8 @@ class EncoderRNN(BaseRNN):
                  bidirectional=True,
                  freeze_embeddings=False):
         super().__init__(
-            vocab=vocab,
+            vocab_size=vocab_size,
+            embeddings=embeddings,
             embedding_size=embedding_size,
             embedding_dropout=embedding_dropout,
             rnn_dropout=rnn_dropout,
@@ -94,7 +96,6 @@ class EncoderRNN(BaseRNN):
         embedded = self.embedding_dropout(embedded)
 
         embedded = nn.utils.rnn.pack_padded_sequence(embedded, lengths.tolist())
-        self.rnn.flatten_parameters()
         output, hidden = self.rnn(embedded)
         output, _ = nn.utils.rnn.pad_packed_sequence(output)
         output = self.rnn_dropout(output)

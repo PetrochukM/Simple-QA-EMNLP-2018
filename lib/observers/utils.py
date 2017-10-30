@@ -1,35 +1,6 @@
 import torch
 import pandas as pd
 
-from seq2seq.util.util import call_from_string
-from seq2seq.metrics.loss import Loss
-from seq2seq.config import configurable
-
-import seq2seq
-
-
-@configurable
-def get_evaluate_loss(loss, **kwargs):
-    """ Get a loss function from a string. Evaluate loss does not have to be used with backward and
-    CUDA. We use this loss for Hyperparameter tunning. """
-    try:
-        criterion = call_from_string(loss, modules=[torch.nn.modules.loss], **kwargs)
-        return Loss(criterion)
-    except:
-        return get_metrics([loss], **kwargs)[0]
-
-
-@configurable
-def get_loss(loss, **kwargs):
-    """ Get a loss function from a string """
-    criterion = call_from_string(loss, modules=[torch.nn.modules.loss], **kwargs)
-    return Loss(criterion)
-
-
-def get_metrics(metrics, **kwargs):
-    """ Calls metrics from strings """
-    return call_from_string(metrics, modules=[seq2seq.metrics], **kwargs)
-
 
 def iterate_batch(*args, batch_first=False):
     """
@@ -114,20 +85,17 @@ def df_to_string_option_context(df, option_context):
         return str(df)
 
 
-def torch_equals_mask(target, prediction, mask=None):
+def torch_equals_ignore_index(target, prediction, ignore_index=None):
     """
     Compute torch.equals with the optional mask parameter.
    
     Args:
-        mask (int): index of masked token, i.e. weight[mask] = 0.
-          For computing equality, a `masked_select` is used determined from target.
-          With mask, this is not commutative.
-          http://pytorch.org/docs/master/torch.html#torch.equal
+        ignore_index (int, optional): specifies a target index that is ignored
     Returns:
         (bool) iff target and prediction are equal
     """
-    if mask is not None:
-        mask_arr = target.ne(mask)
+    if ignore_index is not None:
+        mask_arr = target.ne(ignore_index)
         target = target.masked_select(mask_arr)
         prediction = prediction.masked_select(mask_arr)
 

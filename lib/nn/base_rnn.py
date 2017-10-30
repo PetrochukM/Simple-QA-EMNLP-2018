@@ -2,8 +2,8 @@ import logging
 
 import torch.nn as nn
 
-from seq2seq.fields import SeqField
-from seq2seq.models.lock_dropout import LockedDropout
+from lib.nn.lock_dropout import LockedDropout
+from lib.text_encoders import PADDING_INDEX
 
 logger = logging.getLogger(__name__)
 
@@ -21,13 +21,14 @@ class BaseRNN(nn.Module):
         rnn_cell (str): type of RNN cell (Eg. 'LSTM' , 'GRU')
     """
 
-    def __init__(self, vocab, embedding_size, embedding_dropout, rnn_dropout, rnn_cell,
-                 freeze_embeddings):
+    def __init__(self, vocab_size, embeddings, embedding_size, embedding_dropout, rnn_dropout,
+                 rnn_cell, freeze_embeddings):
         super(BaseRNN, self).__init__()
         embedding_size = int(embedding_size)
-        self.vocab = vocab
+        self.vocab_size = vocab_size
+        self.embeddings = embeddings
         self.embedding_dropout = nn.Dropout(p=embedding_dropout)
-        self.padding_idx = self.vocab.stoi[SeqField.PAD_TOKEN]
+
         self.rnn_dropout = LockedDropout(p=rnn_dropout)
 
         if rnn_cell.lower() == 'lstm':
@@ -37,15 +38,10 @@ class BaseRNN(nn.Module):
         else:
             raise ValueError("Unsupported RNN Cell: {0}".format(rnn_cell))
 
-        self.embedding = nn.Embedding(len(self.vocab), embedding_size, padding_idx=self.padding_idx)
-        if hasattr(self.vocab, 'vectors') and self.vocab.vectors is not None:
+        self.embedding = nn.Embedding(self.vocab_size, embedding_size, padding_idx=PADDING_INDEX)
+        if self.embeddings is not None:
             logger.info('Loading embeddings...')
-            assert self.vocab.vectors.size()[0] == len(self.vocab), """Vocab size must be the same
-                  as the number of self.vocab.vectors"""
-            assert self.vocab.vectors.size()[
-                1] == embedding_size, """Embedding size has to be the same size as the
-                  pretrained embeddings."""
-            self.embedding.weight.data.copy_(self.vocab.vectors)
+            self.embedding.weight.data.copy_(self.embeddings)
 
         if freeze_embeddings:
             self.embedding.weight.requires_grad = False

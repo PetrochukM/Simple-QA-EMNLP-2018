@@ -3,10 +3,10 @@ from collections import defaultdict
 import numpy as np
 import pandas as pd
 
-from seq2seq.metrics.utils import df_to_string_option_context
-from seq2seq.metrics.utils import iterate_batch
-from seq2seq.metrics.metric import Metric
-from seq2seq.metrics.utils import output_to_prediction
+from lib.observers.utils import df_to_string_option_context
+from lib.observers.utils import iterate_batch
+from lib.observers.observer import Metric
+from lib.observers.utils import output_to_prediction
 
 
 class ConfusionMatrix(Metric):
@@ -19,12 +19,14 @@ class ConfusionMatrix(Metric):
         Slow to compute. Avoid using as a training metric.
     """
 
-    def __init__(self, output_field, option_context=None, mask=None, same_rows_columns=False):
+    def __init__(self,
+                 output_field,
+                 option_context=None,
+                 ignore_index=None,
+                 same_rows_columns=False):
         """
         Args:
-            mask (int): index of masked token, i.e. weight[mask] = 0.
-              For computing equality, a `masked_select` is used determined from target.
-              With mask, this is not commutative.
+            ignore_index (int, optional): specifies a target index that is ignored
             option_context: Pandas options context for display
               https://pandas.pydata.org/pandas-docs/stable/generated/pandas.option_context.html#pandas.option_context
             output_field (SeqField)
@@ -33,7 +35,7 @@ class ConfusionMatrix(Metric):
         self.confusion_matrix = defaultdict(dict)  # [target, dict[output, num_predictions]]
         self.prediction_keys = set()  # Rows
         self.target_keys = set()  # Columns
-        self.mask = mask
+        self.ignore_index = ignore_index
         self.output_field = output_field  # torchtext.Vocab object used for __str__
         self.option_context = option_context
         self.same_rows_columns = same_rows_columns  # Same rows/columns in confusion matrix
@@ -86,8 +88,8 @@ class ConfusionMatrix(Metric):
             prediction = output_to_prediction(output)
 
             # Mask part of the target and prediction sequence.
-            if self.mask is not None:
-                mask_arr = target.ne(self.mask)
+            if self.ignore_index is not None:
+                mask_arr = target.ne(self.ignore_index)
                 target = target.masked_select(mask_arr)
                 prediction = prediction.masked_select(mask_arr)
 

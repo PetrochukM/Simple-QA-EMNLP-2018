@@ -2,22 +2,22 @@ import random
 
 import pandas as pd
 
-from seq2seq.metrics.metric import Metric
-from seq2seq.metrics.utils import output_to_prediction
-from seq2seq.config import configurable
-from seq2seq.metrics.utils import torch_equals_mask
+from lib.observers.observer import Metric
+from lib.observers.utils import output_to_prediction
+from lib.configurable import configurable
+from lib.observers.utils import torch_equals_ignore_index
 
 
 class RandomSample(Metric):
     """ Print random samples during training and evaluation """
 
     @configurable
-    def __init__(self, output_field, input_field, n_samples=1, mask=None):
+    def __init__(self, output_field, input_field, n_samples=1, ignore_index=None):
         self.output_field = output_field
         self.input_field = input_field
         self.reset()
         self.n_samples = n_samples
-        self.mask = mask
+        self.ignore_index = ignore_index
         super().__init__('Random Sample')
 
     def reset(self):
@@ -35,12 +35,11 @@ class RandomSample(Metric):
             data = []
             for source, target, prediction in sample:
                 data.append([
-                    self.input_field.denumeralize(source),
-                    self.output_field.denumeralize(target),
+                    self.input_field.denumeralize(source), self.output_field.denumeralize(target),
                     self.output_field.denumeralize(prediction)
                 ])
-            ret += '\n%s Samples:\n%s\n' % (
-                prefix, pd.DataFrame(data, columns=['Source', 'Target', 'Prediction']))
+            ret += '\n%s Samples:\n%s\n' % (prefix, pd.DataFrame(
+                data, columns=['Source', 'Target', 'Prediction']))
         return ret
 
     def get_measurement(self):
@@ -73,7 +72,7 @@ class RandomSample(Metric):
         for i in range(batch_size):
             prediction = output_to_prediction(outputs[i])
             item = tuple([sources[i], targets[i], prediction])
-            if torch_equals_mask(targets[i], prediction, mask=self.mask):
+            if torch_equals_ignore_index(targets[i], prediction, ignore_index=self.ignore_index):
                 sample(self.positive_samples, self.positive_row_count, item)
                 self.positive_row_count += 1
             else:

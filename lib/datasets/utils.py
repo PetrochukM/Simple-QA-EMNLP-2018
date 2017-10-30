@@ -4,7 +4,7 @@ import sys
 import tempfile
 import time
 
-from seq2seq.config import configurable
+from lib.configurable import configurable
 from seq2seq.fields.utils import build_input_vocab
 from seq2seq.fields.utils import build_output_vocab
 from seq2seq.fields.utils import get_input_field

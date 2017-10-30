@@ -3,14 +3,14 @@ from collections import defaultdict
 import numpy as np
 import pandas as pd
 
-from seq2seq.metrics.utils import df_to_string_option_context
-from seq2seq.metrics.utils import iterate_batch
-from seq2seq.metrics.metric import Metric
-from seq2seq.metrics.accuracy import Accuracy
-from seq2seq.util.util import get_variable_from_string
-from seq2seq.metrics.utils import get_metrics
-from seq2seq.metrics.utils import output_to_prediction
-from seq2seq.config import configurable
+from lib.observers.utils import df_to_string_option_context
+from lib.observers.utils import iterate_batch
+from lib.observers.observer import Metric
+from lib.observers.accuracy import Accuracy
+from lib.utils import get_variable_from_string
+from lib.observers.utils import get_metrics
+from lib.observers.utils import output_to_prediction
+from lib.configurable import configurable
 
 import seq2seq
 
@@ -33,7 +33,7 @@ class BucketMetric(Metric):
                  input_field,
                  metric=None,
                  option_context=None,
-                 mask=None,
+                 ignore_index=None,
                  bucket_key='target',
                  **kwargs):
         """
@@ -42,20 +42,18 @@ class BucketMetric(Metric):
             input_field (SeqField)
             metric (Metric or str, optional): Compute some metric class per bucket
             bucket_key (str or callable): given source, target, output compute a key for bucketing
-            mask (int, optional): index of masked token, i.e. weight[mask] = 0.
-              For computing equality, a `masked_select` is used determined from target.
-              With mask, this is not commutative.
+            ignore_index (int, optional): specifies a target index that is ignored
             option_context (list, optional) Pandas options context for display
               https://pandas.pydata.org/pandas-docs/stable/generated/pandas.option_context.html#pandas.option_context
             **kwargs: key word arguments used for instantiating the next metric
         """
         self.get_bucket_key = get_variable_from_string(bucket_key, [seq2seq.metrics.bucket_metric])
-        metric = Accuracy(mask=mask) if metric is None else metric
+        metric = Accuracy(ignore_index=ignore_index) if metric is None else metric
         metric = get_metrics(
             [metric],
             output_field=output_field,
             input_field=input_field,
-            mask=mask,
+            ignore_index=ignore_index,
             option_context=option_context,
             **kwargs)[0] if isinstance(metric, str) else metric
         if not isinstance(metric, Metric):
@@ -65,7 +63,7 @@ class BucketMetric(Metric):
         self.output_field = output_field
         self.input_field = input_field
         self.option_context = option_context
-        self.mask = mask
+        self.ignore_index = ignore_index
         super().__init__('Bucket Metric')
 
     def reset(self):
@@ -103,14 +101,14 @@ class BucketMetric(Metric):
             source_masked = source
             target_masked = target
             prediction_masked = prediction
-            if self.mask:
+            if self.ignore_index:
                 # Mark target, output
-                mask_arr = target.ne(self.mask)
+                mask_arr = target.ne(self.ignore_index)
                 target_masked = target.masked_select(mask_arr)
                 prediction_masked = prediction.masked_select(mask_arr)
 
                 # Mask source
-                mask_arr = source.ne(self.mask)
+                mask_arr = source.ne(self.ignore_index)
                 source_masked = source.masked_select(mask_arr)
 
             key = self.get_bucket_key(

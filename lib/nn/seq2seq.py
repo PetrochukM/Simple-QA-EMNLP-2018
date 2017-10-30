@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from seq2seq.config import configurable
+from lib.configurable import configurable
 
 
 class Seq2seq(nn.Module):
@@ -22,7 +22,7 @@ class Seq2seq(nn.Module):
         if tie_weights:
             self.decoder.embedding.weight = self.encoder.embedding.weight
 
-    def forward(self, batch):
+    def forward(self, source, source_lengths, target=None, target_lengths=None):
         """
         Args:
             batch (torchtext.data.Batch): Batch object with an input and output field containing the
@@ -39,21 +39,15 @@ class Seq2seq(nn.Module):
                 *KEY_INPUT* : target outputs if provided for decoding,
                 *KEY_ATTN_SCORE* : list of sequences, where each list is of attention weights}
         """
-        # TODO: instead of taking a batch taking the tensors is more general and less dependent.
-        input_, lengths = batch.input
-        encoder_outputs, encoder_hidden = self.encoder(input_, lengths)
+        encoder_outputs, encoder_hidden = self.encoder(source, source_lengths)
 
-        max_length = None
-        output = None
-        if self.training and hasattr(batch, 'output'):
-            output = batch.output[0]
-        # Use max_length to cutoff prediction during evaluation.
-        if hasattr(batch, 'output'):
-            output_lengths = batch.output[1]
-            max_length = torch.max(output_lengths)
+        if target is not None:
+            max_length = torch.max(target_lengths)
+        else:
+            max_length = None
 
         return self.decoder(
             max_length=max_length,
-            target_output=output,
+            target_output=target,
             encoder_hidden=encoder_hidden,
             encoder_outputs=encoder_outputs)

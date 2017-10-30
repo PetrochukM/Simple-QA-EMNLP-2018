@@ -1,18 +1,18 @@
-from seq2seq.metrics.accuracy import Accuracy
-from seq2seq.metrics.accuracy_top_n import AccuracyTopN
-from seq2seq.metrics.bucket_metric import BucketMetric
-from seq2seq.metrics.confusion_matrix import ConfusionMatrix
-from seq2seq.metrics.loss import Loss
-from seq2seq.metrics.metric import Metric
-from seq2seq.metrics.random_sample import RandomSample
-from seq2seq.metrics.token_accuracy import TokenAccuracy
-from seq2seq.metrics.bleu import ApproxBleu
-from seq2seq.metrics.bleu import MosesBleu
-from seq2seq.metrics.utils import df_to_string_option_context
-from seq2seq.metrics.utils import flatten_batch
-from seq2seq.metrics.utils import iterate_batch
-from seq2seq.metrics.utils import output_to_prediction
-from seq2seq.metrics.utils import torch_equals_mask
-from seq2seq.metrics.utils import get_metrics
-from seq2seq.metrics.utils import get_loss
-from seq2seq.metrics.utils import get_evaluate_loss
+from lib.observers.accuracy import Accuracy
+# from lib.observers.accuracy_top_n import AccuracyTopN
+# from lib.observers.bucket_metric import BucketMetric
+# from lib.observers.confusion_matrix import ConfusionMatrix
+# from lib.observers.loss import Loss
+# from lib.observers.observer import Metric
+# from lib.observers.random_sample import RandomSample
+# from lib.observers.token_accuracy import TokenAccuracy
+# from lib.observers.bleu import ApproxBleu
+# from lib.observers.bleu import MosesBleu
+# from lib.observers.utils import df_to_string_option_context
+# from lib.observers.utils import flatten_batch
+# from lib.observers.utils import iterate_batch
+# from lib.observers.utils import output_to_prediction
+# from lib.observers.utils import torch_equals_ignore_index
+# from lib.observers.utils import get_metrics
+# from lib.observers.utils import get_loss
+# from lib.observers.utils import get_evaluate_loss
