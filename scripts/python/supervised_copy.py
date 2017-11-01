@@ -35,6 +35,7 @@ from lib.utils import device_default
 from lib.utils import init_logging
 from lib.utils import add_logger_file_handler
 from lib.utils import get_total_parameters
+from lib.utils import seed
 
 init_logging()
 logger = logging.getLogger(__name__)  # Root logger
@@ -112,9 +113,7 @@ def main(
     logger.info('Device: %s', device)
 
     # Random Seed for reproducibility
-    if random_seed:
-        random.seed(random_seed)
-        torch.manual_seed(random_seed)
+    seed(random_seed)
 
     # Load Checkpoint
     checkpoint = Checkpoint.load(

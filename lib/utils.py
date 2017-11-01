@@ -6,6 +6,7 @@ import ctypes
 import logging
 import logging.config
 
+import random
 import torch
 import yaml
 
@@ -176,3 +177,12 @@ def collate_fn(batch, input_key, output_key, sort_key=None, preprocess=pad):
     ret[input_key] = tuple(ret[input_key])
     ret[output_key] = tuple(ret[output_key])
     return ret
+
+
+def seed(random_seed=None):
+    if random_seed is not None:
+        random.seed(random_seed)
+        torch.manual_seed(random_seed)
+        if torch.cuda.is_available():
+            torch.cuda.manual_seed(random_seed)
+            torch.cuda.manual_seed_all(random_seed)
