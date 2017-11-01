@@ -28,20 +28,16 @@ def get_root_path():
 DEFAULT_SAVE_DIRECTORY = path.join(get_root_path(), 'log')
 
 
-def init_logging(save_directory=DEFAULT_SAVE_DIRECTORY, config_path='lib/logging.yaml'):
+def init_logging(config_path='lib/logging.yaml'):
     """ Setup logging configuration using logging.yaml.
     """
     # Only configure logging if it has not been configured yet
     if len(logging.root.handlers) == 0:
-        if not path.exists(save_directory):
-            makedirs(save_directory)
+        if not path.exists('log'):
+            makedirs('log')
 
         with open(config_path, 'rt') as file_:
             config = yaml.safe_load(file_.read())
-
-        config['handlers']['info_file_handler']['filename'] = path.join(save_directory, 'info.log')
-        config['handlers']['error_file_handler']['filename'] = path.join(
-            save_directory, 'error.log')
 
         logging.config.dictConfig(config)
 
@@ -141,24 +137,24 @@ def pad(batch):
     return padded, lengths
 
 
-def collate_fn(batch, input_key, output_key, sort_key):
+def collate_fn(batch, input_key, output_key, sort_key=None, preprocess=pad):
     """ Collate a batch of tensors not ready for training to padded, sorted, transposed,
     contiguous and cuda tensors ready for training. Used with torch.utils.data.DataLoader. """
-    batch = sorted(batch, key=lambda row: len(row[sort_key]), reverse=True)
-    input_batch, input_lengths = pad([row[input_key] for row in batch])
-    output_batch, output_lengths = pad([row[output_key] for row in batch])
+    if sort_key:
+        batch = sorted(batch, key=lambda row: len(row[sort_key]), reverse=True)
+    input_batch, input_lengths = preprocess([row[input_key] for row in batch])
+    output_batch, output_lengths = preprocess([row[output_key] for row in batch])
 
     # PyTorch RNN requires batches to be transposed for speed and integration with CUDA
     ret = {}
-    ret[input_key] = tuple(
-        [Variable(torch.stack(input_batch).t_().contiguous()), torch.LongTensor(input_lengths)])
-    ret[output_key] = tuple(
-        [Variable(torch.stack(output_batch).t_().contiguous()), torch.LongTensor(output_lengths)])
+    ret[input_key] = [torch.stack(input_batch).t_().contiguous(), torch.LongTensor(input_lengths)]
+    ret[output_key] = [
+        torch.stack(output_batch).t_().contiguous(), torch.LongTensor(output_lengths)
+    ]
     for key in batch[0].keys():
         if key not in [input_key, output_key]:
             ret[key] = [row[key] for row in batch]
 
-    if torch.cuda.is_available():
-        ret[input_key].cuda()
-        ret[output_key].cuda()
+    ret[input_key] = tuple(ret[input_key])
+    ret[output_key] = tuple(ret[output_key])
     return ret

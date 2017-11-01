@@ -100,8 +100,6 @@ class Checkpoint(object):
             logger.error('Cannot save checkpoint; directory (%s) already exists.', path)
             return
 
-        os.makedirs(path)
-
         logger.info('Saving checkpoint %s', name)
 
         torch.save(
@@ -111,6 +109,7 @@ class Checkpoint(object):
                 'input_text_encoder': input_text_encoder,
                 'output_text_encoder': output_text_encoder,
             },
+            path,
             pickle_module=dill)
 
     def predict(self):

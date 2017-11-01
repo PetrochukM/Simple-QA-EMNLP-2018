@@ -17,6 +17,7 @@ class Optimizer(object):
         self.optimizer = optim
         self.scheduler = None
         self.max_grad_norm = max_grad_norm
+        self.zero_grad = self.optimizer.zero_grad
 
     def set_scheduler(self, scheduler):
         """ Set the learning rate scheduler.

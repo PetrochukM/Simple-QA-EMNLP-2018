@@ -3,58 +3,41 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-######################################################################
-#   Metric Definitions
-######################################################################
-
 
 class Observer(object):
     """ Base class for encapsulation of a Observer.
 
-    Observer observers batches of data. With `update_batch` a Observer accumulates data. With
-    `reset` Observer resets and returns an observation.
+    Observer observers batches of data. With `reset` dump resets and returns an observation.
 
     Args:
-        name (str): name of the metric used by logging messages.
+        name (str): name of the Observer used by logging messages.
     """
 
     def __init__(self, name=None):
         self.name = self.__class__.__name__ if name is None else name
 
-    def __str__(self):
-        """ Return a string representation of this metric. Must be in the form of `self.name: * \n`.
-        """
-        return '%s: %s' % (self.name, str(self.reset()))
-
     def reset(self):
-        """ Reset the accumulated variables and output an observation. """
+        """ Reset the accumulated variables. """
         raise NotImplementedError
 
-    def update_batch(self, input_batch, output_batch):
-        """ Evaluate and accumulate variables given outputs and expected results.
+    def dump(self, params):
+        """ Output an observation to the `save_directory` or to console depending on the observable.
 
-        This method is called after each batch with the batch outputs and the target (expected)
-        results. Override it to define your own accumulation method.
-    
         Args:
-            outputs (torch.FloatTensor [seq_len, batch_size, dictionary_size]): outputs of a
-                batch.
-            batch (torch.LongTensor [seq_len, batch_size]): expected output of a batch.
+            params (dict): arbitrary parameters used for saving the observation.
         """
-        # TODO: By default, call update and iterate through batch 
         raise NotImplementedError
 
-    def update(self, input, output):
-        """ Evaluate and accumulate variables given outputs and expected results.
+    def observed(self):
+        """ Get the observation.
+        """
+        raise NotImplementedError
 
-        This method is called after each batch with the batch outputs and the target (expected)
-        results. Override it to define your own accumulation method.
+    def update(self, event):
+        """ Update the state of the `Observer`.
 
-        # TODO: Update this input/output
-    
         Args:
-            output (torch.Tensor [seq_len, dictionary_size]): output of a batch.
-            target (torch.Tensor [seq_len]): expected output of a batch.
+            event (dict): arbitrary dictionary that every observer accepts
         """
         raise NotImplementedError
 

@@ -82,6 +82,7 @@ cover/**
 
 # Log files
 log/**
+save/**
 
 # Data
 data/**

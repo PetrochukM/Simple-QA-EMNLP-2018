@@ -51,5 +51,9 @@
     "build/**": true,
     "cover/**": true
   },
-  "python.pythonPath": "python3"
+  "python.pythonPath": "python3",
+  "cSpell.words": [
+    "functools",
+    "tqdm"
+  ]
 }

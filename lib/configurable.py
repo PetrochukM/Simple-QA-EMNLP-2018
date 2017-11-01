@@ -50,7 +50,7 @@ class _KeyListDictionary(dict):
 _configuration = _KeyListDictionary()
 
 
-def _dict_merge(dict_, merge_dict):
+def _dict_merge(dict_, merge_dict, overwrite=False):
     """ Recursive `dict` merge. `dict_merge` recurses down into dicts nested to an arbitrary depth,
     updating keys. The `merge_dict` is merged into `dict_`.
 
@@ -60,8 +60,10 @@ def _dict_merge(dict_, merge_dict):
     """
     for key in merge_dict:
         if key in dict_ and isinstance(dict_[key], dict):
-            _dict_merge(dict_[key], merge_dict[key])
-        else:
+            _dict_merge(dict_[key], merge_dict[key], overwrite)
+        elif overwrite and key in dict_:
+            dict_[key] = merge_dict[key]
+        elif key not in dict_:
             dict_[key] = merge_dict[key]
 
 
@@ -190,9 +192,9 @@ def add_config(dict_, is_log=True):
     global _configuration
     if is_log:
         logger.info('Added config:')
-        pretty_printer.pprint(dict_)
+        logging.info(pretty_printer.pformat(dict_))
     parsed = _parse_configuration(dict_)
-    _dict_merge(_configuration, parsed)
+    _dict_merge(_configuration, parsed, overwrite=False)
     _configuration = _KeyListDictionary(_configuration)
 
 
@@ -250,6 +252,7 @@ def configurable(func, instance, args, kwargs):
     try:
         if len(default) == 0:
             logger.info('%s no config for: %s', print_name, '.'.join(keys))
+        logger.info('%s was configured with:\n%s', print_name, pretty_printer.pformat(merged))
         return func(*args, **merged)
     except TypeError as error:
         logger.info('%s was passed defaults: %s', print_name, default)
