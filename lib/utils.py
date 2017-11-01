@@ -6,8 +6,6 @@ import ctypes
 import logging
 import logging.config
 
-from torch.autograd import Variable
-
 import torch
 import yaml
 
@@ -122,6 +120,26 @@ def cuda_devices():
         cuda.cuCtxDetach(context)
 
     return ret
+
+
+def get_total_parameters(model):
+    """ Return the total number of trainable parameters in model """
+    params = filter(lambda p: p.requires_grad, model.parameters())
+    return sum(x.size()[0] * x.size()[1] if len(x.size()) > 1 else x.size()[0] for x in params)
+
+
+def add_logger_file_handler(filename, level=logging.DEBUG, formatter=None):
+    """
+    Add a filehandler to the root logger.
+    
+    Useful to store a copy of the logs during training or evaluation.
+    """
+    logger = logging.getLogger()  # Root logger
+    handler = logging.FileHandler(filename)
+    handler.setLevel(logging.DEBUG)
+    if formatter is None:
+        handler.setFormatter(logger.handlers[0].formatter)
+    logger.addHandler(handler)
 
 
 def pad(batch):

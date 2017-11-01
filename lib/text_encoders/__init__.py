@@ -6,6 +6,8 @@ from lib.text_encoders.text_encoders import PADDING_TOKEN
 from lib.text_encoders.text_encoders import UNKNOWN_TOKEN
 from lib.text_encoders.text_encoders import EOS_TOKEN
 from lib.text_encoders.text_encoders import SOS_TOKEN
+from lib.text_encoders.text_encoders import COPY_INDEX
+from lib.text_encoders.text_encoders import COPY_TOKEN
 from lib.text_encoders.text_encoders import WordEncoder
 from lib.text_encoders.text_encoders import CharacterEncoder
 from lib.text_encoders.text_encoders import MosesEncoder

@@ -28,6 +28,7 @@ from lib.observers import RandomSample
 from lib.optim import Optimizer
 from lib.samplers import BucketBatchSampler
 from lib.text_encoders import PADDING_INDEX
+from lib.text_encoders import COPY_INDEX
 from lib.text_encoders import WordEncoder
 from lib.utils import collate_fn
 from lib.utils import device_default
@@ -61,7 +62,7 @@ DEFAULT_HYPERPARAMETERS = {
         'nn': {
             'decoder_rnn.DecoderRNN.__init__': {
                 'use_attention': True,
-                'scheduled_sampling': True
+                'scheduled_sampling': False,
             },
             'encoder_rnn.EncoderRNN.__init__': {
                 'bidirectional': True,
@@ -132,8 +133,10 @@ def main(
     if checkpoint:
         source_encoder, target_encoder = checkpoint.input_encoder, checkpoint.output_encoder
     else:
-        source_encoder = WordEncoder(train_dataset['source'])
-        target_encoder = WordEncoder(train_dataset['target'])
+        # For the experiment, we require the dictionaries are the same
+        source_encoder = WordEncoder(train_dataset['source'] + train_dataset['target'])
+        target_encoder = source_encoder
+
     for dataset in [train_dataset, dev_dataset]:
         for row in dataset:
             row['source'] = source_encoder.encode(row['source'])
@@ -189,7 +192,7 @@ def main(
 
     # Train!
     for i in range(epochs):
-        logger.info('Epoch %d', i)
+        logger.info('Starting epoch %d', i)
         model.train(mode=True)
         batch_sampler = BucketBatchSampler(train_dataset, lambda r: r['source'].size()[0],
                                            train_batch_size)
@@ -203,14 +206,22 @@ def main(
             source, source_lengths, target, target_lengths = prepare_batch(batch)
 
             optimizer.zero_grad()
-            output = model(source, source_lengths, target, target_lengths)[0]
+            output, _, attention = model(source, source_lengths, target, target_lengths)
+
+            # Given the max attention weight selects the correct `source_value` change the 
+            # `target` to COPY_INDEX; otherwise, keep it consistent. 
+            attention = attention.max(2)[1]  # [batch_size, output_length]
+            for target_index in range(target.size()[0]):
+                for batch_index in range(target.size()[1]):
+                    source_index = attention[target_index, batch_index].data[0]
+                    source_value = source[source_index, batch_index]
+                    if target[target_index, batch_index].data[0] == source_value.data[0]:
+                        target[target_index, batch_index] = COPY_INDEX
 
             # Compute loss
             # NOTE: flattening the tensors allows for the computation to be done once per batch
             output_flat = output.view(-1, output.size(2))
             target_flat = target.view(-1)
-            source_flat = source.view(-1)
-
             loss = criterion(output_flat, target_flat)
 
             # Backward propagation
@@ -225,8 +236,10 @@ def main(
             output_text_encoder=target_encoder,
             device=device)
 
-        # Evaluate
         model.train(mode=False)
+        # Train then evaluate
+        copy_index_tokens = 0
+        total_tokens = 0
         for batch in DataLoader(
                 dev_dataset,
                 batch_size=dev_batch_size,
@@ -234,19 +247,37 @@ def main(
                 pin_memory=torch.cuda.is_available(),
                 num_workers=0):
             source, source_lengths, target, target_lengths = prepare_batch(batch)
-            output = model(source, source_lengths, target, target_lengths)[0]
+            output, _, attention = model(source, source_lengths, target, target_lengths)
+
+            # Given a COPY_INDEX was predicted replace it with the copy value.
+            output = output.data
+            attention = attention.max(2)[1]  # [batch_size, output_length]
+            ignore_index = PADDING_INDEX
+            for output_index in range(output.size()[0]):
+                for batch_index in range(output.size()[1]):
+                    if output[output_index, batch_index].max(0)[1][0] == COPY_INDEX:
+                        source_index = attention[output_index, batch_index].data[0]
+                        source_value = source[source_index, batch_index].data[0]
+                        # Change the distribution to predict the copy value
+                        output[output_index, batch_index, source_value] = output[
+                            output_index, batch_index, COPY_INDEX]
+                        output[output_index, batch_index, COPY_INDEX] = -1000
+                        if source_value != ignore_index:
+                            copy_index_tokens += 1
+                            total_tokens += 1
+                    elif output[output_index, batch_index].max(0)[1][0] != ignore_index:
+                        total_tokens += 1
+
             for observer in dev_observers:
                 observer.update({
                     'source_batch': source,
                     'target_batch': target,
-                    'output_batch': output
+                    'output_batch': Variable(output)
                 })
 
+        logger.info('Frequency of copy tokens: %.03f [%d of %d]', copy_index_tokens / total_tokens,
+                    copy_index_tokens, total_tokens)
         [observer.dump().reset() for observer in dev_observers]
-
-    # 8. Return the best loss function
-
-    # If any of these steps seems repetitive create a function to help that in training?
 
 
 if __name__ == '__main__':
