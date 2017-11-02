@@ -8,6 +8,7 @@ from lib.text_encoders.text_encoders import TextEncoder
 
 
 class StaticTokenizerEncoder(TextEncoder):
+    """ Encoder where the tokenizer is not learned and a static function. """
 
     def __init__(self, sample, append_eos=True, lower=True, tokenize=(lambda s: s.split())):
         """ Given a sample, build the dictionary for the word encoder """

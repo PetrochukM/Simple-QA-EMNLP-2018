@@ -101,9 +101,6 @@ def train(dataset=reverse,
 
     # Init Dataset
     train_dataset, dev_dataset = dataset(train=True, dev=True, test=False)
-    # NOTE: `source` and `target` are typically associated with sequences
-    assert 'source' in train_dataset and 'source' in dev_dataset
-    assert 'target' in train_dataset and 'target' in dev_dataset
 
     logger.info('Num Training Data: %d', len(train_dataset))
     logger.info('Num Development Data: %d', len(dev_dataset))

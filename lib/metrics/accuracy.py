@@ -1,15 +1,11 @@
 import logging
 
-import pandas as pd
-import numpy as np
-import random
-
 from lib.utils import torch_equals_ignore_index
 
 logger = logging.getLogger(__name__)
 
 
-def get_accuracy(targets, outputs, ignore_index=None, print=False):
+def get_accuracy(targets, outputs, ignore_index=None, print_=False):
     """
     Args:
       targets (list of tensors)
@@ -23,6 +19,6 @@ def get_accuracy(targets, outputs, ignore_index=None, print=False):
         if torch_equals_ignore_index(target, prediction, ignore_index=ignore_index):
             n_correct += 1
     accuracy = float(n_correct) / len(targets)
-    if print:
+    if print_:
         logger.info('Accuracy: %s [%d of %d]', accuracy, n_correct, len(targets))
     return accuracy, n_correct, len(targets)

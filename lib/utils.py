@@ -163,36 +163,6 @@ def collate_fn(batch, input_key, output_key, sort_key=None, preprocess=pad):
     return ret
 
 
-def iterate_batch(*args, batch_first=False):
-    """
-    Get a generator through a batch of outputs/targets.
-
-    Args:
-        *args:
-            outputs (torch.Tensor [seq_len, batch_size, dictionary_size]): outputs of a batch.
-            targets (torch.Tensor [seq_len, batch_size]): expected output of a batch.
-            source  (torch.Tensor [seq_len, batch_size]): source tensor of a batch.
-        batch_first (bool): batch is the second dimension if False, else it is the first
-    Returns:
-        generator for tuples with two objects ->
-            output (torch.Tensor [seq_len, dictionary_size]): outputs of a batch.
-            target (torch.Tensor [seq_len]): expected output of a batch.
-    """
-    args = list(args)
-    if not batch_first:
-        for i, arg in enumerate(args):
-            args[i] = args[i].transpose(0, 1)
-
-    # Batch is first
-    batch_size = args[0].size(0)
-
-    for i in range(batch_size):
-        ret = []
-        for arg in args:
-            ret.append(arg[i])
-        yield tuple(ret)
-
-
 def setup_training(dataset, checkpoint_path, save_directory, hyperparameters_config, device,
                    random_seed):
     """ Utility function to settup logger, hyperparameters, seed, device and checkpoint """

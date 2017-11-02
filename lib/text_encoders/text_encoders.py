@@ -1,6 +1,3 @@
-import torch
-
-
 class TextEncoder(object):
 
     def __init__(self):

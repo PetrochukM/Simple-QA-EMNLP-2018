@@ -15,7 +15,8 @@ def get_random_sample(sources,
                       output_text_encoder,
                       n_samples=5,
                       ignore_index=None,
-                      print=False):
+                      print_=False):
+    """ Print a random sample of positive and negative samples """
     positive_indexes = []
     negative_indexes = []
     predictions = []
@@ -31,15 +32,18 @@ def get_random_sample(sources,
     positive_samples = random.sample(positive_indexes, n_samples)
     negative_samples = random.sample(negative_indexes, n_samples)
 
-    if print:
-        ret = 'Random Sample:\n'
-        for prefix, samples in [('Positive', positive_samples), ('Negative', negative_samples)]:
-            data = []
-            for i in samples:
-                source = input_text_encoder.decode(sources[i].squeeze(dim=0))
-                target = output_text_encoder.decode(targets[i].squeeze(dim=0))
-                prediction = output_text_encoder.decode(predictions[i])
-                data.append([source, target, prediction])
-            ret += '\n%s Samples:\n%s\n' % (prefix, pd.DataFrame(
-                data, columns=['Source', 'Target', 'Prediction']))
+    ret = 'Random Sample:\n'
+    for prefix, samples in [('Positive', positive_samples), ('Negative', negative_samples)]:
+        data = []
+        for i in samples:
+            source = input_text_encoder.decode(sources[i].squeeze(dim=0))
+            target = output_text_encoder.decode(targets[i].squeeze(dim=0))
+            prediction = output_text_encoder.decode(predictions[i])
+            data.append([source, target, prediction])
+        ret += '\n%s Samples:\n%s\n' % (prefix, pd.DataFrame(
+            data, columns=['Source', 'Target', 'Prediction']))
+
+    if print_:
         logger.info(ret)
+
+    return data

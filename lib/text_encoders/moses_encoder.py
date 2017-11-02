@@ -2,6 +2,7 @@ from lib.text_encoders.word_encoder import WordEncoder
 
 
 class MosesEncoder(WordEncoder):
+    """ Use Moses to encode. """
 
     def __init__(self, *args, **kwargs):
         if 'tokenize' in kwargs:

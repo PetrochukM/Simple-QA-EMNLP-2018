@@ -10,6 +10,11 @@ def reverse(train=False,
             dev_rows=1000,
             test_rows=1000,
             seq_max_length=10):
+    """
+    Sample Data:
+        Input: 1 2 3
+        Output: 3 2 1
+    """
     ret = []
     for is_requested, n_rows in [(train, train_rows), (dev, dev_rows), (test, test_rows)]:
         rows = []

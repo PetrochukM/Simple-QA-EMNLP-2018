@@ -2,6 +2,7 @@ from lib.text_encoders.static_tokenizer_encoder import StaticTokenizerEncoder
 
 
 class IdentityEncoder(StaticTokenizerEncoder):
+    """ No tokenization for example: 'Hi There' => ['Hi There'] """
 
     def __init__(self, *args, **kwargs):
         if 'tokenize' in kwargs:

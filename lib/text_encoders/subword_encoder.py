@@ -11,6 +11,7 @@ from lib.text_encoders.text_encoders import TextEncoder
 
 
 class SubwordEncoder(TextEncoder):
+    """ Use Googles Tensor2Tensor SubwordTextTokenizer """
 
     def __init__(self,
                  sample,

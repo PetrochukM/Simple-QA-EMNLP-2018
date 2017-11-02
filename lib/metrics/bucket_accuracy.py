@@ -7,14 +7,13 @@ from lib.metrics.accuracy import get_accuracy
 logger = logging.getLogger(__name__)
 
 
-def get_bucket_accuracy(buckets, targets, outputs, ignore_index=None, print=False):
+def get_bucket_accuracy(buckets, targets, outputs, ignore_index=None, print_=False):
     """
     Args:
+      buckets (list of keys)
       targets (list of tensors)
       outputs (list of tensors)
-      buckets (list of keys)
       ignore_index (int, optional): specifies a target index that is ignored
-            
     """
     keys = list(set(buckets))
     bucketed_targets = {key: [] for key in keys}
@@ -31,6 +30,6 @@ def get_bucket_accuracy(buckets, targets, outputs, ignore_index=None, print=Fals
         data.append([accuracy, n_correct, n_total])
 
     df = pd.DataFrame(data, index=keys, columns=columns)
-    if print:
+    if print_:
         logger.info('Bucket Accuracy:\n%s\n', df)
     return df

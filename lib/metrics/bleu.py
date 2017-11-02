@@ -88,7 +88,8 @@ def moses_multi_bleu(hypotheses, references, lowercase=False):
     return np.float32(bleu_score)
 
 
-def get_bleu(targets, outputs, output_text_encoder, ignore_index=None, print=False):
+def get_bleu(targets, outputs, output_text_encoder, ignore_index=None, print_=False):
+    """ Compute BLEU with standard moses multi-bleu.perl """
     decoded_targets = []
     decoded_predictions = []
     for target, output in zip(targets, outputs):
@@ -105,6 +106,6 @@ def get_bleu(targets, outputs, output_text_encoder, ignore_index=None, print=Fal
         bleu = None
     else:
         bleu = moses_multi_bleu(np.array(decoded_predictions), np.array(decoded_targets))
-    if print:
+    if print_:
         logger.info('BLEU: %s [%d Corpus Size]', bleu, len(decoded_targets))
     return bleu

@@ -3,7 +3,8 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def get_token_accuracy(targets, outputs, ignore_index=None, print=False):
+def get_token_accuracy(targets, outputs, ignore_index=None, print_=False):
+    """ Compute the token accuracy. """
     n_correct = 0
     n_total = 0
     for target, output in zip(targets, outputs):
@@ -18,6 +19,6 @@ def get_token_accuracy(targets, outputs, ignore_index=None, print=False):
             n_total += len(target)
             n_correct += prediction.eq(target).sum()
     token_accuracy = float(n_correct) / n_total
-    if print:
+    if print_:
         logger.info('Token Accuracy: %s [%d of %d]', token_accuracy, n_correct, n_total)
     return token_accuracy, n_correct, n_total

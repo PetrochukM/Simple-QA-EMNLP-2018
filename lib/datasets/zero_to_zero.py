@@ -1,13 +1,12 @@
 from lib.datasets.dataset import Dataset
 
 
-def zero_to_zero(train=False,
-                 dev=False,
-                 test=False,
-                 train_rows=256,
-                 dev_rows=64,
-                 test_rows=64,
-                 seq_max_length=10):
+def zero_to_zero(train=False, dev=False, test=False, train_rows=256, dev_rows=64, test_rows=64):
+    """
+    Sample Data:
+        Input: 0
+        Output: 0
+    """
     ret = []
     for is_requested, n_rows in [(train, train_rows), (dev, dev_rows), (test, test_rows)]:
         if not is_requested:

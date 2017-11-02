@@ -2,6 +2,7 @@ from lib.text_encoders.static_tokenizer_encoder import StaticTokenizerEncoder
 
 
 class CharacterEncoder(StaticTokenizerEncoder):
+    """ Encode by splitting up by character """
 
     def __init__(self, *args, **kwargs):
         if 'tokenize' in kwargs:
