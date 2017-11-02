@@ -1,6 +1,5 @@
 from functools import lru_cache
-from os import path
-from os import makedirs
+import os
 
 import ctypes
 import logging
@@ -9,8 +8,9 @@ import logging.config
 import random
 import torch
 import yaml
-import pandas as pd
 
+from lib.checkpoint import Checkpoint
+from lib.configurable import add_config
 from lib.text_encoders import PADDING_INDEX
 
 logger = logging.getLogger(__name__)
@@ -22,10 +22,7 @@ def get_root_path():
     Returns (str):
         Root directory path
     """
-    return path.join(path.dirname(path.realpath(__file__)), '..')
-
-
-DEFAULT_SAVE_DIRECTORY = path.join(get_root_path(), 'log')
+    return os.path.join(os.path.dirname(os.path.realpath(__file__)), '..')
 
 
 def init_logging(config_path='lib/logging.yaml'):
@@ -33,8 +30,8 @@ def init_logging(config_path='lib/logging.yaml'):
     """
     # Only configure logging if it has not been configured yet
     if len(logging.root.handlers) == 0:
-        if not path.exists('log'):
-            makedirs('log')
+        if not os.path.exists('log'):
+            os.makedirs('log')
 
         with open(config_path, 'rt') as file_:
             config = yaml.safe_load(file_.read())
@@ -130,20 +127,6 @@ def get_total_parameters(model):
     return sum(x.size()[0] * x.size()[1] if len(x.size()) > 1 else x.size()[0] for x in params)
 
 
-def add_logger_file_handler(filename, level=logging.DEBUG, formatter=None):
-    """
-    Add a filehandler to the root logger.
-    
-    Useful to store a copy of the logs during training or evaluation.
-    """
-    logger = logging.getLogger()  # Root logger
-    handler = logging.FileHandler(filename)
-    handler.setLevel(logging.DEBUG)
-    if formatter is None:
-        handler.setFormatter(logger.handlers[0].formatter)
-    logger.addHandler(handler)
-
-
 def pad(batch):
     """ Pad a list of tensors with PADDING_INDEX. Sort by decreasing lengths as well. """
     # PyTorch RNN requires batches to be sorted in decreasing length order
@@ -180,19 +163,6 @@ def collate_fn(batch, input_key, output_key, sort_key=None, preprocess=pad):
     return ret
 
 
-def seed(random_seed=None):
-    """
-    For reproducibility, ensure all the required dependencies got the random_seed.
-    """
-    if random_seed is not None:
-        random.seed(random_seed)
-        torch.manual_seed(random_seed)
-        if torch.cuda.is_available():
-            torch.cuda.manual_seed(random_seed)
-            torch.cuda.manual_seed_all(random_seed)
-    logger.info('Seed')
-
-
 def iterate_batch(*args, batch_first=False):
     """
     Get a generator through a batch of outputs/targets.
@@ -223,39 +193,42 @@ def iterate_batch(*args, batch_first=False):
         yield tuple(ret)
 
 
-def flatten_batch(output_batch, target_batch):
-    """
-    Take outputs and their targets and return both with their batch dimension flattened.
+def setup_training(dataset, checkpoint_path, save_directory, hyperparameters_config, device,
+                   random_seed):
+    """ Utility function to settup logger, hyperparameters, seed, device and checkpoint """
+    # Save a copy of all logger logs to `save_directory`/train.log
+    # To keep a record per experiment
+    filename = os.path.join(save_directory, 'train.log')
+    logger = logging.getLogger()  # Root logger
+    handler = logging.FileHandler(filename)
+    handler.setLevel(logging.DEBUG)
+    handler.setFormatter(logger.handlers[0].formatter)
+    logger.addHandler(handler)
 
-    Example:
-      `torch.nn._Loss` accepts only targets of 1D and outputs of 2D. For an efficient loss
-      computation, it can be useful to flatten a 2D targets and 3D output to 1D and 2D respectively.
-    Args:
-        outputs (torch.Tensor [seq_len, batch_size, dictionary_size]): outputs of a batch.
-        targets (torch.Tensor [seq len, batch size]): expected output of a batch.
-    Returns:
-        outputs (torch.Tensor [seq_len * batch_size, dictionary_size]): outputs of a batch.
-        targets (torch.Tensor [seq len * batch size]): expected output of a batch.
-        batch_size (int): size of the batch
-    """
-    batch_size = output_batch.size(1)
-    # (seq len, batch size, dictionary size) -> (batch size * seq len, dictionary size)
-    output_flat = output_batch.view(-1, output_batch.size(2))
-    # (seq len, batch size) -> (batch size * seq len)
-    target_flat = target_batch.view(-1)
-    return output_flat, target_flat, batch_size
+    # Setup the hyperparameters
+    add_config(hyperparameters_config)
 
+    # Setup Device
+    device = device_default(device)
+    if torch.cuda.is_available():
+        torch.cuda.set_device(device)
 
-def output_to_prediction(output):
-    """
-    Given output from a decoder, return predictions from the softmax layer.
+    logger.info('Device: %s', device)
 
-    Args:
-        output (torch.Tensor [seq_len, dictionary_size]): output from decoder
-    Returns:
-        prediction (torch.Tensor [seq_len]): predictions
-    """
-    return output.max(1)[1].view(-1)
+    # Random Seed for reproducibility
+    if random_seed is not None:
+        random.seed(random_seed)
+        torch.manual_seed(random_seed)
+        if torch.cuda.is_available():
+            torch.cuda.manual_seed(random_seed)
+            torch.cuda.manual_seed_all(random_seed)
+
+    # Load Checkpoint
+    if checkpoint_path:
+        checkpoint = Checkpoint(checkpoint_path, device)
+    else:
+        checkpoint = Checkpoint.recent(save_directory, device)
+    return checkpoint
 
 
 def torch_equals_ignore_index(target, prediction, ignore_index=None):

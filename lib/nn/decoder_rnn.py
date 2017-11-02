@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 class DecoderRNN(BaseRNN):
     r"""
-    Provides functionality for decoding in a seq2seq framework, with an option for attention.
+    Provides functionality for decoding in a SeqToSeq framework, with an option for attention.
 
     Args:
         vocab (torchtext.vocab.Vocab):
@@ -38,7 +38,7 @@ class DecoderRNN(BaseRNN):
             default value of 128. <https://arxiv.org/pdf/1707.06799v1.pdf>.
 
         n_layers (numpy.int, int, optional):
-            Number of RNN layers used in Seq2seq. Based on Nils et
+            Number of RNN layers used in SeqToSeq. Based on Nils et
             al., 2017, we choose the default value of 2 as a "robust rule of thumb".
             <https://arxiv.org/pdf/1707.06799v1.pdf>
 
@@ -49,9 +49,9 @@ class DecoderRNN(BaseRNN):
             dropout probability for the input sequence (default: 0)
 
         use_attention(bool, optional):
-            Flag adds attention to the decoder. Attention is commonly used in Seq2Seq to attend to
+            Flag adds attention to the decoder. Attention is commonly used in SeqToSeq to attend to
             the encoder states. Based on wide community adoption, we recommend attention for
-            Seq2Seq. <http://ruder.io/deep-learning-nlp-best-practices/index.html#fnref:27>
+            SeqToSeq. <http://ruder.io/deep-learning-nlp-best-practices/index.html#fnref:27>
     """
 
     @configurable

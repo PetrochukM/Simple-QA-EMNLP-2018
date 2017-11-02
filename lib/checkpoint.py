@@ -8,19 +8,13 @@ from torch.autograd import Variable
 import dill
 import torch
 
-from lib.utils import device_default
+import lib
 
 logger = logging.getLogger(__name__)
 
 
-# MISSING: Load text encoding and pickled model to predict and evaluate
-# TODO: When predicting, to turn the model train=False
 class Checkpoint(object):
-    # TODO: If location is not a string, load the most recent checkpoint; else, load the checkpoint
-    # at location.
-    # Not the experiments folder, but the checkpoint parent
-    # List of checkpoints
-    # Checkpoint container
+
     def __init__(self, checkpoint_path, device=None):
         """
         Load a checkpoint.
@@ -30,7 +24,7 @@ class Checkpoint(object):
             checkpoint_path (str or None): Given a non-none checkpoint path, the checkpoint is
                 loaded
         """
-        self.device = device_default(device)
+        self.device = lib.utils.device_default(device)
         self.checkpoint_path = checkpoint_path
 
         logger.info("Loading checkpoints from %s onto device %d", self.checkpoint_path, self.device)
@@ -142,48 +136,3 @@ class Checkpoint(object):
             return tuple(ret[0])
         else:
             return ret
-
-    # MISSING: Pass observers and folder location to evaluate on the test set or an arbitrary set. 
-    def evaluate(self):
-        data_iter = BucketIterator(data, batch_size=batch_size, device=self.device, train=False)
-
-        # Required to turn off dropout
-        model.train(mode=False)
-
-        if self.loss is not None:
-            self.loss.reset()
-        if self.metrics is not None:
-            [metric.reset() for metric in self.metrics]
-
-        last_percentage = 0.0
-        for i, batch in enumerate(data_iter):
-            # First return of the model should be targets.size by vocab_size
-            outputs = model(batch)[0]
-            if print_progress and abs((i / len(data_iter)) - last_percentage) > .05:
-                # Print every 5%
-                logger.info('Evaluator progress: %f%%', i / len(data_iter))
-                last_percentage = i / len(data_iter)
-
-            if self.metrics is not None:
-                [metric.eval_batch(outputs, batch) for metric in self.metrics]
-            if self.loss is not None:
-                self.loss.eval_batch(outputs, batch)
-
-        if self.metrics is not None:
-            for metric in self.metrics:
-                logger.info('Eval %s', str(metric))
-        if self.loss is not None:
-            dev_loss = self.loss.get_measurement()
-            if not self.minimize_loss:
-                dev_loss = -dev_loss
-            logger.info("Eval %s: %.4f", self.loss.name, dev_loss)
-
-        model.train(mode=True)
-
-        # Dev loss is used by the trainer to use to decide the learning rate dynamically
-        if self.loss is not None:
-            return dev_loss
-        else:
-            return None
-
-        pass

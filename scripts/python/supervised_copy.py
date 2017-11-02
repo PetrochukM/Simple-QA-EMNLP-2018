@@ -21,7 +21,7 @@ from lib.configurable import configurable
 from lib.datasets import reverse
 from lib.nn import DecoderRNN
 from lib.nn import EncoderRNN
-from lib.nn import Seq2seq
+from lib.nn import SeqToSeq
 from lib.metrics import Accuracy
 from lib.metrics import RandomSample
 from lib.optim import Optimizer
@@ -146,7 +146,7 @@ def main(
     if checkpoint:
         model = checkpoint.model
     else:
-        model = Seq2seq(
+        model = SeqToSeq(
             EncoderRNN(vocab_size=source_encoder.vocab_size, embeddings=source_encoder.embeddings),
             DecoderRNN(vocab_size=target_encoder.vocab_size, embeddings=target_encoder.embeddings))
         for param in model.parameters():

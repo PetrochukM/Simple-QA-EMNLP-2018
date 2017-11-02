@@ -4,7 +4,7 @@ import torch.nn as nn
 from lib.configurable import configurable
 
 
-class Seq2seq(nn.Module):
+class SeqToSeq(nn.Module):
     """ Standard sequence-to-sequence architecture with configurable encoder
     and decoder.
     """
@@ -16,7 +16,7 @@ class Seq2seq(nn.Module):
             encoder (EncoderRNN): object of EncoderRNN
             decoder (DecoderRNN): object of DecoderRNN
         """
-        super(Seq2seq, self).__init__()
+        super(SeqToSeq, self).__init__()
         self.encoder = encoder
         self.decoder = decoder
         if tie_weights:

@@ -138,7 +138,7 @@ def _dict_to_flat_config(dict_):
         (dict) shallow dictionary with every key concatenated by "." similar to module names in
         python
     Raises:
-        (TypeError) module names (keys) are formatted improperly (Example: 'seq2seq..models')
+        (TypeError) module names (keys) are formatted improperly (Example: 'lib..models')
         (TypeError) duplicate functions/modules/packages are defined
     """
     flat = {}
@@ -167,7 +167,7 @@ def add_config(dict_, is_log=True):
     Example:
         `dict_`=
               {
-                'seq2seq': {
+                'lib': {
                   'models': {
                     'decoder_rnn.DecoderRNN.__init__': {
                       'embedding_size': 32
@@ -186,7 +186,7 @@ def add_config(dict_, is_log=True):
             configuration.
     Returns: None
     Raises:
-        (TypeError) module names (keys) are formatted improperly (Example: 'seq2seq..models')
+        (TypeError) module names (keys) are formatted improperly (Example: 'lib..models')
         (TypeError) duplicate functions/modules/packages are defined
     """
     global _configuration

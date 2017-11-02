@@ -16,27 +16,23 @@ import torch
 import pandas as pd
 
 from lib.checkpoint import Checkpoint
-from lib.configurable import add_config
 from lib.configurable import configurable
 from lib.datasets import reverse
-from lib.datasets import simple_qa_object
 from lib.metrics import get_accuracy
 from lib.metrics import get_bucket_accuracy
 from lib.metrics import get_random_sample
 from lib.metrics import get_token_accuracy
 from lib.nn import DecoderRNN
 from lib.nn import EncoderRNN
-from lib.nn import Seq2seq
+from lib.nn import SeqToSeq
 from lib.optim import Optimizer
 from lib.samplers import BucketBatchSampler
 from lib.text_encoders import PADDING_INDEX
 from lib.text_encoders import WordEncoder
-from lib.utils import add_logger_file_handler
 from lib.utils import collate_fn
-from lib.utils import device_default
 from lib.utils import get_total_parameters
 from lib.utils import init_logging
-from lib.utils import seed
+from lib.utils import setup_training
 
 init_logging()
 logger = logging.getLogger(__name__)  # Root logger
@@ -91,36 +87,17 @@ DEFAULT_SAVE_DIRECTORY_NAME += time.strftime('_%mm_%dd_%Hh_%Mm_%Ss', time.localt
 DEFAULT_SAVE_DIRECTORY = os.path.join('save/', DEFAULT_SAVE_DIRECTORY_NAME)
 
 
-def main(dataset=simple_qa_object,
-         checkpoint_path=None,
-         save_directory=DEFAULT_SAVE_DIRECTORY,
-         hyperparameters_config=DEFAULT_HYPERPARAMETERS,
-         device=None,
-         random_seed=123,
-         epochs=4,
-         train_max_batch_size=16,
-         dev_max_batch_size=128):
-    # Save a copy of all logger logs to `save_directory`/train.log
-    filename = os.path.join(save_directory, 'train.log')
-    add_logger_file_handler(filename)
-
-    add_config(hyperparameters_config)
-
-    # Setup Device
-    device = device_default(device)
-    if torch.cuda.is_available():
-        torch.cuda.set_device(device)
-
-    logger.info('Device: %s', device)
-
-    # Random Seed for reproducibility
-    seed(random_seed)
-
-    # Load Checkpoint
-    if checkpoint_path:
-        checkpoint = Checkpoint(checkpoint_path, device)
-    else:
-        checkpoint = Checkpoint.recent(save_directory, device)
+def train(dataset=reverse,
+          checkpoint_path=None,
+          save_directory=DEFAULT_SAVE_DIRECTORY,
+          hyperparameters_config=DEFAULT_HYPERPARAMETERS,
+          device=None,
+          random_seed=123,
+          epochs=4,
+          train_max_batch_size=16,
+          dev_max_batch_size=128):
+    checkpoint = setup_training(dataset, checkpoint_path, save_directory, hyperparameters_config,
+                                device, random_seed)
 
     # Init Dataset
     train_dataset, dev_dataset = dataset(train=True, dev=True, test=False)
@@ -146,7 +123,7 @@ def main(dataset=simple_qa_object,
     if checkpoint:
         model = checkpoint.model
     else:
-        model = Seq2seq(
+        model = SeqToSeq(
             EncoderRNN(vocab_size=source_encoder.vocab_size, embeddings=source_encoder.embeddings),
             DecoderRNN(vocab_size=target_encoder.vocab_size, embeddings=target_encoder.embeddings))
         for param in model.parameters():
@@ -248,7 +225,10 @@ def main(dataset=simple_qa_object,
             ignore_index=PADDING_INDEX,
             print=True)
 
-    # TODO: Return the best loss if hyperparameter tunning
+    # TODO: Return the best loss if hyperparameter tunning.
+
+    # TODO: Figure out a good abstraction for evaluation.
+    # TODO: In class, I'll add a classification model and try to get it running.
 
 
 if __name__ == '__main__':
@@ -262,4 +242,4 @@ if __name__ == '__main__':
     save_directory = os.path.dirname(
         args.checkpoint_path) if args.checkpoint_path else DEFAULT_SAVE_DIRECTORY
     os.makedirs(save_directory)
-    main(checkpoint_path=args.checkpoint_path, save_directory=save_directory)
+    train(checkpoint_path=args.checkpoint_path, save_directory=save_directory)

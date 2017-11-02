@@ -55,6 +55,7 @@
   "cSpell.words": [
     "bleu",
     "functools",
-    "tqdm"
+    "tqdm",
+    "unsqueeze"
   ]
 }

@@ -55,6 +55,7 @@
         "topk",
         "tqdm",
         "ujson",
+        "unsqueeze",
         "untokenized"
     ],
     // flagWords - list of words to be always considered incorrect

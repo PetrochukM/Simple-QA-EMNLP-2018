@@ -73,16 +73,14 @@ target/
 # Vagrant
 .vagrant
 
-# Checkpoints from seq2seq
-experiment/**
-experiments/**
+# Checkpoints
+save/**
 
 # Nose coverage
 cover/** 
 
 # Log files
 log/**
-save/**
 
 # Data
 data/**

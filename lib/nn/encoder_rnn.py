@@ -24,7 +24,7 @@ class EncoderRNN(BaseRNN):
             dropout probability for the input sequence
 
         n_layers (numpy.int, int, optional):
-            Number of RNN layers used in Seq2seq. Based on Nils et
+            Number of RNN layers used in SeqToSeq. Based on Nils et
             al., 2017, we choose the default value of 2 as a "robust rule of thumb".
             <https://arxiv.org/pdf/1707.06799v1.pdf>
 
