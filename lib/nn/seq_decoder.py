@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 # Helps with marking
 
 
-class DecoderRNN(BaseRNN):
+class SeqDecoder(BaseRNN):
     r"""
     Provides functionality for decoding in a SeqToSeq framework, with an option for attention.
 

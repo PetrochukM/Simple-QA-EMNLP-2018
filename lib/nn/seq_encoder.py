@@ -5,7 +5,7 @@ from lib.nn.base_rnn import BaseRNN
 from lib.configurable import configurable
 
 
-class EncoderRNN(BaseRNN):
+class SeqEncoder(BaseRNN):
     r"""
     Applies a multi-layer RNN to an input sequence.
 

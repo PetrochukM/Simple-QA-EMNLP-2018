@@ -22,8 +22,8 @@ from lib.metrics import get_accuracy
 from lib.metrics import get_bucket_accuracy
 from lib.metrics import get_random_sample
 from lib.metrics import get_token_accuracy
-from lib.nn import DecoderRNN
-from lib.nn import EncoderRNN
+from lib.nn import SeqDecoder
+from lib.nn import SeqEncoder
 from lib.nn import SeqToSeq
 from lib.optim import Optimizer
 from lib.samplers import BucketBatchSampler
@@ -121,8 +121,8 @@ def train(dataset=reverse,
         model = checkpoint.model
     else:
         model = SeqToSeq(
-            EncoderRNN(vocab_size=source_encoder.vocab_size, embeddings=source_encoder.embeddings),
-            DecoderRNN(vocab_size=target_encoder.vocab_size, embeddings=target_encoder.embeddings))
+            SeqEncoder(vocab_size=source_encoder.vocab_size, embeddings=source_encoder.embeddings),
+            SeqDecoder(vocab_size=target_encoder.vocab_size, embeddings=target_encoder.embeddings))
         for param in model.parameters():
             param.data.uniform_(-0.1, 0.1)
 
