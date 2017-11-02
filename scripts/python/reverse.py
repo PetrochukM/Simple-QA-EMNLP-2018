@@ -3,7 +3,6 @@ from functools import partial
 import argparse
 import logging
 import os
-import random
 import time
 
 from torch.nn.modules.loss import NLLLoss
@@ -20,11 +19,13 @@ from lib.checkpoint import Checkpoint
 from lib.configurable import add_config
 from lib.configurable import configurable
 from lib.datasets import reverse
+from lib.metrics import get_accuracy
+from lib.metrics import get_bucket_accuracy
+from lib.metrics import get_random_sample
+from lib.metrics import get_token_accuracy
 from lib.nn import DecoderRNN
 from lib.nn import EncoderRNN
 from lib.nn import Seq2seq
-from lib.observers import Accuracy
-from lib.observers import RandomSample
 from lib.optim import Optimizer
 from lib.samplers import BucketBatchSampler
 from lib.text_encoders import PADDING_INDEX
@@ -84,7 +85,7 @@ DEFAULT_HYPERPARAMETERS['lib']['nn']['decoder_rnn.DecoderRNN.__init__'].update(
 DEFAULT_HYPERPARAMETERS['lib']['nn']['encoder_rnn.EncoderRNN.__init__'].update(
     BASE_RNN_HYPERPARAMETERS)
 
-DEFAULT_SAVE_DIRECTORY_NAME = __file__.split('/')[-1].rstrip('.py')
+DEFAULT_SAVE_DIRECTORY_NAME = __file__.split('/')[-1].replace('.py', '')
 DEFAULT_SAVE_DIRECTORY_NAME += time.strftime('_%mm_%dd_%Hh_%Mm_%Ss', time.localtime())
 DEFAULT_SAVE_DIRECTORY = os.path.join('save/', DEFAULT_SAVE_DIRECTORY_NAME)
 
@@ -96,8 +97,8 @@ def main(
         device=None,
         random_seed=123,  # Reproducibility
         epochs=4,
-        train_batch_size=16,
-        dev_batch_size=128):
+        train_max_batch_size=16,
+        dev_max_batch_size=128):
     # Save a copy of all logger logs to `save_directory`/train.log
     filename = os.path.join(save_directory, 'train.log')
     add_logger_file_handler(filename)
@@ -165,12 +166,6 @@ def main(
     optimizer = Optimizer(Adam(params=params))
     optimizer.set_scheduler(StepLR)
 
-    # Init Observers
-    dev_observers = [
-        Accuracy(ignore_index=PADDING_INDEX), RandomSample(
-            source_encoder, target_encoder, n_samples=5, ignore_index=PADDING_INDEX)
-    ]
-
     # collate function merges rows into tensor batches
     collate_fn_partial = partial(
         collate_fn, input_key='source', output_key='target', sort_key='source')
@@ -182,23 +177,21 @@ def main(
         if torch.cuda.is_available():
             source, source_lengths = source.cuda(async=True), source_lengths.cuda(async=True)
             target, target_lengths = target.cuda(async=True), target_lengths.cuda(async=True)
-        source = Variable(source)
-        target = Variable(target)
-        return source, source_lengths, target, target_lengths
+        return Variable(source), source_lengths, Variable(target), target_lengths
 
     # Train!
     for i in range(epochs):
         logger.info('Epoch %d', i)
         model.train(mode=True)
         batch_sampler = BucketBatchSampler(train_dataset, lambda r: r['source'].size()[0],
-                                           train_batch_size)
-        for batch in tqdm(
-                DataLoader(
-                    train_dataset,
-                    batch_sampler=batch_sampler,
-                    collate_fn=collate_fn_partial,
-                    pin_memory=torch.cuda.is_available(),
-                    num_workers=0)):
+                                           train_max_batch_size)
+        train_iterator = DataLoader(
+            train_dataset,
+            batch_sampler=batch_sampler,
+            collate_fn=collate_fn_partial,
+            pin_memory=torch.cuda.is_available(),
+            num_workers=0)
+        for batch in tqdm(train_iterator):
             source, source_lengths, target, target_lengths = prepare_batch(batch)
 
             optimizer.zero_grad()
@@ -208,8 +201,6 @@ def main(
             # NOTE: flattening the tensors allows for the computation to be done once per batch
             output_flat = output.view(-1, output.size(2))
             target_flat = target.view(-1)
-            source_flat = source.view(-1)
-
             loss = criterion(output_flat, target_flat)
 
             # Backward propagation
@@ -226,26 +217,35 @@ def main(
 
         # Evaluate
         model.train(mode=False)
-        for batch in DataLoader(
-                dev_dataset,
-                batch_size=dev_batch_size,
-                collate_fn=collate_fn_partial,
-                pin_memory=torch.cuda.is_available(),
-                num_workers=0):
+        outputs, sources, targets = [], [], []
+        dev_iterator = DataLoader(
+            dev_dataset,
+            batch_size=dev_max_batch_size,
+            collate_fn=collate_fn_partial,
+            pin_memory=torch.cuda.is_available(),
+            num_workers=0)
+        for batch in dev_iterator:
             source, source_lengths, target, target_lengths = prepare_batch(batch)
             output = model(source, source_lengths, target, target_lengths)[0]
-            for observer in dev_observers:
-                observer.update({
-                    'source_batch': source,
-                    'target_batch': target,
-                    'output_batch': output
-                })
+            # Prevent memory leak by moving output from variable to tensor
+            sources.extend(source.data.cpu().transpose(0, 1).split(split_size=1, dim=0))
+            targets.extend(target.data.cpu().transpose(0, 1).split(split_size=1, dim=0))
+            outputs.extend(output.data.cpu().transpose(0, 1).split(split_size=1, dim=0))
 
-        [observer.dump().reset() for observer in dev_observers]
+        get_accuracy(targets, outputs, ignore_index=PADDING_INDEX, print=True)
+        get_token_accuracy(targets, outputs, ignore_index=PADDING_INDEX, print=True)
+        buckets = [t.ne(PADDING_INDEX).sum() - 1 for t in targets]
+        get_bucket_accuracy(buckets, targets, outputs, ignore_index=PADDING_INDEX, print=True)
+        get_random_sample(
+            sources,
+            targets,
+            outputs,
+            source_encoder,
+            target_encoder,
+            ignore_index=PADDING_INDEX,
+            print=True)
 
-    # 8. Return the best loss function
-
-    # If any of these steps seems repetitive create a function to help that in training?
+    # TODO: Return the best loss if hyperparameter tunning
 
 
 if __name__ == '__main__':

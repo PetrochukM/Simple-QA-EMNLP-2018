@@ -3,7 +3,6 @@ from functools import partial
 import argparse
 import logging
 import os
-import random
 import time
 
 from torch.nn.modules.loss import NLLLoss
@@ -23,8 +22,8 @@ from lib.datasets import reverse
 from lib.nn import DecoderRNN
 from lib.nn import EncoderRNN
 from lib.nn import Seq2seq
-from lib.observers import Accuracy
-from lib.observers import RandomSample
+from lib.metrics import Accuracy
+from lib.metrics import RandomSample
 from lib.optim import Optimizer
 from lib.samplers import BucketBatchSampler
 from lib.text_encoders import PADDING_INDEX
@@ -47,6 +46,8 @@ pd.set_option('display.expand_frame_repr', False)
 pd.set_option('max_colwidth', 80)
 
 # NOTE: The goal of this file is just to setup the training for simple_questions_predicate.
+
+# TODO: In order to not copy code this should be implemented as a branch
 
 BASE_RNN_HYPERPARAMETERS = {
     'embedding_size': 128,
@@ -85,7 +86,7 @@ DEFAULT_HYPERPARAMETERS['lib']['nn']['decoder_rnn.DecoderRNN.__init__'].update(
 DEFAULT_HYPERPARAMETERS['lib']['nn']['encoder_rnn.EncoderRNN.__init__'].update(
     BASE_RNN_HYPERPARAMETERS)
 
-DEFAULT_SAVE_DIRECTORY_NAME = __file__.split('/')[-1].rstrip('.py')
+DEFAULT_SAVE_DIRECTORY_NAME = __file__.split('/')[-1].replace('.py', '')
 DEFAULT_SAVE_DIRECTORY_NAME += time.strftime('_%mm_%dd_%Hh_%Mm_%Ss', time.localtime())
 DEFAULT_SAVE_DIRECTORY = os.path.join('save/', DEFAULT_SAVE_DIRECTORY_NAME)
 
@@ -276,7 +277,7 @@ def main(
 
         logger.info('Frequency of copy tokens: %.03f [%d of %d]', copy_index_tokens / total_tokens,
                     copy_index_tokens, total_tokens)
-        [observer.dump().reset() for observer in dev_observers]
+        [observer.dump(save_directory).reset() for observer in dev_observers]
 
 
 if __name__ == '__main__':

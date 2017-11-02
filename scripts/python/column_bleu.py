@@ -4,11 +4,10 @@ column_bleu.py computes the BLEU between two columns.
 
 import pandas
 
-from metrics.bleu import moses_multi_bleu
+from lib.metrics.bleu import moses_multi_bleu
 
-def main(src='data/simple_qa/test.tsv',
-         column_a='Question EN',
-         column_b='Question EN DeepL'):
+
+def main(src='data/simple_qa/test.tsv', column_a='Question EN', column_b='Question EN DeepL'):
     """ Computes the BLEU between two columns """
     data = pandas.read_table(src)
     assert column_a in data.columns.values

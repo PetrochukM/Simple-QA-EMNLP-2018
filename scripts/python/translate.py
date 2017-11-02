@@ -12,31 +12,28 @@ def translate(batch):
     """ Translate a batch of questions from english to french using DeepL 44 BLEU """
     headers = {
         'cookie':
-        'LMTBID="efd84772-1e6e-4a72-be20-a4478c3b8f0d"; selectedTargetLang=FR; preferredLangs=FR%2CEN',
+            'LMTBID="efd84772-1e6e-4a72-be20-a4478c3b8f0d"; selectedTargetLang=FR; preferredLangs=FR%2CEN',
         'origin':
-        'https://www.deepl.com',
+            'https://www.deepl.com',
         'accept-encoding':
-        'gzip, deflate, br',
+            'gzip, deflate, br',
         'accept-language':
-        'en-US,en;q=0.9',
+            'en-US,en;q=0.9',
         'user-agent':
-        'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.62 Safari/537.36',
+            'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.62 Safari/537.36',
         'content-type':
-        'text/plain',
+            'text/plain',
         'accept':
-        '*/*',
+            '*/*',
         'referer':
-        'https://www.deepl.com/translator',
+            'https://www.deepl.com/translator',
         'authority':
-        'www.deepl.com',
+            'www.deepl.com',
         'x-requested-with':
-        'XMLHttpRequest',
+            'XMLHttpRequest',
     }
 
-    jobs = [{
-        "kind": "default",
-        "raw_en_sentence": sentence
-    } for sentence in batch]
+    jobs = [{"kind": "default", "raw_en_sentence": sentence} for sentence in batch]
     data = {
         "jsonrpc": "2.0",
         "method": "LMT_handle_jobs",
@@ -52,14 +49,11 @@ def translate(batch):
         "id": 13
     }
     result = requests.post(
-        'https://www.deepl.com/jsonrpc',
-        headers=headers,
-        data=json.dumps(data)).json()
+        'https://www.deepl.com/jsonrpc', headers=headers, data=json.dumps(data)).json()
     translations = []
     for i, translation in enumerate(result['result']['translations']):
         if translation['beams']:
-            translations.append(
-                translation['beams'][0]['postprocessed_sentence'])
+            translations.append(translation['beams'][0]['postprocessed_sentence'])
         else:
             # No translation is returned. Example:
             # which publisher was behind  age of conan: unchained
@@ -104,7 +98,7 @@ def main(src='data/simple_qa/test.tsv',
             character_count = 0
         batch.append(question)
         character_count += len(question)
-    translated.extend(translate(batch)) # Last batch
+    translated.extend(translate(batch))  # Last batch
 
     # Save data
     assert len(translated) == len(data.index)

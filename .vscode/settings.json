@@ -53,6 +53,7 @@
   },
   "python.pythonPath": "python3",
   "cSpell.words": [
+    "bleu",
     "functools",
     "tqdm"
   ]
