@@ -1,22 +1,24 @@
 import torch
 
 from lib.text_encoders.reserved_tokens import EOS_INDEX
+from lib.text_encoders.reserved_tokens import UNKNOWN_INDEX
 from lib.text_encoders.reserved_tokens import RESERVED_ITOS
 from lib.text_encoders.reserved_tokens import RESERVED_STOI
 from lib.text_encoders.subword_text_tokenizer import SubwordTextTokenizer
 from lib.text_encoders.text_encoders import TextEncoder
 
+# TODO: Add reserved tokens to SubwordTextTokenizer like Google did to ensure correct tokenization
+
 
 class SubwordEncoder(TextEncoder):
 
-    def __init__(
-            self,
-            sample,
-            append_eos=True,
-            lower=True,
-            target_size=None,
-            min_val=1,
-            max_val=1e3,):
+    def __init__(self,
+                 sample,
+                 append_eos=True,
+                 lower=True,
+                 target_size=None,
+                 min_val=1,
+                 max_val=1e3):
         """ Given a sample, build the dictionary for the word encoder.
         
         Args:
@@ -55,7 +57,7 @@ class SubwordEncoder(TextEncoder):
             text = text.lower()
         text = text.rstrip('\n')
         text = self.tokenizer.encode(text)
-        vector = [self.stoi[token] for token in text]
+        vector = [self.stoi.get(token, UNKNOWN_INDEX) for token in text]
         if self.append_eos:
             vector.append(EOS_INDEX)
         return torch.LongTensor(vector)

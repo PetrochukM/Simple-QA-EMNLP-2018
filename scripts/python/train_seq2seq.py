@@ -19,6 +19,7 @@ from lib.checkpoint import Checkpoint
 from lib.configurable import add_config
 from lib.configurable import configurable
 from lib.datasets import reverse
+from lib.datasets import simple_qa_object
 from lib.metrics import get_accuracy
 from lib.metrics import get_bucket_accuracy
 from lib.metrics import get_random_sample
@@ -90,20 +91,20 @@ DEFAULT_SAVE_DIRECTORY_NAME += time.strftime('_%mm_%dd_%Hh_%Mm_%Ss', time.localt
 DEFAULT_SAVE_DIRECTORY = os.path.join('save/', DEFAULT_SAVE_DIRECTORY_NAME)
 
 
-def main(
-        dataset=reverse,
-        checkpoint_path=None,
-        save_directory=DEFAULT_SAVE_DIRECTORY,
-        device=None,
-        random_seed=123,  # Reproducibility
-        epochs=4,
-        train_max_batch_size=16,
-        dev_max_batch_size=128):
+def main(dataset=simple_qa_object,
+         checkpoint_path=None,
+         save_directory=DEFAULT_SAVE_DIRECTORY,
+         hyperparameters_config=DEFAULT_HYPERPARAMETERS,
+         device=None,
+         random_seed=123,
+         epochs=4,
+         train_max_batch_size=16,
+         dev_max_batch_size=128):
     # Save a copy of all logger logs to `save_directory`/train.log
     filename = os.path.join(save_directory, 'train.log')
     add_logger_file_handler(filename)
 
-    add_config(DEFAULT_HYPERPARAMETERS)
+    add_config(hyperparameters_config)
 
     # Setup Device
     device = device_default(device)
@@ -116,8 +117,10 @@ def main(
     seed(random_seed)
 
     # Load Checkpoint
-    checkpoint = Checkpoint.load(
-        checkpoint_path=checkpoint_path, save_directory=save_directory, device=device)
+    if checkpoint_path:
+        checkpoint = Checkpoint(checkpoint_path, device)
+    else:
+        checkpoint = Checkpoint.recent(save_directory, device)
 
     # Init Dataset
     train_dataset, dev_dataset = dataset(train=True, dev=True, test=False)

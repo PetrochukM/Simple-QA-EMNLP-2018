@@ -1,144 +1,104 @@
 import os
-import logging
-
-from torchtext.data import Example
 
 import pandas as pd
-import sh
 
-from lib.config import get_root_path
-from lib.config import init_logging
-from seq2seq.datasets.seq_input_output_dataset import SeqInputOutputDataset
+from lib.datasets.dataset import Dataset
 
-logger = logging.getLogger(__name__)
-
-# TODO: Allow access to original input before field for replace_unk feature.
-
-# _SimpleQA downloads and processes large files; therefore, we add `pragma: no cover`
-# Not reasonable to test this during test time
+# TODO: Add download simple_qa
 
 
-class _SimpleQA(SeqInputOutputDataset):  # pragma: no cover
+def simple_qa_object(directory='data/simple_qa',
+                     train=False,
+                     dev=False,
+                     test=False,
+                     train_filename='train.tsv',
+                     dev_filename='dev.tsv',
+                     test_filename='test.tsv'):
     """
-    Base class for simple question answering tasks.
-
-    The class is responsible for downloading to disc the simple question answering data.
+    Sample Data:
+        Input: what language is angels vengeance in
+        Output: c c c e e c
     """
-
-    url = 'hdfs://hdpb.prn.parsec.apple.com/user/mpetrochuk/simple_qa'
-    directory_name = 'simple_qa'
-    n_rows = {'train.tsv': 74526, 'dev.tsv': 10639, 'test.tsv': 21300}
-
-    @classmethod
-    def download(cls, data_directory='.'):
-        """
-        Download simple questions data if `data_directory/${cls.directory_name}` does not exist.
-
-        Args:
-            data_directory (str): directory where all data is stored
-        Returns:
-            (str) `data_directory/${cls.directory_name}`
-        """
-        path = os.path.join(get_root_path(), data_directory, cls.directory_name)
-        if not os.path.isdir(path):
-            # Download
-            logger.info('Downloading %s', cls.url)
-            sh.hdfs('dfs', '-copyToLocal', cls.url, data_directory)
-            logger.info('Downloaded %s', os.listdir(path))
-        return path
-
-    @classmethod
-    def splits(cls, *args, data_directory='.', **kwargs):
-        """
-        Missing function definition can be found in `SeqInputOutputDataset`.
-        """
-        path = cls.download(data_directory=data_directory)
-        return super().splits(*args, data_directory=path, **kwargs)
-
-
-class SimpleQAObject(_SimpleQA):  # pragma: no cover
-    """ Simple question answering derivative to predict the object in a question. """
-
-    def __init__(self, path, question_field, object_mask_field, **kwargs):
-        """
-        Sample Data:
-           Input: what language is angels vengeance in
-           Output: c c c e e c
-        """
-        data = pd.read_table(path)
+    ret = []
+    datasets = [(train, train_filename), (dev, dev_filename), (test, test_filename)]
+    for is_requested, filename in datasets:
+        if not is_requested:
+            continue
+        full_path = os.path.join(directory, filename)
+        data = pd.read_table(full_path)
         data = data[data['Object EN Mask'].notnull()]
-        fields = [('input', question_field), ('output', object_mask_field)]
-        examples = []
+        rows = []
         for _, row in data.iterrows():
-            example = Example.fromlist([row['Question EN'].strip(), row['Object EN Mask']], fields)
-            examples.append(example)
-        super().__init__(examples, fields, **kwargs)
+            rows.append({'source': row['Question EN'].strip(), 'target': row['Object EN Mask']})
+        ret.append(Dataset(rows))
+
+    if len(ret) == 1:
+        return ret[0]
+    else:
+        return tuple(ret)
 
 
-class SimpleQAFreebasePredicate(_SimpleQA):  # pragma: no cover
-    """ Simple question answering derivative to predict the predicate in a question. """
-
-    def __init__(self, path, question_field, predicate_field, **kwargs):
-        """
-        Sample Data:
-           Input: what is the book e about?
-           Output: www.freebase.com/book/written_work/subjects
-        """
-        data = pd.read_table(path)
+def simple_qa_predicate(directory='data/simple_qa',
+                        train=False,
+                        dev=False,
+                        test=False,
+                        train_filename='train.tsv',
+                        dev_filename='dev.tsv',
+                        test_filename='test.tsv'):
+    """
+    Sample Data:
+        Input: what is the book e about?
+        Output: www.freebase.com/book/written_work/subjects
+    """
+    ret = []
+    datasets = [(train, train_filename), (dev, dev_filename), (test, test_filename)]
+    for is_requested, filename in datasets:
+        if not is_requested:
+            continue
+        full_path = os.path.join(directory, filename)
+        data = pd.read_table(full_path)
         data = data[data['Freebase Property'].notnull()]
-        fields = [('input', question_field), ('output', predicate_field)]
-        examples = []
+        rows = []
         for _, row in data.iterrows():
-            example = Example.fromlist([row['Question EN'].strip(), row['Freebase Property']],
-                                       fields)
-            examples.append(example)
-        super().__init__(examples, fields, **kwargs)
+            rows.append({'text': row['Question EN'].strip(), 'label': row['Freebase Property']})
+        ret.append(Dataset(rows))
+
+    if len(ret) == 1:
+        return ret[0]
+    else:
+        return tuple(ret)
 
 
-class SimpleQAWikiDataPredicate(_SimpleQA):  # pragma: no cover
-    """ Simple question answering derivative to predict the predicate in a question. """
-
-    def __init__(self, path, question_field, predicate_field, **kwargs):
-        """
-        Sample Data:
-           Input: what country was the film the debt from
-           Output: P495
-        """
-        data = pd.read_table(path)
-        data = data[data['WikiData Property'].notnull()]
-        data = data[~data['WikiData Property'].str.contains(':')]  # Ignore modifiers
-        fields = [('input', question_field), ('output', predicate_field)]
-        examples = []
-        for _, row in data.iterrows():
-            example = Example.fromlist([row['Question EN'].strip(), row['WikiData Property']],
-                                       fields)
-            examples.append(example)
-        super().__init__(examples, fields, **kwargs)
-
-
-class SimpleQAQuestionGeneration(_SimpleQA):  # pragma: no cover
-    """ Simple question answering derivative to generate questions. """
-
-    def __init__(self, path, triple_field, question_field, **kwargs):
-        """
-        Sample Data:
-           Input: book/written_work/subjects | E
-           Output: what is the book e about
-        """
-        data = pd.read_table(path)
+def simple_qa_question_generation(directory='data/simple_qa',
+                                  train=False,
+                                  dev=False,
+                                  test=False,
+                                  train_filename='train.tsv',
+                                  dev_filename='dev.tsv',
+                                  test_filename='test.tsv'):
+    """
+    Sample Data:
+        Input: book/written_work/subjects | E
+        Output: what is the book e about
+    """
+    ret = []
+    datasets = [(train, train_filename), (dev, dev_filename), (test, test_filename)]
+    for is_requested, filename in datasets:
+        if not is_requested:
+            continue
+        full_path = os.path.join(directory, filename)
+        data = pd.read_table(full_path)
         data = data[data['Subject EN'].notnull() & data['Object EN'].notnull()
                     & data['Freebase Property'].notnull()]
         data['Freebase Property'] = data.apply(
             lambda row: row['Freebase Property'].replace('www.freebase.com/', '').strip(), axis=1)
-        fields = [('input', triple_field), ('output', question_field)]
-        examples = []
+        rows = []
         for _, row in data.iterrows():
             input_ = ' | '.join([row['Subject EN'], row['Object EN'], row['Freebase Property']])
-            example = Example.fromlist([input_, row['Question EN'].strip()], fields)
-            examples.append(example)
-        super().__init__(examples, fields, **kwargs)
+            rows.append({'source': input_, 'target': row['Question EN'].strip()})
+        ret.append(Dataset(rows))
 
-
-if __name__ == '__main__':  # pragma: no cover
-    init_logging()
-    _SimpleQA.download(data_directory='data/')
+    if len(ret) == 1:
+        return ret[0]
+    else:
+        return tuple(ret)

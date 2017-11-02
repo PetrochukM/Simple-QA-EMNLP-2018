@@ -22,6 +22,10 @@ class Seq2seq(nn.Module):
         if tie_weights:
             self.decoder.embedding.weight = self.encoder.embedding.weight
 
+    def flatten_parameters(self):
+        self.encoder.rnn.flatten_parameters()
+        self.decoder.rnn.flatten_parameters()
+
     def forward(self, source, source_lengths, target=None, target_lengths=None):
         """
         Args:

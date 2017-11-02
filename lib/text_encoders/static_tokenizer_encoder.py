@@ -1,6 +1,7 @@
 import torch
 
 from lib.text_encoders.reserved_tokens import EOS_INDEX
+from lib.text_encoders.reserved_tokens import UNKNOWN_INDEX
 from lib.text_encoders.reserved_tokens import RESERVED_ITOS
 from lib.text_encoders.reserved_tokens import RESERVED_STOI
 from lib.text_encoders.text_encoders import TextEncoder
@@ -39,7 +40,7 @@ class StaticTokenizerEncoder(TextEncoder):
 
     def encode(self, text):
         text = self._preprocess(text)
-        vector = [self.stoi[token] for token in text]
+        vector = [self.stoi.get(token, UNKNOWN_INDEX) for token in text]
         if self.append_eos:
             vector.append(EOS_INDEX)
         return torch.LongTensor(vector)

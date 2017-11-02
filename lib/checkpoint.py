@@ -1,9 +1,14 @@
 import logging
+import math
 import os
 import time
 
+from torch.autograd import Variable
+
 import dill
 import torch
+
+from lib.utils import device_default
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +21,7 @@ class Checkpoint(object):
     # Not the experiments folder, but the checkpoint parent
     # List of checkpoints
     # Checkpoint container
-    def __init__(self, device, checkpoint_path):
+    def __init__(self, checkpoint_path, device=None):
         """
         Load a checkpoint.
 
@@ -25,7 +30,7 @@ class Checkpoint(object):
             checkpoint_path (str or None): Given a non-none checkpoint path, the checkpoint is
                 loaded
         """
-        self.device = device
+        self.device = device_default(device)
         self.checkpoint_path = checkpoint_path
 
         logger.info("Loading checkpoints from %s onto device %d", self.checkpoint_path, self.device)
@@ -44,31 +49,20 @@ class Checkpoint(object):
         self.model.flatten_parameters()  # make RNN parameters contiguous
 
     @classmethod
-    def load(cls, device, checkpoint_path=None, save_directory=None):
+    def recent(cls, save_directory, device=None):
         """
-        Load a checkpoint.
+        Load a checkpoint or returns `None` if save_directory has no checkpoint.
 
-        Pre: There exists a save_directory with some experiments; where each experiment has some
-             number of checkpoints, logs, visualizations, etc.
         Args:
+            save_directory (str or None): Lastest checkpoint is loaded from save_directory
             device (int)
-            checkpoint_path (str or None): Given a non-none checkpoint path, the checkpoint is
-                loaded
-            save_directory (str or None): By default the lastest checkpoint is loaded from
-                save_directory
         """
-        if checkpoint_path is not None:
-            checkpoint_path = checkpoint_path
-        elif save_directory is not None:
-            all_filenames = sorted(os.listdir(save_directory), reverse=True)
-            all_checkpoints = [filename for filename in all_filenames if '.pt' in filename]
-            if len(all_checkpoints) == 0:
-                return None
-            checkpoint_path = os.path.join(save_directory, all_checkpoints[0])
-        else:
-            raise ValueError('checkpoint_path or save_directory must be non-none')
-
-        return cls(device, checkpoint_path)
+        all_filenames = sorted(os.listdir(save_directory), reverse=True)
+        all_checkpoints = [filename for filename in all_filenames if '.pt' in filename]
+        if len(all_checkpoints) == 0:
+            return None
+        checkpoint_path = os.path.join(save_directory, all_checkpoints[0])
+        return cls(checkpoint_path, device)
 
     @classmethod
     def save(cls,
@@ -112,40 +106,42 @@ class Checkpoint(object):
             path,
             pickle_module=dill)
 
-    def predict(self):
+    def predict(self, input_, batch_first=False, top_k=1):
+        """ Make prediction given `input_`."""
         self.model.train(mode=False)
 
-        preprocessed = self.input_field.preprocess(sequence)
-        preprocessed = self.input_field.preprocess_with_vocab(preprocessed)
-        padded = self.input_field.pad([preprocessed])
-        batch_data = self.input_field.numericalize(padded, self.device, train=False)
-        batch = Batch.fromvars(None, 1, train=False, input=batch_data)
-        logger.info('Preprocessed %s', padded)
+        tensor = self.input_text_encoder.encode(input_)
 
-        logger.info('Predicting...')
-        decoder_outputs = self.model(batch)[0]
-        decoder_outputs = decoder_outputs.data.squeeze(1)
-        output_sequences = decoder_outputs.topk(top, dim=1)[1]
+        # Create the batch
+        batch_source = tensor.unsqueeze(0)  # Batch size of 1
+        if not batch_first:
+            batch_source = batch_source.t_()
+        batch_source = Variable(batch_source.contiguous())
+        batch_source_length = torch.LongTensor([tensor.size()[0]])
 
+        # Predict
+        output_batch = self.model(batch_source, batch_source_length)[0]
+        output_tensor = output_batch.data.squeeze(1)  # Squeeze
+        output_sequences = output_tensor.topk(top_k, dim=1)[1]
+
+        # Make human readable
         ret = []
-        for i in range(min(top, output_sequences.size()[1])):
+        for i in range(min(top_k, output_sequences.size()[1])):
             output_sequence = output_sequences[:, i]
             log_confidence = [
-                decoder_outputs[j][token_idx] for j, token_idx in enumerate(output_sequence)
+                output_tensor[j][token_index] for j, token_index in enumerate(output_sequence)
             ]
             confidence = [math.exp(x) for x in log_confidence]
 
             # Make sure not to have side affects
-            self.model.train(mode=True)
-            decoded = [self.output_field.vocab.itos[idx] for idx in output_sequence.tolist()]
+            decoded = self.output_text_encoder.decode(output_sequence)
             ret.append([decoded, confidence])
 
-        if top == 1:
+        self.model.train(mode=True)
+        if top_k == 1:
             return tuple(ret[0])
         else:
             return ret
-
-        pass
 
     # MISSING: Pass observers and folder location to evaluate on the test set or an arbitrary set. 
     def evaluate(self):
