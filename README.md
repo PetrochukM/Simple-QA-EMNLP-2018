@@ -1,4 +1,4 @@
-# Independent Study
+# Question Answering Research
 
 ## Synopsis
 
