@@ -54,11 +54,7 @@ BASE_RNN_HYPERPARAMETERS = {
 DEFAULT_HYPERPARAMETERS = {
     'lib': {
         'nn': {
-            'decoder_rnn.DecoderRNN.__init__': {
-                'use_attention': True,
-                'scheduled_sampling': True
-            },
-            'encoder_rnn.EncoderRNN.__init__': {
+            'seq_encoder.SeqEncoder.__init__': {
                 'bidirectional': True,
             },
             'attention.Attention.__init__.attention_type': 'general',
@@ -73,9 +69,7 @@ DEFAULT_HYPERPARAMETERS = {
     }
 }
 
-DEFAULT_HYPERPARAMETERS['lib']['nn']['decoder_rnn.DecoderRNN.__init__'].update(
-    BASE_RNN_HYPERPARAMETERS)
-DEFAULT_HYPERPARAMETERS['lib']['nn']['encoder_rnn.EncoderRNN.__init__'].update(
+DEFAULT_HYPERPARAMETERS['lib']['nn']['seq_encoder.SeqEncoder.__init__'].update(
     BASE_RNN_HYPERPARAMETERS)
 
 DEFAULT_SAVE_DIRECTORY_NAME = __file__.split('/')[-1].replace('.py', '')
@@ -199,10 +193,11 @@ def train(dataset=count,
         optimizer.update(total_loss / len(dev_dataset), epoch)
         logger.info('Loss: %.03f', total_loss / len(dev_dataset))
         get_accuracy(labels, outputs, print_=True)
-        get_token_accuracy(labels, outputs, print_=True)
         buckets = [label_encoder.decode(label) for label in labels]
         get_bucket_accuracy(buckets, labels, outputs, print_=True)
         get_random_sample(texts, labels, outputs, text_encoder, label_encoder, print_=True)
+
+    logger.info('Training done!')
 
     # TODO: Return the best loss if hyperparameter tunning.
 
