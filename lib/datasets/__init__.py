@@ -1,4 +1,5 @@
 from lib.datasets.reverse import reverse
+from lib.datasets.count import count
 from lib.datasets.zero_to_zero import zero_to_zero
 from lib.datasets.simple_qa import simple_qa_object
 from lib.datasets.simple_qa import simple_qa_predicate

@@ -23,14 +23,14 @@ def get_random_sample(sources,
     for i, (target, output) in enumerate(zip(targets, outputs)):
         target = target.squeeze(dim=0)
         output = output.squeeze(dim=0)
-        prediction = output.max(1)[1].view(-1)
+        prediction = output.max(output.dim() - 1)[1].view(-1)
         predictions.append(prediction)
         if torch_equals_ignore_index(target, prediction, ignore_index=ignore_index):
             positive_indexes.append(i)
         else:
             negative_indexes.append(i)
-    positive_samples = random.sample(positive_indexes, n_samples)
-    negative_samples = random.sample(negative_indexes, n_samples)
+    positive_samples = random.sample(positive_indexes, min(len(positive_indexes), n_samples))
+    negative_samples = random.sample(negative_indexes, min(len(negative_indexes), n_samples))
 
     ret = 'Random Sample:\n'
     for prefix, samples in [('Positive', positive_samples), ('Negative', negative_samples)]:

@@ -175,7 +175,7 @@ def add_config(dict_, is_log=True):
                       'n_layers': 1
                       'rnn_cell': 'gru'
                       'embedding_dropout': 0.0
-                      'intra_layer_dropout': 0.0\
+                      'intra_layer_dropout': 0.0
                     }
                   }
                 }
@@ -194,6 +194,14 @@ def add_config(dict_, is_log=True):
         logger.info('Added config:')
         logging.info(pretty_printer.pformat(dict_))
     parsed = _parse_configuration(dict_)
+    # TODO: Check the parsed configuration every module that it points too exists with @configurable
+    # Most of my bugs are here
+    # 
+    # Cases to handle recursively:
+    # 'seq_encoder.SeqEncoder.__init__': {
+    #     'bidirectional': True,
+    # },
+    # 'attention.Attention.__init__.attention_type': 'general',
     _dict_merge(_configuration, parsed, overwrite=False)
     _configuration = _KeyListDictionary(_configuration)
 

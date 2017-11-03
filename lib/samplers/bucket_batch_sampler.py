@@ -23,14 +23,13 @@ class BucketBatchSampler(BatchSampler):
                  data_source,
                  sort_key,
                  batch_size,
-                 drop_last=False,
                  sort_key_noise=0.1,
                  last_batch_first=True,
                  shuffle=True):
         self.last_batch_first = last_batch_first
         self.shuffle = shuffle
         super().__init__(
-            NoisySortedSampler(data_source, sort_key, sort_key_noise), batch_size, drop_last)
+            NoisySortedSampler(data_source, sort_key, sort_key_noise), batch_size, False)
 
     def __iter__(self):
         batches = list(super().__iter__())

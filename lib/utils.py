@@ -150,9 +150,11 @@ def collate_fn(batch, input_key, output_key, sort_key=None, preprocess=pad):
 
     # PyTorch RNN requires batches to be transposed for speed and integration with CUDA
     ret = {}
-    ret[input_key] = [torch.stack(input_batch).t_().contiguous(), torch.LongTensor(input_lengths)]
+    ret[input_key] = [
+        torch.stack(input_batch).t_().squeeze(0).contiguous(), torch.LongTensor(input_lengths)
+    ]
     ret[output_key] = [
-        torch.stack(output_batch).t_().contiguous(), torch.LongTensor(output_lengths)
+        torch.stack(output_batch).t_().squeeze(0).contiguous(), torch.LongTensor(output_lengths)
     ]
     for key in batch[0].keys():
         if key not in [input_key, output_key]:

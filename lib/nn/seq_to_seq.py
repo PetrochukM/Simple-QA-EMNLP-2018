@@ -3,6 +3,8 @@ import torch.nn as nn
 
 from lib.configurable import configurable
 
+# TODO: Encoder and decoder are dependent on each other resolve that by not taking them as inputs
+
 
 class SeqToSeq(nn.Module):
     """ Standard sequence-to-sequence architecture with configurable encoder

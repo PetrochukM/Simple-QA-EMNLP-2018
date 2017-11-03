@@ -59,22 +59,22 @@ class SeqEncoder(BaseRNN):
             rnn_cell=rnn_cell,
             freeze_embeddings=freeze_embeddings)
         n_layers = int(n_layers)
-        self.rnn_size = int(rnn_size)
+        rnn_size = int(rnn_size)
 
         # NOTE: This assert is included because PyTorch throws a weird error if layers==0
         assert n_layers > 0, """There must be more than 0 layers."""
 
         # Bidirectional doubles the RNN size per direction
         if bidirectional:
-            assert self.rnn_size % 2 == 0, """RNN size must be divisible by two. This ensures
+            assert rnn_size % 2 == 0, """RNN size must be divisible by two. This ensures
               consistency between the Bidirectional Encoder RNN hidden state size and the Decoder
               RNN hidden state size."""
-            self.rnn_size = self.rnn_size // 2
+            rnn_size = rnn_size // 2
 
         self.bidirectional = bidirectional
         self.rnn = self.rnn_cell(
             embedding_size,
-            self.rnn_size,
+            rnn_size,
             n_layers,
             bidirectional=bidirectional,
             dropout=rnn_variational_dropout)

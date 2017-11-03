@@ -17,7 +17,7 @@ The goal of this repository is to add minimal overhead to these components of tr
 
 ## TODO Prioritized
 
-- [ ] Add classification model for Simple Questions predicate
+- [x] Add classification model for Simple Questions predicate
 - [ ] Add a CLI and different hyperparameter configurations to train script
 - [ ] Recreate the Simple Questions using the new Simple Questions names
 - [ ] Import notebooks for Simple Questions end to end

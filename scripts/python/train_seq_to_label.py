@@ -7,7 +7,6 @@ import time
 
 from torch.nn.modules.loss import NLLLoss
 from torch.optim import Adam
-from torch.optim.lr_scheduler import StepLR
 from torch.utils.data import DataLoader
 from torch.autograd import Variable
 from tqdm import tqdm
@@ -17,18 +16,16 @@ import pandas as pd
 
 from lib.checkpoint import Checkpoint
 from lib.configurable import configurable
-from lib.datasets import reverse
+from lib.datasets import count
 from lib.metrics import get_accuracy
 from lib.metrics import get_bucket_accuracy
 from lib.metrics import get_random_sample
 from lib.metrics import get_token_accuracy
-from lib.nn import SeqDecoder
-from lib.nn import SeqEncoder
-from lib.nn import SeqToSeq
+from lib.nn import SeqToLabel
 from lib.optim import Optimizer
 from lib.samplers import BucketBatchSampler
-from lib.text_encoders import PADDING_INDEX
 from lib.text_encoders import WordEncoder
+from lib.text_encoders import IdentityEncoder
 from lib.utils import collate_fn
 from lib.utils import get_total_parameters
 from lib.utils import init_logging
@@ -38,7 +35,6 @@ init_logging()
 logger = logging.getLogger(__name__)  # Root logger
 
 Adam.__init__ = configurable(Adam.__init__)
-StepLR.__init__ = configurable(StepLR.__init__)
 
 pd.set_option('display.expand_frame_repr', False)
 pd.set_option('max_colwidth', 80)
@@ -46,8 +42,8 @@ pd.set_option('max_colwidth', 80)
 # NOTE: The goal of this file is just to setup the training for simple_questions_predicate.
 
 BASE_RNN_HYPERPARAMETERS = {
-    'embedding_size': 128,
-    'rnn_size': 64,
+    'embedding_size': 16,
+    'rnn_size': 16,
     'n_layers': 1,
     'rnn_cell': 'lstm',
     'embedding_dropout': 0.0,
@@ -58,11 +54,11 @@ BASE_RNN_HYPERPARAMETERS = {
 DEFAULT_HYPERPARAMETERS = {
     'lib': {
         'nn': {
-            'seq_decoder.SeqDecoder.__init__': {
+            'decoder_rnn.DecoderRNN.__init__': {
                 'use_attention': True,
                 'scheduled_sampling': True
             },
-            'seq_encoder.SeqEncoder.__init__': {
+            'encoder_rnn.EncoderRNN.__init__': {
                 'bidirectional': True,
             },
             'attention.Attention.__init__.attention_type': 'general',
@@ -77,9 +73,9 @@ DEFAULT_HYPERPARAMETERS = {
     }
 }
 
-DEFAULT_HYPERPARAMETERS['lib']['nn']['seq_decoder.SeqDecoder.__init__'].update(
+DEFAULT_HYPERPARAMETERS['lib']['nn']['decoder_rnn.DecoderRNN.__init__'].update(
     BASE_RNN_HYPERPARAMETERS)
-DEFAULT_HYPERPARAMETERS['lib']['nn']['seq_encoder.SeqEncoder.__init__'].update(
+DEFAULT_HYPERPARAMETERS['lib']['nn']['encoder_rnn.EncoderRNN.__init__'].update(
     BASE_RNN_HYPERPARAMETERS)
 
 DEFAULT_SAVE_DIRECTORY_NAME = __file__.split('/')[-1].replace('.py', '')
@@ -87,13 +83,13 @@ DEFAULT_SAVE_DIRECTORY_NAME += time.strftime('_%mm_%dd_%Hh_%Mm_%Ss', time.localt
 DEFAULT_SAVE_DIRECTORY = os.path.join('save/', DEFAULT_SAVE_DIRECTORY_NAME)
 
 
-def train(dataset=reverse,
+def train(dataset=count,
           checkpoint_path=None,
           save_directory=DEFAULT_SAVE_DIRECTORY,
           hyperparameters_config=DEFAULT_HYPERPARAMETERS,
           device=None,
           random_seed=123,
-          epochs=4,
+          epochs=2,
           train_max_batch_size=16,
           dev_max_batch_size=128):
     checkpoint = setup_training(dataset, checkpoint_path, save_directory, hyperparameters_config,
@@ -101,28 +97,25 @@ def train(dataset=reverse,
 
     # Init Dataset
     train_dataset, dev_dataset = dataset(train=True, dev=True, test=False)
-
     logger.info('Num Training Data: %d', len(train_dataset))
     logger.info('Num Development Data: %d', len(dev_dataset))
 
     # Init Encoders and encode dataset
     if checkpoint:
-        source_encoder, target_encoder = checkpoint.input_encoder, checkpoint.output_encoder
+        text_encoder, label_encoder = checkpoint.input_encoder, checkpoint.output_encoder
     else:
-        source_encoder = WordEncoder(train_dataset['source'])
-        target_encoder = WordEncoder(train_dataset['target'])
+        text_encoder = WordEncoder(train_dataset['text'])
+        label_encoder = IdentityEncoder(train_dataset['label'])
     for dataset in [train_dataset, dev_dataset]:
         for row in dataset:
-            row['source'] = source_encoder.encode(row['source'])
-            row['target'] = target_encoder.encode(row['target'])
+            row['text'] = text_encoder.encode(row['text'])
+            row['label'] = label_encoder.encode(row['label'])
 
     # Init Model
     if checkpoint:
         model = checkpoint.model
     else:
-        model = SeqToSeq(
-            SeqEncoder(vocab_size=source_encoder.vocab_size, embeddings=source_encoder.embeddings),
-            SeqDecoder(vocab_size=target_encoder.vocab_size, embeddings=target_encoder.embeddings))
+        model = SeqToLabel(text_encoder.vocab_size, label_encoder.vocab_size)
         for param in model.parameters():
             param.data.uniform_(-0.1, 0.1)
 
@@ -133,7 +126,7 @@ def train(dataset=reverse,
         model.cuda(device_id=device)
 
     # Init Loss
-    criterion = NLLLoss(ignore_index=PADDING_INDEX, size_average=False)
+    criterion = NLLLoss(size_average=False)
     if torch.cuda.is_available():
         criterion.cuda()
 
@@ -141,26 +134,24 @@ def train(dataset=reverse,
     # https://github.com/pytorch/pytorch/issues/679
     params = filter(lambda p: p.requires_grad, model.parameters())
     optimizer = Optimizer(Adam(params=params))
-    optimizer.set_scheduler(StepLR(optimizer.optimizer, step_size=1))
 
     # collate function merges rows into tensor batches
-    collate_fn_partial = partial(
-        collate_fn, input_key='source', output_key='target', sort_key='source')
+    collate_fn_partial = partial(collate_fn, input_key='text', output_key='label', sort_key='text')
 
     def prepare_batch(batch):
         # Prepare batch for model
-        source, source_lengths = batch['source']
-        target, target_lengths = batch['target']
+        text, text_lengths = batch['text']
+        label, _ = batch['label']
         if torch.cuda.is_available():
-            source, source_lengths = source.cuda(async=True), source_lengths.cuda(async=True)
-            target, target_lengths = target.cuda(async=True), target_lengths.cuda(async=True)
-        return Variable(source), source_lengths, Variable(target), target_lengths
+            text, text_lengths = text.cuda(async=True), text_lengths.cuda(async=True)
+            label = label.cuda(async=True)
+        return Variable(text), text_lengths, Variable(label)
 
+    # Train!
     for epoch in range(epochs):
-        # Train
         logger.info('Epoch %d', epoch)
         model.train(mode=True)
-        batch_sampler = BucketBatchSampler(train_dataset, lambda r: r['source'].size()[0],
+        batch_sampler = BucketBatchSampler(train_dataset, lambda r: r['text'].size()[0],
                                            train_max_batch_size)
         train_iterator = DataLoader(
             train_dataset,
@@ -169,16 +160,10 @@ def train(dataset=reverse,
             pin_memory=torch.cuda.is_available(),
             num_workers=0)
         for batch in tqdm(train_iterator):
-            source, source_lengths, target, target_lengths = prepare_batch(batch)
-
+            text, text_lengths, label = prepare_batch(batch)
             optimizer.zero_grad()
-            output = model(source, source_lengths, target, target_lengths)[0]
-
-            # Compute loss
-            # NOTE: flattening the tensors allows for the computation to be done once per batch
-            output_flat = output.view(-1, output.size(2))
-            target_flat = target.view(-1)
-            loss = criterion(output_flat, target_flat) / target_flat.size()[0]
+            output = model(text, text_lengths)
+            loss = criterion(output, label) / label.size()[0]
 
             # Backward propagation
             loss.backward()
@@ -188,54 +173,40 @@ def train(dataset=reverse,
             save_directory=save_directory,
             model=model,
             optimizer=optimizer,
-            input_text_encoder=source_encoder,
-            output_text_encoder=target_encoder,
+            input_text_encoder=text_encoder,
+            output_text_encoder=label_encoder,
             device=device)
 
         # Evaluate
         model.train(mode=False)
-        outputs, sources, targets = [], [], []
+        texts, labels, outputs = [], [], []
         dev_iterator = DataLoader(
             dev_dataset,
             batch_size=dev_max_batch_size,
             collate_fn=collate_fn_partial,
             pin_memory=torch.cuda.is_available(),
             num_workers=0)
-        n_words = 0
         total_loss = 0
         for batch in dev_iterator:
-            source, source_lengths, target, target_lengths = prepare_batch(batch)
-            output = model(source, source_lengths, target, target_lengths)[0]
-
-            # Compute loss
-            # NOTE: flattening the tensors allows for the computation to be done once per batch
-            output_flat = output.view(-1, output.size(2))
-            target_flat = target.view(-1)
-            total_loss += criterion(output_flat, target_flat).data[0]
-            n_words += target_flat.size()[0]
-
+            text, text_lengths, label = prepare_batch(batch)
+            output = model(text, text_lengths)
+            total_loss += criterion(output, label).data[0]
             # Prevent memory leak by moving output from variable to tensor
-            sources.extend(source.data.cpu().transpose(0, 1).split(split_size=1, dim=0))
-            targets.extend(target.data.cpu().transpose(0, 1).split(split_size=1, dim=0))
-            outputs.extend(output.data.cpu().transpose(0, 1).split(split_size=1, dim=0))
+            texts.extend(text.data.cpu().transpose(0, 1).split(split_size=1, dim=0))
+            labels.extend(label.data.cpu().split(split_size=1, dim=0))
+            outputs.extend(output.data.cpu().split(split_size=1, dim=0))
 
-        optimizer.update(total_loss / n_words, epoch)
-        logger.info('Loss: %.03f', total_loss / n_words)
-        get_accuracy(targets, outputs, ignore_index=PADDING_INDEX, print_=True)
-        get_token_accuracy(targets, outputs, ignore_index=PADDING_INDEX, print_=True)
-        buckets = [t.ne(PADDING_INDEX).sum() - 1 for t in targets]
-        get_bucket_accuracy(buckets, targets, outputs, ignore_index=PADDING_INDEX, print_=True)
-        get_random_sample(
-            sources,
-            targets,
-            outputs,
-            source_encoder,
-            target_encoder,
-            ignore_index=PADDING_INDEX,
-            print_=True)
+        optimizer.update(total_loss / len(dev_dataset), epoch)
+        logger.info('Loss: %.03f', total_loss / len(dev_dataset))
+        get_accuracy(labels, outputs, print_=True)
+        get_token_accuracy(labels, outputs, print_=True)
+        buckets = [label_encoder.decode(label) for label in labels]
+        get_bucket_accuracy(buckets, labels, outputs, print_=True)
+        get_random_sample(texts, labels, outputs, text_encoder, label_encoder, print_=True)
 
     # TODO: Return the best loss if hyperparameter tunning.
-    # TODO: Figure out a good abstraction for evaluation on a test set.
+
+    # TODO: Figure out a good abstraction for evaluation.
     # TODO: In class, I'll add a classification model and try to get it running.
 
 
