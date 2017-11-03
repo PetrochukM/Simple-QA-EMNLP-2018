@@ -1,10 +1,8 @@
 from functools import partial
 
 import argparse
-import atexit
 import logging
 import os
-import time
 
 from torch.nn.modules.loss import NLLLoss
 from torch.optim import Adam
@@ -27,6 +25,7 @@ from lib.samplers import BucketBatchSampler
 from lib.text_encoders import IdentityEncoder
 from lib.text_encoders import WordEncoder
 from lib.utils import collate_fn
+from lib.utils import get_save_directory_path
 from lib.utils import get_total_parameters
 from lib.utils import init_logging
 from lib.utils import setup_training
@@ -71,20 +70,7 @@ DEFAULT_HYPERPARAMETERS = {
 
 DEFAULT_HYPERPARAMETERS['lib']['nn']['seq_encoder.SeqEncoder.__init__'].update(
     BASE_RNN_HYPERPARAMETERS)
-
-start_time = time.time()
-DEFAULT_SAVE_DIRECTORY_NAME = '0000.%s.seq_to_label' % time.strftime('%m-%d_%H:%M:%S',
-                                                                     time.localtime())
-DEFAULT_SAVE_DIRECTORY = os.path.join('save/', DEFAULT_SAVE_DIRECTORY_NAME)
-
-
-def exit_handler():
-    # Add runtime to the directory name sorting
-    difference = int(time.time() - start_time)
-    os.rename(DEFAULT_SAVE_DIRECTORY, DEFAULT_SAVE_DIRECTORY.replace('0000', '%04d' % difference))
-
-
-atexit.register(exit_handler)
+DEFAULT_SAVE_DIRECTORY = get_save_directory_path('seq_to_label')
 
 
 def train(dataset=count,

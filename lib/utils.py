@@ -1,9 +1,11 @@
 from functools import lru_cache
-import os
 
+import atexit
 import ctypes
 import logging
 import logging.config
+import os
+import time
 
 import random
 import torch
@@ -151,10 +153,12 @@ def collate_fn(batch, input_key, output_key, sort_key=None, preprocess=pad):
     # PyTorch RNN requires batches to be transposed for speed and integration with CUDA
     ret = {}
     ret[input_key] = [
-        torch.stack(input_batch).t_().squeeze(0).contiguous(), torch.LongTensor(input_lengths)
+        torch.stack(input_batch).t_().squeeze(0).contiguous(),
+        torch.LongTensor(input_lengths)
     ]
     ret[output_key] = [
-        torch.stack(output_batch).t_().squeeze(0).contiguous(), torch.LongTensor(output_lengths)
+        torch.stack(output_batch).t_().squeeze(0).contiguous(),
+        torch.LongTensor(output_lengths)
     ]
     for key in batch[0].keys():
         if key not in [input_key, output_key]:
@@ -218,3 +222,20 @@ def torch_equals_ignore_index(target, prediction, ignore_index=None):
         prediction = prediction.masked_select(mask_arr)
 
     return torch.equal(target, prediction)
+
+
+def get_save_directory_path(label, save_directory='save/'):
+    """
+    Get a save directory that includes start time and execution time.
+    """
+    start_time = time.time()
+    name = '0000.%s.%s' % (time.strftime('%m-%d_%H:%M:%S', time.localtime()), label)
+    path = os.path.join(save_directory, name)
+
+    def exit_handler():
+        # Add runtime to the directory name sorting
+        difference = int(time.time() - start_time)
+        os.rename(path, path.replace('0000', '%04d' % difference))
+
+    atexit.register(exit_handler)
+    return path
