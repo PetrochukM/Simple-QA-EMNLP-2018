@@ -14,6 +14,7 @@ import torch
 import pandas as pd
 
 from lib.checkpoint import Checkpoint
+from lib.configurable import add_config
 from lib.configurable import configurable
 from lib.datasets import count
 from lib.metrics import get_accuracy
@@ -72,18 +73,19 @@ DEFAULT_HYPERPARAMETERS['lib']['nn']['seq_encoder.SeqEncoder.__init__'].update(
     BASE_RNN_HYPERPARAMETERS)
 DEFAULT_SAVE_DIRECTORY = get_save_directory_path('seq_to_label')
 
+add_config(DEFAULT_HYPERPARAMETERS)
 
+
+@configurable
 def train(dataset=count,
           checkpoint_path=None,
           save_directory=DEFAULT_SAVE_DIRECTORY,
-          hyperparameters_config=DEFAULT_HYPERPARAMETERS,
           device=None,
           random_seed=123,
           epochs=2,
           train_max_batch_size=16,
           dev_max_batch_size=128):
-    checkpoint = setup_training(dataset, checkpoint_path, save_directory, hyperparameters_config,
-                                device, random_seed)
+    checkpoint = setup_training(dataset, checkpoint_path, save_directory, device, random_seed)
 
     # Init Dataset
     train_dataset, dev_dataset = dataset(train=True, dev=True, test=False)
@@ -138,6 +140,7 @@ def train(dataset=count,
         return Variable(text), text_lengths, Variable(label)
 
     # Train!
+    logger.info('Epochs: %d', epochs)
     for epoch in range(epochs):
         logger.info('Epoch %d', epoch)
         model.train(mode=True)
@@ -192,8 +195,6 @@ def train(dataset=count,
         buckets = [label_encoder.decode(label) for label in labels]
         get_bucket_accuracy(buckets, labels, outputs, print_=True)
         get_random_sample(texts, labels, outputs, text_encoder, label_encoder, print_=True)
-
-    logger.info('Training done!')
 
     # TODO: Return the best loss if hyperparameter tunning.
 

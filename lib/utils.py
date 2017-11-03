@@ -6,14 +6,15 @@ import logging
 import logging.config
 import os
 import time
+import sys
 
 import random
 import torch
 import yaml
 
 from lib.checkpoint import Checkpoint
-from lib.configurable import add_config
 from lib.text_encoders import PADDING_INDEX
+from lib.configurable import log_config
 
 logger = logging.getLogger(__name__)
 
@@ -27,8 +28,28 @@ def get_root_path():
     return os.path.join(os.path.dirname(os.path.realpath(__file__)), '..')
 
 
-def init_logging(config_path='lib/logging.yaml'):
-    """ Setup logging configuration using logging.yaml.
+def get_save_directory_path(label, save_directory='save/'):
+    """
+    Get a save directory that includes start time and execution time.
+
+    The execution time is used as the main sorting key to help distinguish between finished,
+    halted, and running experiments.
+    """
+    start_time = time.time()
+    name = '0000.%s.%s' % (time.strftime('%m-%d_%H:%M:%S', time.localtime()), label)
+    path = os.path.join(save_directory, name)
+
+    def exit_handler():
+        # Add runtime to the directory name sorting
+        difference = int(time.time() - start_time)
+        os.rename(path, path.replace('0000', '%04d' % difference))
+
+    atexit.register(exit_handler)
+    return path
+
+
+def init_logging(config_path='lib/logging.yaml', label=''):
+    """ Setup a unique folder to save logs per run
     """
     # Only configure logging if it has not been configured yet
     if len(logging.root.handlers) == 0:
@@ -39,6 +60,11 @@ def init_logging(config_path='lib/logging.yaml'):
             config = yaml.safe_load(file_.read())
 
         logging.config.dictConfig(config)
+
+        # TODO: Save a copy of init_logging per run
+        # Create a logging folder
+        # Per run check what the __main__file is.
+        # Remove logging.yaml and replace with per run logging
 
 
 def device_default(device=None):
@@ -169,8 +195,7 @@ def collate_fn(batch, input_key, output_key, sort_key=None, preprocess=pad):
     return ret
 
 
-def setup_training(dataset, checkpoint_path, save_directory, hyperparameters_config, device,
-                   random_seed):
+def setup_training(dataset, checkpoint_path, save_directory, device, random_seed):
     """ Utility function to settup logger, hyperparameters, seed, device and checkpoint """
     # Save a copy of all logger logs to `save_directory`/train.log
     # To keep a record per experiment
@@ -180,9 +205,6 @@ def setup_training(dataset, checkpoint_path, save_directory, hyperparameters_con
     handler.setLevel(logging.DEBUG)
     handler.setFormatter(logger.handlers[0].formatter)
     logger.addHandler(handler)
-
-    # Setup the hyperparameters
-    add_config(hyperparameters_config)
 
     # Setup Device
     device = device_default(device)
@@ -198,12 +220,17 @@ def setup_training(dataset, checkpoint_path, save_directory, hyperparameters_con
         if torch.cuda.is_available():
             torch.cuda.manual_seed(random_seed)
             torch.cuda.manual_seed_all(random_seed)
+    logger.info('Seed: %s', random_seed)
 
     # Load Checkpoint
     if checkpoint_path:
         checkpoint = Checkpoint(checkpoint_path, device)
     else:
         checkpoint = Checkpoint.recent(save_directory, device)
+
+    # Log the global configuration before starting to train.
+    log_config()
+
     return checkpoint
 
 
@@ -222,20 +249,3 @@ def torch_equals_ignore_index(target, prediction, ignore_index=None):
         prediction = prediction.masked_select(mask_arr)
 
     return torch.equal(target, prediction)
-
-
-def get_save_directory_path(label, save_directory='save/'):
-    """
-    Get a save directory that includes start time and execution time.
-    """
-    start_time = time.time()
-    name = '0000.%s.%s' % (time.strftime('%m-%d_%H:%M:%S', time.localtime()), label)
-    path = os.path.join(save_directory, name)
-
-    def exit_handler():
-        # Add runtime to the directory name sorting
-        difference = int(time.time() - start_time)
-        os.rename(path, path.replace('0000', '%04d' % difference))
-
-    atexit.register(exit_handler)
-    return path

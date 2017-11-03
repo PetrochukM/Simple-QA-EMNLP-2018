@@ -160,7 +160,7 @@ def _dict_to_flat_config_helper(dict_, flat_dict, keys):
             flat_dict[flat_key] = dict_[key]
 
 
-def add_config(dict_, is_log=True):
+def add_config(dict_):
     """
     Add configuration to the global configuration.
 
@@ -190,20 +190,25 @@ def add_config(dict_, is_log=True):
         (TypeError) duplicate functions/modules/packages are defined
     """
     global _configuration
-    if is_log:
-        logger.info('Added config:')
-        logging.info(pretty_printer.pformat(dict_))
     parsed = _parse_configuration(dict_)
     # TODO: Check the parsed configuration every module that it points too exists with @configurable
     # Most of my bugs are here
-    # 
+    #
     # Cases to handle recursively:
     # 'seq_encoder.SeqEncoder.__init__': {
     #     'bidirectional': True,
     # },
     # 'attention.Attention.__init__.attention_type': 'general',
-    _dict_merge(_configuration, parsed, overwrite=False)
+    _dict_merge(_configuration, parsed, overwrite=True)
     _configuration = _KeyListDictionary(_configuration)
+
+
+def log_config():
+    """
+    Log the global configuration
+    """
+    logger.info('Global configuration:')
+    logging.info(pretty_printer.pformat(_configuration))
 
 
 def clear_config():

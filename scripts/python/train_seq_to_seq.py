@@ -16,6 +16,7 @@ import pandas as pd
 
 from lib.checkpoint import Checkpoint
 from lib.configurable import configurable
+from lib.configurable import add_config
 from lib.datasets import reverse
 from lib.metrics import get_accuracy
 from lib.metrics import get_bucket_accuracy
@@ -74,7 +75,8 @@ DEFAULT_HYPERPARAMETERS = {
     'torch.optim.Adam.__init__': {
         'lr': 0.001,
         'weight_decay': 0,
-    }
+    },
+    'train_seq_to_label.train': {}
 }
 
 DEFAULT_HYPERPARAMETERS['lib']['nn']['seq_decoder.SeqDecoder.__init__'].update(
@@ -83,18 +85,19 @@ DEFAULT_HYPERPARAMETERS['lib']['nn']['seq_encoder.SeqEncoder.__init__'].update(
     BASE_RNN_HYPERPARAMETERS)
 DEFAULT_SAVE_DIRECTORY = get_save_directory_path('seq_to_seq')
 
+add_config(DEFAULT_HYPERPARAMETERS)
 
+
+@configurable
 def train(dataset=reverse,
           checkpoint_path=None,
           save_directory=DEFAULT_SAVE_DIRECTORY,
-          hyperparameters_config=DEFAULT_HYPERPARAMETERS,
           device=None,
           random_seed=123,
           epochs=4,
           train_max_batch_size=16,
           dev_max_batch_size=128):
-    checkpoint = setup_training(dataset, checkpoint_path, save_directory, hyperparameters_config,
-                                device, random_seed)
+    checkpoint = setup_training(dataset, checkpoint_path, save_directory, device, random_seed)
 
     # Init Dataset
     train_dataset, dev_dataset = dataset(train=True, dev=True, test=False)
@@ -153,6 +156,7 @@ def train(dataset=reverse,
             target, target_lengths = target.cuda(async=True), target_lengths.cuda(async=True)
         return Variable(source), source_lengths, Variable(target), target_lengths
 
+    logger.info('Epochs: %d', epochs)
     for epoch in range(epochs):
         # Train
         logger.info('Epoch %d', epoch)
