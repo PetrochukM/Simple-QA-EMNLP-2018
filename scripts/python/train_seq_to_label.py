@@ -1,6 +1,7 @@
 from functools import partial
 
 import argparse
+import atexit
 import logging
 import os
 import time
@@ -20,12 +21,11 @@ from lib.datasets import count
 from lib.metrics import get_accuracy
 from lib.metrics import get_bucket_accuracy
 from lib.metrics import get_random_sample
-from lib.metrics import get_token_accuracy
 from lib.nn import SeqToLabel
 from lib.optim import Optimizer
 from lib.samplers import BucketBatchSampler
-from lib.text_encoders import WordEncoder
 from lib.text_encoders import IdentityEncoder
+from lib.text_encoders import WordEncoder
 from lib.utils import collate_fn
 from lib.utils import get_total_parameters
 from lib.utils import init_logging
@@ -72,9 +72,19 @@ DEFAULT_HYPERPARAMETERS = {
 DEFAULT_HYPERPARAMETERS['lib']['nn']['seq_encoder.SeqEncoder.__init__'].update(
     BASE_RNN_HYPERPARAMETERS)
 
-DEFAULT_SAVE_DIRECTORY_NAME = __file__.split('/')[-1].replace('.py', '')
-DEFAULT_SAVE_DIRECTORY_NAME += time.strftime('_%mm_%dd_%Hh_%Mm_%Ss', time.localtime())
+start_time = time.time()
+DEFAULT_SAVE_DIRECTORY_NAME = '0000.%s.seq_to_label' % time.strftime('%m-%d_%H:%M:%S',
+                                                                     time.localtime())
 DEFAULT_SAVE_DIRECTORY = os.path.join('save/', DEFAULT_SAVE_DIRECTORY_NAME)
+
+
+def exit_handler():
+    # Add runtime to the directory name sorting
+    difference = int(time.time() - start_time)
+    os.rename(DEFAULT_SAVE_DIRECTORY, DEFAULT_SAVE_DIRECTORY.replace('0000', '%04d' % difference))
+
+
+atexit.register(exit_handler)
 
 
 def train(dataset=count,

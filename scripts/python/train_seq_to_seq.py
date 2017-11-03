@@ -1,6 +1,7 @@
 from functools import partial
 
 import argparse
+import atexit
 import logging
 import os
 import time
@@ -82,9 +83,19 @@ DEFAULT_HYPERPARAMETERS['lib']['nn']['seq_decoder.SeqDecoder.__init__'].update(
 DEFAULT_HYPERPARAMETERS['lib']['nn']['seq_encoder.SeqEncoder.__init__'].update(
     BASE_RNN_HYPERPARAMETERS)
 
-DEFAULT_SAVE_DIRECTORY_NAME = __file__.split('/')[-1].replace('.py', '')
-DEFAULT_SAVE_DIRECTORY_NAME += time.strftime('_%mm_%dd_%Hh_%Mm_%Ss', time.localtime())
+start_time = time.time()
+DEFAULT_SAVE_DIRECTORY_NAME = '0000.%s.seq_to_seq' % time.strftime('%m-%d_%H:%M:%S',
+                                                                   time.localtime())
 DEFAULT_SAVE_DIRECTORY = os.path.join('save/', DEFAULT_SAVE_DIRECTORY_NAME)
+
+
+def exit_handler():
+    # Add runtime to the directory name sorting
+    difference = int(time.time() - start_time)
+    os.rename(DEFAULT_SAVE_DIRECTORY, DEFAULT_SAVE_DIRECTORY.replace('0000', '%04d' % difference))
+
+
+atexit.register(exit_handler)
 
 
 def train(dataset=reverse,
