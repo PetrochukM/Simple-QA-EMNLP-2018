@@ -43,24 +43,24 @@ class Checkpoint(object):
         self.model.flatten_parameters()  # make RNN parameters contiguous
 
     @classmethod
-    def recent(cls, save_directory, device=None):
+    def recent(cls, log_directory, device=None):
         """
-        Load a checkpoint or returns `None` if save_directory has no checkpoint.
+        Load a checkpoint or returns `None` if log_directory has no checkpoint.
 
         Args:
-            save_directory (str or None): Lastest checkpoint is loaded from save_directory
+            log_directory (str or None): Lastest checkpoint is loaded from log_directory
             device (int)
         """
-        all_filenames = sorted(os.listdir(save_directory), reverse=True)
+        all_filenames = sorted(os.listdir(log_directory), reverse=True)
         all_checkpoints = [filename for filename in all_filenames if '.pt' in filename]
         if len(all_checkpoints) == 0:
             return None
-        checkpoint_path = os.path.join(save_directory, all_checkpoints[0])
+        checkpoint_path = os.path.join(log_directory, all_checkpoints[0])
         return cls(checkpoint_path, device)
 
     @classmethod
     def save(cls,
-             save_directory,
+             log_directory,
              model,
              optimizer,
              input_text_encoder,
@@ -72,7 +72,7 @@ class Checkpoint(object):
         M_D_H_M_S format.
 
         Args:
-            save_directory (str): path to the save directory
+            log_directory (str): path to the save directory
             model
             optimizer
             input_text_encoder
@@ -82,7 +82,7 @@ class Checkpoint(object):
         date_time = time.strftime('%mm_%dd_%Hh_%Mm_%Ss', time.localtime())
         name = '%s_[%d]' % (date_time, device) if device else date_time
         name += '.pt'
-        path = os.path.join(save_directory, name)
+        path = os.path.join(log_directory, name)
 
         if os.path.exists(path):
             logger.error('Cannot save checkpoint; directory (%s) already exists.', path)

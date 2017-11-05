@@ -6,12 +6,9 @@ import logging
 import logging.config
 import os
 import time
-import sys
 
 import random
 import torch
-import yaml
-
 from lib.checkpoint import Checkpoint
 from lib.text_encoders import PADDING_INDEX
 from lib.configurable import log_config
@@ -28,16 +25,19 @@ def get_root_path():
     return os.path.join(os.path.dirname(os.path.realpath(__file__)), '..')
 
 
-def get_save_directory_path(label, save_directory='save/'):
+def get_log_directory_path(label='', parent_directory='logs/'):
     """
     Get a save directory that includes start time and execution time.
 
     The execution time is used as the main sorting key to help distinguish between finished,
     halted, and running experiments.
     """
+    if not os.path.exists(parent_directory):
+        os.makedirs(parent_directory)
+
     start_time = time.time()
     name = '0000.%s.%s' % (time.strftime('%m-%d_%H:%M:%S', time.localtime()), label)
-    path = os.path.join(save_directory, name)
+    path = os.path.join(parent_directory, name)
 
     def exit_handler():
         # Add runtime to the directory name sorting
@@ -48,23 +48,50 @@ def get_save_directory_path(label, save_directory='save/'):
     return path
 
 
-def init_logging(config_path='lib/logging.yaml', label=''):
-    """ Setup a unique folder to save logs per run
+init_logging_return = None
+
+
+def init_logging(log_directory):
+    """ Setup logging in log_directory.
+
+    Returns the same log_directory after init_logging is setup for the first time.
     """
+    global init_logging_return
     # Only configure logging if it has not been configured yet
-    if len(logging.root.handlers) == 0:
-        if not os.path.exists('log'):
-            os.makedirs('log')
+    if init_logging_return is not None:
+        return init_logging_return
 
-        with open(config_path, 'rt') as file_:
-            config = yaml.safe_load(file_.read())
+    logging.config.dictConfig({
+        "formatters": {
+            "simple": {
+                "format": "%(asctime)s - %(processName)s - %(name)s - %(levelname)s - %(message)s"
+            }
+        },
+        "handlers": {
+            "error_file_handler": {
+                "class": "logging.handlers.FileHandler",
+                "formatter": "simple",
+                "filename": os.path.join(log_directory, "error.log"),
+                "level": "ERROR"
+            },
+            "info_file_handler": {
+                "class": "logging.handlers.FileHandler",
+                "formatter": "simple",
+                "filename": os.path.join(log_directory, "info.log"),
+                "level": "INFO"
+            },
+            "console": {
+                "class": "logging.StreamHandler",
+                "stream": "ext://sys.stdout",
+                "level": "DEBUG",
+                "formatter": "simple"
+            }
+        }
+    })
 
-        logging.config.dictConfig(config)
+    init_logging_return = log_directory
 
-        # TODO: Save a copy of init_logging per run
-        # Create a logging folder
-        # Per run check what the __main__file is.
-        # Remove logging.yaml and replace with per run logging
+    return log_directory
 
 
 def device_default(device=None):
@@ -195,17 +222,8 @@ def collate_fn(batch, input_key, output_key, sort_key=None, preprocess=pad):
     return ret
 
 
-def setup_training(dataset, checkpoint_path, save_directory, device, random_seed):
+def setup_training(dataset, checkpoint_path, log_directory, device, random_seed):
     """ Utility function to settup logger, hyperparameters, seed, device and checkpoint """
-    # Save a copy of all logger logs to `save_directory`/train.log
-    # To keep a record per experiment
-    filename = os.path.join(save_directory, 'train.log')
-    logger = logging.getLogger()  # Root logger
-    handler = logging.FileHandler(filename)
-    handler.setLevel(logging.DEBUG)
-    handler.setFormatter(logger.handlers[0].formatter)
-    logger.addHandler(handler)
-
     # Setup Device
     device = device_default(device)
     if torch.cuda.is_available():
@@ -226,7 +244,7 @@ def setup_training(dataset, checkpoint_path, save_directory, device, random_seed
     if checkpoint_path:
         checkpoint = Checkpoint(checkpoint_path, device)
     else:
-        checkpoint = Checkpoint.recent(save_directory, device)
+        checkpoint = Checkpoint.recent(log_directory, device)
 
     # Log the global configuration before starting to train.
     log_config()

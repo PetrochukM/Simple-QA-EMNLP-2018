@@ -26,7 +26,7 @@ from lib.samplers import BucketBatchSampler
 from lib.text_encoders import IdentityEncoder
 from lib.text_encoders import WordEncoder
 from lib.utils import collate_fn
-from lib.utils import get_save_directory_path
+from lib.utils import get_log_directory_path
 from lib.utils import get_total_parameters
 from lib.utils import init_logging
 from lib.utils import setup_training
@@ -71,21 +71,21 @@ DEFAULT_HYPERPARAMETERS = {
 
 DEFAULT_HYPERPARAMETERS['lib']['nn']['seq_encoder.SeqEncoder.__init__'].update(
     BASE_RNN_HYPERPARAMETERS)
-DEFAULT_SAVE_DIRECTORY = get_save_directory_path('seq_to_label')
 
 add_config(DEFAULT_HYPERPARAMETERS)
 
 
 @configurable
-def train(dataset=count,
-          checkpoint_path=None,
-          save_directory=DEFAULT_SAVE_DIRECTORY,
-          device=None,
-          random_seed=123,
-          epochs=2,
-          train_max_batch_size=16,
-          dev_max_batch_size=128):
-    checkpoint = setup_training(dataset, checkpoint_path, save_directory, device, random_seed)
+def train(
+        log_directory,  # Logs experiments, checkpoints, etc are saveddataset=count,
+        dataset=count,
+        checkpoint_path=None,
+        device=None,
+        random_seed=123,
+        epochs=2,
+        train_max_batch_size=16,
+        dev_max_batch_size=128):
+    checkpoint = setup_training(dataset, checkpoint_path, log_directory, device, random_seed)
 
     # Init Dataset
     train_dataset, dev_dataset = dataset(train=True, dev=True, test=False)
@@ -163,7 +163,7 @@ def train(dataset=count,
             optimizer.step()
 
         Checkpoint.save(
-            save_directory=save_directory,
+            log_directory=log_directory,
             model=model,
             optimizer=optimizer,
             input_text_encoder=text_encoder,
@@ -210,7 +210,11 @@ if __name__ == '__main__':
     parser.add_argument(
         '--checkpoint_path', type=str, default=None, help="Path to checkpoint to resume training.")
     args = parser.parse_args()
-    save_directory = os.path.dirname(
-        args.checkpoint_path) if args.checkpoint_path else DEFAULT_SAVE_DIRECTORY
-    os.makedirs(save_directory)
-    train(checkpoint_path=args.checkpoint_path, save_directory=save_directory)
+
+    if args.checkpoint_path:
+        log_directory = os.path.dirname(args.checkpoint_path)
+    else:
+        log_directory = get_log_directory_path('seq_to_seq')
+    log_directory = init_logging(log_directory)
+    logger = logging.getLogger(__name__)  # Root logger
+    train(checkpoint_path=args.checkpoint_path, log_directory=log_directory)
