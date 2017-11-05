@@ -63,7 +63,7 @@ DEFAULT_HYPERPARAMETERS = {
         'lr': 0.001,
         'weight_decay': 0,
     },
-    'scripts.python.train_seq_to_label.train': {
+    'examples.train_seq_to_label.train': {
         'dataset': count,
         'random_seed': 123,
         'epochs': 2,
@@ -72,41 +72,7 @@ DEFAULT_HYPERPARAMETERS = {
     }
 }
 
-SIMPLE_PREDICATE_HYPERPARAMETERS = {
-    'lib': {
-        'nn': {
-            'seq_encoder.SeqEncoder.__init__': {
-                'bidirectional': True,
-                'rnn_dropout': 0.25,
-                'embedding_size': 300,
-                'n_layers': 2,
-                'embedding_dropout': 0.4,
-                'rnn_variational_dropout': 0.0
-            },
-            'attention.Attention.__init__.attention_type': 'general',
-            'seq_to_label.SeqToLabel.__init__': {
-                'decode_dropout': 0.2,
-                'rnn_size': 256,
-                'rnn_cell': 'gru',
-            }
-        },
-        'optim.Optimizer.__init__': {
-            'max_grad_norm': 0.65,
-        }
-    },
-    'torch.optim.Adam.__init__': {
-        'lr': 0.001
-    },
-    'scripts.python.train_seq_to_label.train': {
-        'dataset': simple_qa_predicate,
-        'random_seed': 1111,
-        'epochs': 10,
-        'train_max_batch_size': 32,
-        'dev_max_batch_size': 128
-    }
-}
-
-add_config(SIMPLE_PREDICATE_HYPERPARAMETERS)
+add_config(DEFAULT_HYPERPARAMETERS)
 
 
 @configurable
@@ -164,14 +130,14 @@ def train(
     # collate function merges rows into tensor batches
     collate_fn_partial = partial(collate_fn, input_key='text', output_key='label', sort_key='text')
 
-    def prepare_batch(batch):
+    def prepare_batch(batch, train=False):
         # Prepare batch for model
         text, text_lengths = batch['text']
         label, _ = batch['label']
         if torch.cuda.is_available():
             text, text_lengths = text.cuda(async=True), text_lengths.cuda(async=True)
             label = label.cuda(async=True)
-        return Variable(text), text_lengths, Variable(label)
+        return Variable(text, volatile=not train), text_lengths, Variable(label, volatile=not train)
 
     # Train!
     logger.info('Epochs: %d', epochs)
@@ -187,7 +153,7 @@ def train(
             pin_memory=torch.cuda.is_available(),
             num_workers=0)
         for batch in tqdm(train_iterator):
-            text, text_lengths, label = prepare_batch(batch)
+            text, text_lengths, label = prepare_batch(batch, True)
             optimizer.zero_grad()
             output = model(text, text_lengths)
             loss = criterion(output, label) / label.size()[0]
@@ -224,11 +190,11 @@ def train(
             outputs.extend(output.data.cpu().split(split_size=1, dim=0))
 
         optimizer.update(total_loss / len(dev_dataset), epoch)
+        buckets = [label_encoder.decode(label) for label in labels]
+        get_random_sample(texts, labels, outputs, text_encoder, label_encoder, print_=True)
+        get_bucket_accuracy(buckets, labels, outputs, print_=True)
         logger.info('Loss: %.03f', total_loss / len(dev_dataset))
         get_accuracy(labels, outputs, print_=True)
-        buckets = [label_encoder.decode(label) for label in labels]
-        get_bucket_accuracy(buckets, labels, outputs, print_=True)
-        get_random_sample(texts, labels, outputs, text_encoder, label_encoder, print_=True)
 
     # TODO: Return the best loss if hyperparameter tunning.
 

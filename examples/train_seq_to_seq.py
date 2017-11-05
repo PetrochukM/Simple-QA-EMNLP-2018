@@ -73,7 +73,7 @@ DEFAULT_HYPERPARAMETERS = {
         'lr': 0.001,
         'weight_decay': 0,
     },
-    'scripts.python.train_seq_to_seq.train': {
+    'examples.train_seq_to_seq.train': {
         'dataset': reverse,
         'random_seed': 123,
         'epochs': 4,
@@ -150,14 +150,16 @@ def train(
     collate_fn_partial = partial(
         collate_fn, input_key='source', output_key='target', sort_key='source')
 
-    def prepare_batch(batch):
+    def prepare_batch(batch, train=False):
         # Prepare batch for model
         source, source_lengths = batch['source']
         target, target_lengths = batch['target']
         if torch.cuda.is_available():
             source, source_lengths = source.cuda(async=True), source_lengths.cuda(async=True)
             target, target_lengths = target.cuda(async=True), target_lengths.cuda(async=True)
-        return Variable(source), source_lengths, Variable(target), target_lengths
+        return Variable(
+            source, volatile=not train), source_lengths, Variable(
+                target, volatile=not train), target_lengths
 
     logger.info('Epochs: %d', epochs)
     for epoch in range(epochs):
@@ -173,7 +175,7 @@ def train(
             pin_memory=torch.cuda.is_available(),
             num_workers=0)
         for batch in tqdm(train_iterator):
-            source, source_lengths, target, target_lengths = prepare_batch(batch)
+            source, source_lengths, target, target_lengths = prepare_batch(batch, True)
 
             optimizer.zero_grad()
             output = model(source, source_lengths, target, target_lengths)[0]
@@ -224,11 +226,7 @@ def train(
             outputs.extend(output.data.cpu().transpose(0, 1).split(split_size=1, dim=0))
 
         optimizer.update(total_loss / n_words, epoch)
-        logger.info('Loss: %.03f', total_loss / n_words)
-        get_accuracy(targets, outputs, ignore_index=PADDING_INDEX, print_=True)
-        get_token_accuracy(targets, outputs, ignore_index=PADDING_INDEX, print_=True)
         buckets = [t.ne(PADDING_INDEX).sum() - 1 for t in targets]
-        get_bucket_accuracy(buckets, targets, outputs, ignore_index=PADDING_INDEX, print_=True)
         get_random_sample(
             sources,
             targets,
@@ -237,6 +235,10 @@ def train(
             target_encoder,
             ignore_index=PADDING_INDEX,
             print_=True)
+        get_bucket_accuracy(buckets, targets, outputs, ignore_index=PADDING_INDEX, print_=True)
+        logger.info('Loss: %.03f', total_loss / n_words)
+        get_accuracy(targets, outputs, ignore_index=PADDING_INDEX, print_=True)
+        get_token_accuracy(targets, outputs, ignore_index=PADDING_INDEX, print_=True)
 
     # TODO: Return the best loss if hyperparameter tunning.
     # TODO: Figure out a good abstraction for evaluation on a test set.
