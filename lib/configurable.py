@@ -4,11 +4,13 @@ Manages a global namespaced configuration.
 from functools import reduce
 from collections import defaultdict
 
+import ast
 import inspect
 import logging
 import operator
 import sys
 import pprint
+from importlib import import_module
 
 import wrapt
 
@@ -160,6 +162,76 @@ def _dict_to_flat_config_helper(dict_, flat_dict, keys):
             flat_dict[flat_key] = dict_[key]
 
 
+def get_decorators(cls):
+    # Reference:
+    # https://stackoverflow.com/questions/3232024/introspection-to-get-decorator-names-on-a-method
+    target = cls
+    decorators = {}
+
+    def visit_FunctionDef(node):
+        decorators[node.name] = []
+        for n in node.decorator_list:
+            name = ''
+            if isinstance(n, ast.Call):
+                name = n.func.attr if isinstance(n.func, ast.Attribute) else n.func.id
+            else:
+                name = n.attr if isinstance(n, ast.Attribute) else n.id
+
+            decorators[node.name].append(name)
+
+    node_iter = ast.NodeVisitor()
+    node_iter.visit_FunctionDef = visit_FunctionDef
+    node_iter.visit(ast.parse(inspect.getsource(target)))
+    return decorators
+
+
+def check_configuration(dict_, keys=[]):
+    # Check the parsed configuration every module that it points too exists with @configurable
+    # Most of my bugs are here
+    #
+    # Cases to handle recursively:
+    # 'seq_encoder.SeqEncoder.__init__': {
+    #     'bidirectional': True,
+    # },
+    # 'attention.Attention.__init__.attention_type': 'general',
+    if not isinstance(dict_, dict):
+        # Recursive function walked up the chain and never found a @configurable
+        # FAILS: Note this is unable to deal with external librares decorated after import.
+        # FAILS: Note this is unable to deal with python
+        logger.warn('Path %s does not contain @configurable.', keys)
+        return
+
+    if len(keys) >= 2:
+        # Scenario: Function
+        try:
+            module_path = '.'.join(keys[:-1])
+            module = import_module(module_path)
+            if hasattr(module, keys[-1]):
+                function = getattr(module, keys[-1])
+                if 'configurable' in function.__dict__:
+                    return
+        except (ImportError, AttributeError):
+            pass
+
+    if len(keys) >= 3:
+        # Scenario: Class
+        try:
+            module_path = '.'.join(keys[:-2])
+            module = import_module(module_path)
+            if hasattr(module, keys[-2]):
+                class_ = getattr(module, keys[-2])
+                function = getattr(class_, keys[-1])
+                if 'configurable' in function.__dict__:
+                    return
+        except (ImportError, AttributeError):
+            pass
+
+    for key in dict_:
+        copy = keys[:]
+        copy.append(key)
+        check_configuration(dict_[key], copy)
+
+
 def add_config(dict_):
     """
     Add configuration to the global configuration.
@@ -191,14 +263,8 @@ def add_config(dict_):
     """
     global _configuration
     parsed = _parse_configuration(dict_)
-    # TODO: Check the parsed configuration every module that it points too exists with @configurable
-    # Most of my bugs are here
-    #
-    # Cases to handle recursively:
-    # 'seq_encoder.SeqEncoder.__init__': {
-    #     'bidirectional': True,
-    # },
-    # 'attention.Attention.__init__.attention_type': 'general',
+    logger.info('Checking configuration...')
+    check_configuration(parsed)
     _dict_merge(_configuration, parsed, overwrite=True)
     _configuration = _KeyListDictionary(_configuration)
 
@@ -242,6 +308,7 @@ def configurable(func, instance, args, kwargs):
     Args/Return are defined by `wrapt.decorator`.
     """
     global _configuration
+    func.__dict__['configurable'] = True
     parameters = inspect.signature(func).parameters
     module_keys = _get_module_name(func).split('.')
     keys = module_keys + func.__qualname__.split('.')

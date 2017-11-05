@@ -31,9 +31,6 @@ from lib.utils import get_total_parameters
 from lib.utils import init_logging
 from lib.utils import setup_training
 
-init_logging()
-logger = logging.getLogger(__name__)  # Root logger
-
 Adam.__init__ = configurable(Adam.__init__)
 
 pd.set_option('display.expand_frame_repr', False)
@@ -59,13 +56,20 @@ DEFAULT_HYPERPARAMETERS = {
             },
             'attention.Attention.__init__.attention_type': 'general',
         },
-        'optim.optim.Optimizer.__init__': {
+        'optim.Optimizer.__init__': {
             'max_grad_norm': 1.0,
         }
     },
     'torch.optim.Adam.__init__': {
         'lr': 0.001,
         'weight_decay': 0,
+    },
+    'scripts.python.train_seq_to_label.train': {
+        'dataset': count,
+        'random_seed': 123,
+        'epochs': 2,
+        'train_max_batch_size': 16,
+        'dev_max_batch_size': 128
     }
 }
 
@@ -77,14 +81,14 @@ add_config(DEFAULT_HYPERPARAMETERS)
 
 @configurable
 def train(
-        log_directory,  # Logs experiments, checkpoints, etc are saveddataset=count,
-        dataset=count,
+        log_directory,  # Logs experiments, checkpoints, etc are saved
+        dataset,
+        random_seed,
+        epochs,
+        train_max_batch_size,
+        dev_max_batch_size,
         checkpoint_path=None,
-        device=None,
-        random_seed=123,
-        epochs=2,
-        train_max_batch_size=16,
-        dev_max_batch_size=128):
+        device=None):
     checkpoint = setup_training(dataset, checkpoint_path, log_directory, device, random_seed)
 
     # Init Dataset
@@ -216,5 +220,5 @@ if __name__ == '__main__':
     else:
         log_directory = get_log_directory_path('seq_to_seq')
     log_directory = init_logging(log_directory)
-    logger = logging.getLogger(__name__)  # Root logger
+    logger = logging.getLogger(__name__)
     train(checkpoint_path=args.checkpoint_path, log_directory=log_directory)

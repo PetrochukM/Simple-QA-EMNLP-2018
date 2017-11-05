@@ -32,9 +32,6 @@ def get_log_directory_path(label='', parent_directory='logs/'):
     The execution time is used as the main sorting key to help distinguish between finished,
     halted, and running experiments.
     """
-    if not os.path.exists(parent_directory):
-        os.makedirs(parent_directory)
-
     start_time = time.time()
     name = '0000.%s.%s' % (time.strftime('%m-%d_%H:%M:%S', time.localtime()), label)
     path = os.path.join(parent_directory, name)
@@ -45,6 +42,7 @@ def get_log_directory_path(label='', parent_directory='logs/'):
         os.rename(path, path.replace('0000', '%04d' % difference))
 
     atexit.register(exit_handler)
+    os.makedirs(path)
     return path
 
 
@@ -62,31 +60,42 @@ def init_logging(log_directory):
         return init_logging_return
 
     logging.config.dictConfig({
-        "formatters": {
-            "simple": {
-                "format": "%(asctime)s - %(processName)s - %(name)s - %(levelname)s - %(message)s"
+        'formatters': {
+            'simple': {
+                'format': '%(asctime)s - %(processName)s - %(name)s - %(levelname)s - %(message)s'
             }
         },
-        "handlers": {
-            "error_file_handler": {
-                "class": "logging.handlers.FileHandler",
-                "formatter": "simple",
-                "filename": os.path.join(log_directory, "error.log"),
-                "level": "ERROR"
+        'root': {
+            'level': 'INFO',
+            'handlers': ['console', 'info_file_handler', 'error_file_handler']
+        },
+        'disable_existing_loggers': False,
+        'handlers': {
+            'console': {
+                'level': 'DEBUG',
+                'class': 'logging.StreamHandler',
+                'formatter': 'simple',
+                'stream': 'ext://sys.stdout'
             },
-            "info_file_handler": {
-                "class": "logging.handlers.FileHandler",
-                "formatter": "simple",
-                "filename": os.path.join(log_directory, "info.log"),
-                "level": "INFO"
+            'error_file_handler': {
+                'class': 'logging.handlers.RotatingFileHandler',
+                'encoding': 'utf8',
+                'filename': os.path.join(log_directory, "error.log"),
+                'backupCount': 2,
+                'level': 'ERROR',
+                'formatter': 'simple'
             },
-            "console": {
-                "class": "logging.StreamHandler",
-                "stream": "ext://sys.stdout",
-                "level": "DEBUG",
-                "formatter": "simple"
+            'info_file_handler': {
+                'class': 'logging.handlers.RotatingFileHandler',
+                'encoding': 'utf8',
+                'filename': os.path.join(log_directory, "info.log"),
+                'backupCount': 2,
+                'level': 'INFO',
+                'formatter': 'simple',
+                'maxBytes': 10485760
             }
-        }
+        },
+        'version': 1
     })
 
     init_logging_return = log_directory

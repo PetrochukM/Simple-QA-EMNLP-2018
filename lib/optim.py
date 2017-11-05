@@ -2,6 +2,8 @@ import itertools
 
 import torch
 
+from lib.configurable import configurable
+
 
 class Optimizer(object):
     """ The Optimizer class encapsulates torch.optim package and provides functionalities
@@ -13,6 +15,7 @@ class Optimizer(object):
             set 0 to disable (default 0)
     """
 
+    @configurable
     def __init__(self, optim, max_grad_norm=0.0):
         self.optimizer = optim
         self.scheduler = None

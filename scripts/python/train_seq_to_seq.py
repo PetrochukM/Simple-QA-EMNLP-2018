@@ -65,7 +65,7 @@ DEFAULT_HYPERPARAMETERS = {
             },
             'attention.Attention.__init__.attention_type': 'general',
         },
-        'optim.optim.Optimizer.__init__': {
+        'optim.Optimizer.__init__': {
             'max_grad_norm': 1.0,
         }
     },
@@ -73,7 +73,13 @@ DEFAULT_HYPERPARAMETERS = {
         'lr': 0.001,
         'weight_decay': 0,
     },
-    'train_seq_to_label.train': {}
+    'scripts.python.train_seq_to_seq.train': {
+        'dataset': reverse,
+        'random_seed': 123,
+        'epochs': 4,
+        'train_max_batch_size': 16,
+        'dev_max_batch_size': 128
+    }
 }
 
 DEFAULT_HYPERPARAMETERS['lib']['nn']['seq_decoder.SeqDecoder.__init__'].update(
@@ -87,13 +93,13 @@ add_config(DEFAULT_HYPERPARAMETERS)
 @configurable
 def train(
         log_directory,  # Logs experiments, checkpoints, etc are saved
-        dataset=reverse,
+        dataset,
+        random_seed,
+        epochs,
+        train_max_batch_size,
+        dev_max_batch_size,
         checkpoint_path=None,
-        device=None,
-        random_seed=123,
-        epochs=4,
-        train_max_batch_size=16,
-        dev_max_batch_size=128):
+        device=None):
     checkpoint = setup_training(dataset, checkpoint_path, log_directory, device, random_seed)
 
     # Init Dataset
