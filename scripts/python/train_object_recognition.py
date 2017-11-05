@@ -17,7 +17,7 @@ import pandas as pd
 from lib.checkpoint import Checkpoint
 from lib.configurable import configurable
 from lib.configurable import add_config
-from lib.datasets import reverse
+from lib.datasets import simple_qa_object
 from lib.metrics import get_accuracy
 from lib.metrics import get_bucket_accuracy
 from lib.metrics import get_random_sample
@@ -29,6 +29,7 @@ from lib.optim import Optimizer
 from lib.samplers import BucketBatchSampler
 from lib.text_encoders import PADDING_INDEX
 from lib.text_encoders import WordEncoder
+from lib.text_encoders import SubwordEncoder
 from lib.utils import collate_fn
 from lib.utils import get_total_parameters
 from lib.utils import init_logging
@@ -44,13 +45,13 @@ pd.set_option('max_colwidth', 80)
 # NOTE: The goal of this file is just to setup the training for simple_questions_predicate.
 
 BASE_RNN_HYPERPARAMETERS = {
-    'embedding_size': 128,
-    'rnn_size': 64,
-    'n_layers': 1,
+    'embedding_size': 100,
+    'rnn_size': 126,
+    'n_layers': 2,
     'rnn_cell': 'lstm',
-    'embedding_dropout': 0.0,
+    'embedding_dropout': 0.6,
     'rnn_variational_dropout': 0.0,
-    'rnn_dropout': 0.4,
+    'rnn_dropout': 0.0,
 }
 
 DEFAULT_HYPERPARAMETERS = {
@@ -58,7 +59,7 @@ DEFAULT_HYPERPARAMETERS = {
         'nn': {
             'seq_decoder.SeqDecoder.__init__': {
                 'use_attention': True,
-                'scheduled_sampling': True
+                'scheduled_sampling': False
             },
             'seq_encoder.SeqEncoder.__init__': {
                 'bidirectional': True,
@@ -70,13 +71,13 @@ DEFAULT_HYPERPARAMETERS = {
         }
     },
     'torch.optim.Adam.__init__': {
-        'lr': 0.001,
+        'lr': 0.0014,
         'weight_decay': 0,
     },
-    'examples.train_seq_to_seq.train': {
-        'dataset': reverse,
+    'scripts.python.train_object_recognition.train': {
+        'dataset': simple_qa_object,
         'random_seed': 123,
-        'epochs': 4,
+        'epochs': 10,
         'train_max_batch_size': 16,
         'dev_max_batch_size': 128
     }
@@ -112,7 +113,7 @@ def train(
     if checkpoint:
         source_encoder, target_encoder = checkpoint.input_encoder, checkpoint.output_encoder
     else:
-        source_encoder = WordEncoder(train_dataset['source'])
+        source_encoder = SubwordEncoder(train_dataset['source'], min_val=32, lower=True)
         target_encoder = WordEncoder(train_dataset['target'])
     for dataset in [train_dataset, dev_dataset]:
         for row in dataset:
@@ -234,6 +235,7 @@ def train(
             source_encoder,
             target_encoder,
             ignore_index=PADDING_INDEX,
+            n_samples=25,
             print_=True)
         get_bucket_accuracy(buckets, targets, outputs, ignore_index=PADDING_INDEX, print_=True)
         logger.info('Loss: %.03f', total_loss / n_words)

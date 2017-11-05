@@ -38,7 +38,7 @@ class SubwordEncoder(TextEncoder):
 
         if target_size is None:
             self.tokenizer = SubwordTextTokenizer()
-            self.tokenizer.build_from_corpus(sample, min_val=min_val)
+            self.tokenizer.build_from_corpus(sample, min_count=min_val)
         else:
             self.tokenizer = SubwordTextTokenizer.build_to_target_size_from_corpus(
                 sample, target_size=target_size, min_val=min_val, max_val=max_val)
@@ -51,7 +51,7 @@ class SubwordEncoder(TextEncoder):
 
     @property
     def vocab_size(self):
-        return self.tokenizer.vocab_size
+        return len(self.itos)
 
     def encode(self, text):
         if self.lower:

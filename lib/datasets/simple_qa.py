@@ -18,6 +18,8 @@ def simple_qa_object(directory='data/simple_qa',
     Sample Data:
         Input: what language is angels vengeance in
         Output: c c c e e c
+
+    # TODO: Update
     """
     ret = []
     datasets = [(train, train_filename), (dev, dev_filename), (test, test_filename)]

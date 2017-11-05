@@ -192,6 +192,7 @@ class SubwordTextTokenizer(object):
         """The subtoken vocabulary size."""
         return len(self._all_subtoken_strings)
 
+    @property
     def vocab(self):
         return self._all_subtoken_strings
 

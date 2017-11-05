@@ -332,6 +332,7 @@ def configurable(func, instance, args, kwargs):
     try:
         if len(default) == 0:
             logger.info('%s no config for: %s', print_name, '.'.join(keys))
+        # TODO: Does not print all parameters; FIX
         logger.info('%s was configured with:\n%s', print_name, pretty_printer.pformat(merged))
         return func(*args, **merged)
     except TypeError as error:
