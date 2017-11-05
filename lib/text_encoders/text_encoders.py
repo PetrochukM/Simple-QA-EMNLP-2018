@@ -20,4 +20,5 @@ class TextEncoder(object):
     def embeddings(self):
         """ Return an embedding tensor such that for each index 0 to vocab_size there exists an
         embedding """
+        # TODO: https://github.com/pytorch/text/blob/master/torchtext/vocab.py
         return None

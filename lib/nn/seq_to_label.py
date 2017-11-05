@@ -7,12 +7,23 @@ from lib.configurable import configurable
 class SeqToLabel(nn.Module):
 
     @configurable
-    def __init__(self, input_vocab_size, output_vocab_size, rnn_size=128, rnn_cell='lstm'):
+    def __init__(self,
+                 input_vocab_size,
+                 output_vocab_size,
+                 rnn_size=128,
+                 rnn_cell='lstm',
+                 decode_dropout=0.0):
         super().__init__()
         self.rnn_size = rnn_size
         self.rnn_cell = rnn_cell
         self.encoder = SeqEncoder(input_vocab_size, rnn_size=rnn_size, rnn_cell=rnn_cell)
-        self.decode = nn.Sequential(nn.Linear(self.rnn_size, output_vocab_size), nn.Softmax())
+        self.decode = nn.Sequential(
+            nn.Linear(self.rnn_size, self.rnn_size),  # can apply batch norm after this - add later
+            nn.BatchNorm1d(self.rnn_size),
+            nn.ReLU(),
+            nn.Dropout(p=decode_dropout),
+            nn.Linear(self.rnn_size, output_vocab_size),
+            nn.Softmax())
 
     def flatten_parameters(self):
         self.encoder.rnn.flatten_parameters()

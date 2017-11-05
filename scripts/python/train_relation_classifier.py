@@ -16,16 +16,15 @@ import pandas as pd
 from lib.checkpoint import Checkpoint
 from lib.configurable import add_config
 from lib.configurable import configurable
-from lib.datasets import count
 from lib.datasets import simple_qa_predicate
 from lib.metrics import get_accuracy
 from lib.metrics import get_bucket_accuracy
 from lib.metrics import get_random_sample
-from lib.nn import SeqToLabel
+from lib.nn import RelationClassifier
 from lib.optim import Optimizer
 from lib.samplers import BucketBatchSampler
 from lib.text_encoders import IdentityEncoder
-from lib.text_encoders import MosesEncoder
+from lib.text_encoders import TreebankEncoder
 from lib.utils import collate_fn
 from lib.utils import get_log_directory_path
 from lib.utils import get_total_parameters
@@ -37,70 +36,35 @@ Adam.__init__ = configurable(Adam.__init__)
 pd.set_option('display.expand_frame_repr', False)
 pd.set_option('max_colwidth', 80)
 
-DEFAULT_HYPERPARAMETERS = {
-    'lib': {
-        'nn': {
-            'seq_encoder.SeqEncoder.__init__': {
-                'bidirectional': True,
-                'embedding_size': 16,
-                'n_layers': 1,
-                'rnn_cell': 'lstm',
-                'embedding_dropout': 0.0,
-                'rnn_variational_dropout': 0.0,
-                'rnn_dropout': 0.4,
-            },
-            'seq_to_label.SeqToLabel': {
-                'decode_dropout': 0.2,
-                'rnn_size': 16,
-                'rnn_cell': 'lstm',
-            }
-        },
-        'optim.Optimizer.__init__': {
-            'max_grad_norm': 1.0,
-        }
-    },
-    'torch.optim.Adam.__init__': {
-        'lr': 0.001,
-        'weight_decay': 0,
-    },
-    'scripts.python.train_seq_to_label.train': {
-        'dataset': count,
-        'random_seed': 123,
-        'epochs': 2,
-        'train_max_batch_size': 16,
-        'dev_max_batch_size': 128
-    }
-}
-
 SIMPLE_PREDICATE_HYPERPARAMETERS = {
     'lib': {
         'nn': {
-            'seq_encoder.SeqEncoder.__init__': {
+            'relation_classifier.RelationClassifier.__init__': {
                 'bidirectional': True,
-                'rnn_dropout': 0.25,
                 'embedding_size': 300,
-                'n_layers': 2,
+                'rnn_size': 200,
+                'freeze_embeddings': False,
+                'rnn_cell': 'lstm',
+                'decode_dropout': 0.25,
                 'embedding_dropout': 0.4,
-                'rnn_variational_dropout': 0.0
             },
-            'attention.Attention.__init__.attention_type': 'general',
-            'seq_to_label.SeqToLabel.__init__': {
-                'decode_dropout': 0.2,
-                'rnn_size': 256,
-                'rnn_cell': 'gru',
+            'relation_classifier.Encoder.__init__': {
+                'n_layers': 2,
+                'rnn_variational_dropout': 0.0,
             }
         },
         'optim.Optimizer.__init__': {
-            'max_grad_norm': 0.65,
+            'max_grad_norm': 0.6,
         }
     },
     'torch.optim.Adam.__init__': {
-        'lr': 0.001
+        'lr': .0015,
+        'weight_decay': 0,
     },
-    'scripts.python.train_seq_to_label.train': {
+    'scripts.python.train_relation_classifier.train': {
         'dataset': simple_qa_predicate,
         'random_seed': 1111,
-        'epochs': 10,
+        'epochs': 20,
         'train_max_batch_size': 32,
         'dev_max_batch_size': 128
     }
@@ -130,7 +94,7 @@ def train(
     if checkpoint:
         text_encoder, label_encoder = checkpoint.input_encoder, checkpoint.output_encoder
     else:
-        text_encoder = MosesEncoder(train_dataset['text'])
+        text_encoder = TreebankEncoder(train_dataset['text'], lower=True)
         label_encoder = IdentityEncoder(train_dataset['label'])
     for dataset in [train_dataset, dev_dataset]:
         for row in dataset:
@@ -141,7 +105,7 @@ def train(
     if checkpoint:
         model = checkpoint.model
     else:
-        model = SeqToLabel(text_encoder.vocab_size, label_encoder.vocab_size)
+        model = RelationClassifier(text_encoder.vocab_size, label_encoder.vocab_size)
         for param in model.parameters():
             param.data.uniform_(-0.1, 0.1)
 
@@ -164,17 +128,16 @@ def train(
     # collate function merges rows into tensor batches
     collate_fn_partial = partial(collate_fn, input_key='text', output_key='label', sort_key='text')
 
-    def prepare_batch(batch):
+    def prepare_batch(batch, train=False):
         # Prepare batch for model
         text, text_lengths = batch['text']
         label, _ = batch['label']
         if torch.cuda.is_available():
             text, text_lengths = text.cuda(async=True), text_lengths.cuda(async=True)
             label = label.cuda(async=True)
-        return Variable(text), text_lengths, Variable(label)
+        return Variable(text, volatile=not train), text_lengths, Variable(label, volatile=not train)
 
     # Train!
-    logger.info('Epochs: %d', epochs)
     for epoch in range(epochs):
         logger.info('Epoch %d', epoch)
         model.train(mode=True)
@@ -187,7 +150,7 @@ def train(
             pin_memory=torch.cuda.is_available(),
             num_workers=0)
         for batch in tqdm(train_iterator):
-            text, text_lengths, label = prepare_batch(batch)
+            text, text_lengths, label = prepare_batch(batch, True)
             optimizer.zero_grad()
             output = model(text, text_lengths)
             loss = criterion(output, label) / label.size()[0]
@@ -224,11 +187,12 @@ def train(
             outputs.extend(output.data.cpu().split(split_size=1, dim=0))
 
         optimizer.update(total_loss / len(dev_dataset), epoch)
-        logger.info('Loss: %.03f', total_loss / len(dev_dataset))
-        get_accuracy(labels, outputs, print_=True)
+        get_random_sample(
+            texts, labels, outputs, text_encoder, label_encoder, n_samples=25, print_=True)
         buckets = [label_encoder.decode(label) for label in labels]
         get_bucket_accuracy(buckets, labels, outputs, print_=True)
-        get_random_sample(texts, labels, outputs, text_encoder, label_encoder, print_=True)
+        logger.info('Loss: %.03f', total_loss / len(dev_dataset))
+        get_accuracy(labels, outputs, print_=True)
 
     # TODO: Return the best loss if hyperparameter tunning.
 
@@ -248,7 +212,7 @@ if __name__ == '__main__':
     if args.checkpoint_path:
         log_directory = os.path.dirname(args.checkpoint_path)
     else:
-        log_directory = get_log_directory_path('seq_to_seq')
+        log_directory = get_log_directory_path('relation_classifier')
     log_directory = init_logging(log_directory)
     logger = logging.getLogger(__name__)
     train(checkpoint_path=args.checkpoint_path, log_directory=log_directory)
