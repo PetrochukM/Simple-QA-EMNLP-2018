@@ -45,8 +45,8 @@ pd.set_option('max_colwidth', 80)
 # NOTE: The goal of this file is just to setup the training for simple_questions_predicate.
 
 BASE_RNN_HYPERPARAMETERS = {
-    'embedding_size': 100,
-    'rnn_size': 126,
+    'embedding_size': 256,
+    'rnn_size': 256,
     'n_layers': 2,
     'rnn_cell': 'lstm',
     'embedding_dropout': 0.6,
@@ -259,7 +259,7 @@ if __name__ == '__main__':
     if args.checkpoint_path:
         log_directory = os.path.dirname(args.checkpoint_path)
     else:
-        log_directory = get_log_directory_path('seq_to_seq')
+        log_directory = get_log_directory_path('object_recognition')
     log_directory = init_logging(log_directory)
     logger = logging.getLogger(__name__)  # Root logger
     train(checkpoint_path=args.checkpoint_path, log_directory=log_directory)

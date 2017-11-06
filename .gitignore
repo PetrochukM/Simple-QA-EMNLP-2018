@@ -54,7 +54,6 @@ coverage.xml
 *.pot
 
 # Django stuff:
-*.log
 local_settings.py
 
 # Flask stuff:
@@ -78,9 +77,6 @@ logs/**
 
 # Nose coverage
 cover/** 
-
-# Log files
-log/**
 
 # Data
 data/**

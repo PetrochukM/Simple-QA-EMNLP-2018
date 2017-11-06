@@ -1,0 +1,258 @@
+2017-10-31 15:52:21,656 - MainProcess - lib.configurable - ERROR - update() got an unexpected keyword argument 'source_batch'
+Traceback (most recent call last):
+  File "/Users/petrochuk/Documents/personal/independant-study/lib/configurable.py", line 255, in configurable
+    return func(*args, **merged)
+  File "scripts/python/reverse.py", line 238, in main
+    for observer in dev_observers
+  File "scripts/python/reverse.py", line 238, in <listcomp>
+    for observer in dev_observers
+TypeError: update() got an unexpected keyword argument 'source_batch'
+2017-10-31 17:41:08,538 - MainProcess - lib.configurable - ERROR - 'type' object is not iterable
+Traceback (most recent call last):
+  File "/Users/petrochuk/Documents/personal/independant-study/lib/configurable.py", line 255, in configurable
+    return func(*args, **merged)
+  File "scripts/python/reverse.py", line 213, in main
+    num_workers=0)):
+  File "/usr/local/lib/python3.6/site-packages/tqdm/_tqdm.py", line 953, in __iter__
+    for obj in iterable:
+  File "/usr/local/lib/python3.6/site-packages/torch/utils/data/dataloader.py", line 178, in __next__
+    indices = next(self.sample_iter)  # may raise StopIteration
+  File "/usr/local/lib/python3.6/site-packages/torch/utils/data/sampler.py", line 115, in __iter__
+    for idx in self.sampler:
+TypeError: 'type' object is not iterable
+2017-10-31 17:41:21,561 - MainProcess - lib.configurable - ERROR - __init__() missing 1 required positional argument: 'data_source'
+Traceback (most recent call last):
+  File "/Users/petrochuk/Documents/personal/independant-study/lib/configurable.py", line 255, in configurable
+    return func(*args, **merged)
+  File "scripts/python/reverse.py", line 211, in main
+    sampler=SequentialSampler(),
+TypeError: __init__() missing 1 required positional argument: 'data_source'
+2017-10-31 17:41:34,359 - MainProcess - lib.configurable - ERROR - 'type' object is not iterable
+Traceback (most recent call last):
+  File "/Users/petrochuk/Documents/personal/independant-study/lib/configurable.py", line 255, in configurable
+    return func(*args, **merged)
+  File "scripts/python/reverse.py", line 213, in main
+    num_workers=0)):
+  File "/usr/local/lib/python3.6/site-packages/tqdm/_tqdm.py", line 953, in __iter__
+    for obj in iterable:
+  File "/usr/local/lib/python3.6/site-packages/torch/utils/data/dataloader.py", line 178, in __next__
+    indices = next(self.sample_iter)  # may raise StopIteration
+  File "/usr/local/lib/python3.6/site-packages/torch/utils/data/sampler.py", line 115, in __iter__
+    for idx in self.sampler:
+TypeError: 'type' object is not iterable
+2017-10-31 18:03:20,844 - MainProcess - lib.configurable - ERROR - 'str' object is not callable
+Traceback (most recent call last):
+  File "/Users/petrochuk/Documents/personal/independant-study/lib/configurable.py", line 255, in configurable
+    return func(*args, **merged)
+  File "scripts/python/reverse.py", line 228, in main
+    for batch in tqdm(train_iter):
+  File "/usr/local/lib/python3.6/site-packages/tqdm/_tqdm.py", line 953, in __iter__
+    for obj in iterable:
+  File "/usr/local/lib/python3.6/site-packages/torchtext/data/iterator.py", line 163, in __iter__
+    for idx, minibatch in enumerate(self.batches):
+  File "/usr/local/lib/python3.6/site-packages/torchtext/data/iterator.py", line 296, in pool
+    p_batch = batch(sorted(p, key=key), batch_size, batch_size_fn)
+TypeError: 'str' object is not callable
+2017-10-31 18:04:49,301 - MainProcess - lib.configurable - ERROR - 'Batch' object is not subscriptable
+Traceback (most recent call last):
+  File "/Users/petrochuk/Documents/personal/independant-study/lib/configurable.py", line 255, in configurable
+    return func(*args, **merged)
+  File "scripts/python/reverse.py", line 229, in main
+    source, source_lengths = batch['source']
+TypeError: 'Batch' object is not subscriptable
+2017-10-31 18:05:08,254 - MainProcess - lib.configurable - ERROR - 'Batch' object is not subscriptable
+Traceback (most recent call last):
+  File "/Users/petrochuk/Documents/personal/independant-study/lib/configurable.py", line 255, in configurable
+    return func(*args, **merged)
+  File "scripts/python/reverse.py", line 230, in main
+    source, source_lengths = batch['source']
+TypeError: 'Batch' object is not subscriptable
+2017-10-31 18:06:15,222 - MainProcess - lib.configurable - ERROR - 'Batch' object is not subscriptable
+Traceback (most recent call last):
+  File "/Users/petrochuk/Documents/personal/independant-study/lib/configurable.py", line 255, in configurable
+    return func(*args, **merged)
+  File "scripts/python/reverse.py", line 230, in main
+    source, source_lengths = batch['source']
+TypeError: 'Batch' object is not subscriptable
+2017-10-31 18:09:07,354 - MainProcess - lib.configurable - ERROR - 'Batch' object is not subscriptable
+Traceback (most recent call last):
+  File "/Users/petrochuk/Documents/personal/independant-study/lib/configurable.py", line 255, in configurable
+    return func(*args, **merged)
+  File "scripts/python/reverse.py", line 230, in main
+    source, source_lengths = batch['source']
+TypeError: 'Batch' object is not subscriptable
+2017-10-31 18:11:27,839 - MainProcess - lib.configurable - ERROR - 'Batch' object is not subscriptable
+Traceback (most recent call last):
+  File "/Users/petrochuk/Documents/personal/independant-study/lib/configurable.py", line 255, in configurable
+    return func(*args, **merged)
+  File "scripts/python/reverse.py", line 231, in main
+    source, source_lengths = batch['source']
+TypeError: 'Batch' object is not subscriptable
+2017-10-31 18:11:35,479 - MainProcess - lib.configurable - ERROR - 'Batch' object is not subscriptable
+Traceback (most recent call last):
+  File "/Users/petrochuk/Documents/personal/independant-study/lib/configurable.py", line 255, in configurable
+    return func(*args, **merged)
+  File "scripts/python/reverse.py", line 231, in main
+    source, source_lengths = batch['source']
+TypeError: 'Batch' object is not subscriptable
+2017-10-31 18:11:47,447 - MainProcess - lib.configurable - ERROR - list indices must be integers or slices, not str
+Traceback (most recent call last):
+  File "/Users/petrochuk/Documents/personal/independant-study/lib/configurable.py", line 255, in configurable
+    return func(*args, **merged)
+  File "scripts/python/reverse.py", line 230, in main
+    source, source_lengths = batch.data['source']
+TypeError: list indices must be integers or slices, not str
+2017-10-31 19:13:23,523 - MainProcess - lib.configurable - ERROR - object of type 'int' has no len()
+Traceback (most recent call last):
+  File "/Users/petrochuk/Documents/personal/independant-study/lib/configurable.py", line 255, in configurable
+    return func(*args, **merged)
+  File "scripts/python/reverse.py", line 225, in main
+    SortedSampler(train_dataset, lambda r: len(row['source'][0])),
+  File "/Users/petrochuk/Documents/personal/independant-study/lib/samplers.py", line 14, in __init__
+    zip = [(i, self.sort_key(row)) for i, row in enumerate(self.data_source)]
+  File "/Users/petrochuk/Documents/personal/independant-study/lib/samplers.py", line 14, in <listcomp>
+    zip = [(i, self.sort_key(row)) for i, row in enumerate(self.data_source)]
+  File "scripts/python/reverse.py", line 225, in <lambda>
+    SortedSampler(train_dataset, lambda r: len(row['source'][0])),
+TypeError: object of type 'int' has no len()
+2017-10-31 19:13:49,955 - MainProcess - lib.configurable - ERROR - object of type 'int' has no len()
+Traceback (most recent call last):
+  File "/Users/petrochuk/Documents/personal/independant-study/lib/configurable.py", line 255, in configurable
+    return func(*args, **merged)
+  File "scripts/python/reverse.py", line 225, in main
+    SortedSampler(train_dataset, lambda r: len(row['source'][0])),
+  File "/Users/petrochuk/Documents/personal/independant-study/lib/samplers.py", line 16, in __init__
+    zip = sorted(zip, key=lambda r: r[1])
+  File "/Users/petrochuk/Documents/personal/independant-study/lib/samplers.py", line 16, in <listcomp>
+    zip = sorted(zip, key=lambda r: r[1])
+  File "scripts/python/reverse.py", line 225, in <lambda>
+    SortedSampler(train_dataset, lambda r: len(row['source'][0])),
+TypeError: object of type 'int' has no len()
+2017-10-31 19:15:05,132 - MainProcess - lib.configurable - ERROR - 'builtin_function_or_method' object is not subscriptable
+Traceback (most recent call last):
+  File "/Users/petrochuk/Documents/personal/independant-study/lib/configurable.py", line 255, in configurable
+    return func(*args, **merged)
+  File "scripts/python/reverse.py", line 225, in main
+    SortedSampler(train_dataset, lambda r: row['source'].size[0]),
+  File "/Users/petrochuk/Documents/personal/independant-study/lib/samplers.py", line 15, in __init__
+    print(self.sort_key(self.data_source[0]))
+  File "scripts/python/reverse.py", line 225, in <lambda>
+    SortedSampler(train_dataset, lambda r: row['source'].size[0]),
+TypeError: 'builtin_function_or_method' object is not subscriptable
+2017-10-31 19:20:08,687 - MainProcess - lib.configurable - ERROR - 'NoneType' object is not iterable
+Traceback (most recent call last):
+  File "/Users/petrochuk/Documents/personal/independant-study/lib/configurable.py", line 255, in configurable
+    return func(*args, **merged)
+  File "scripts/python/reverse.py", line 228, in main
+    num_workers=0)):
+  File "/usr/local/lib/python3.6/site-packages/tqdm/_tqdm.py", line 953, in __iter__
+    for obj in iterable:
+  File "/usr/local/lib/python3.6/site-packages/torch/utils/data/dataloader.py", line 301, in __iter__
+    return DataLoaderIter(self)
+  File "/usr/local/lib/python3.6/site-packages/torch/utils/data/dataloader.py", line 139, in __init__
+    self.sample_iter = iter(self.batch_sampler)
+  File "/Users/petrochuk/Documents/personal/independant-study/lib/samplers.py", line 45, in __iter__
+    return iter(random.shuffle(list(super().__iter__())))
+TypeError: 'NoneType' object is not iterable
+2017-10-31 19:20:43,765 - MainProcess - lib.configurable - ERROR - 'super' object is not iterable
+Traceback (most recent call last):
+  File "/Users/petrochuk/Documents/personal/independant-study/lib/configurable.py", line 255, in configurable
+    return func(*args, **merged)
+  File "scripts/python/reverse.py", line 228, in main
+    num_workers=0)):
+  File "/usr/local/lib/python3.6/site-packages/tqdm/_tqdm.py", line 953, in __iter__
+    for obj in iterable:
+  File "/usr/local/lib/python3.6/site-packages/torch/utils/data/dataloader.py", line 301, in __iter__
+    return DataLoaderIter(self)
+  File "/usr/local/lib/python3.6/site-packages/torch/utils/data/dataloader.py", line 139, in __init__
+    self.sample_iter = iter(self.batch_sampler)
+  File "/Users/petrochuk/Documents/personal/independant-study/lib/samplers.py", line 32, in __iter__
+    return iter(random.shuffle(list(iter(super()))))
+TypeError: 'super' object is not iterable
+2017-10-31 19:21:24,252 - MainProcess - lib.configurable - ERROR - 'super' object is not iterable
+Traceback (most recent call last):
+  File "/Users/petrochuk/Documents/personal/independant-study/lib/configurable.py", line 255, in configurable
+    return func(*args, **merged)
+  File "scripts/python/reverse.py", line 228, in main
+    num_workers=0)):
+  File "/usr/local/lib/python3.6/site-packages/tqdm/_tqdm.py", line 953, in __iter__
+    for obj in iterable:
+  File "/usr/local/lib/python3.6/site-packages/torch/utils/data/dataloader.py", line 301, in __iter__
+    return DataLoaderIter(self)
+  File "/usr/local/lib/python3.6/site-packages/torch/utils/data/dataloader.py", line 139, in __init__
+    self.sample_iter = iter(self.batch_sampler)
+  File "/Users/petrochuk/Documents/personal/independant-study/lib/samplers.py", line 34, in __iter__
+    iter(super())
+TypeError: 'super' object is not iterable
+2017-10-31 19:21:39,504 - MainProcess - lib.configurable - ERROR - 'NoneType' object is not iterable
+Traceback (most recent call last):
+  File "/Users/petrochuk/Documents/personal/independant-study/lib/configurable.py", line 255, in configurable
+    return func(*args, **merged)
+  File "scripts/python/reverse.py", line 228, in main
+    num_workers=0)):
+  File "/usr/local/lib/python3.6/site-packages/tqdm/_tqdm.py", line 953, in __iter__
+    for obj in iterable:
+  File "/usr/local/lib/python3.6/site-packages/torch/utils/data/dataloader.py", line 301, in __iter__
+    return DataLoaderIter(self)
+  File "/usr/local/lib/python3.6/site-packages/torch/utils/data/dataloader.py", line 139, in __init__
+    self.sample_iter = iter(self.batch_sampler)
+  File "/Users/petrochuk/Documents/personal/independant-study/lib/samplers.py", line 35, in __iter__
+    return iter(random.shuffle(list()))
+TypeError: 'NoneType' object is not iterable
+2017-10-31 19:21:58,865 - MainProcess - lib.configurable - ERROR - 'NoneType' object is not iterable
+Traceback (most recent call last):
+  File "/Users/petrochuk/Documents/personal/independant-study/lib/configurable.py", line 255, in configurable
+    return func(*args, **merged)
+  File "scripts/python/reverse.py", line 228, in main
+    num_workers=0)):
+  File "/usr/local/lib/python3.6/site-packages/tqdm/_tqdm.py", line 953, in __iter__
+    for obj in iterable:
+  File "/usr/local/lib/python3.6/site-packages/torch/utils/data/dataloader.py", line 301, in __iter__
+    return DataLoaderIter(self)
+  File "/usr/local/lib/python3.6/site-packages/torch/utils/data/dataloader.py", line 139, in __init__
+    self.sample_iter = iter(self.batch_sampler)
+  File "/Users/petrochuk/Documents/personal/independant-study/lib/samplers.py", line 35, in __iter__
+    return iter(random.shuffle(list()))
+TypeError: 'NoneType' object is not iterable
+2017-10-31 19:22:13,174 - MainProcess - lib.configurable - ERROR - 'NoneType' object is not iterable
+Traceback (most recent call last):
+  File "/Users/petrochuk/Documents/personal/independant-study/lib/configurable.py", line 255, in configurable
+    return func(*args, **merged)
+  File "scripts/python/reverse.py", line 228, in main
+    num_workers=0)):
+  File "/usr/local/lib/python3.6/site-packages/tqdm/_tqdm.py", line 953, in __iter__
+    for obj in iterable:
+  File "/usr/local/lib/python3.6/site-packages/torch/utils/data/dataloader.py", line 301, in __iter__
+    return DataLoaderIter(self)
+  File "/usr/local/lib/python3.6/site-packages/torch/utils/data/dataloader.py", line 139, in __init__
+    self.sample_iter = iter(self.batch_sampler)
+  File "/Users/petrochuk/Documents/personal/independant-study/lib/samplers.py", line 34, in __iter__
+    return iter(random.shuffle(list(super().__iter__())))
+TypeError: 'NoneType' object is not iterable
+2017-10-31 23:44:05,911 - MainProcess - lib.checkpoint - ERROR - Cannot save checkpoint; directory (save/supervised_co_10m_31d_23h_44m_03s/10m_31d_23h_44m_05s_[-1].pt) already exists.
+2017-11-02 16:28:57,979 - MainProcess - lib.configurable - ERROR - __init__() missing 1 required positional argument: 'optimizer'
+Traceback (most recent call last):
+  File "/Users/petrochuk/Documents/personal/independant-study/lib/configurable.py", line 256, in configurable
+    return func(*args, **merged)
+TypeError: __init__() missing 1 required positional argument: 'optimizer'
+2017-11-02 22:48:26,775 - MainProcess - lib.configurable - ERROR - __init__() missing 1 required positional argument: 'vocab_size'
+Traceback (most recent call last):
+  File "/Users/petrochuk/Documents/personal/independant-study/lib/configurable.py", line 264, in configurable
+    return func(*args, **merged)
+TypeError: __init__() missing 1 required positional argument: 'vocab_size'
+2017-11-02 22:48:26,777 - MainProcess - lib.configurable - ERROR - __init__() missing 1 required positional argument: 'vocab_size'
+Traceback (most recent call last):
+  File "/Users/petrochuk/Documents/personal/independant-study/lib/configurable.py", line 264, in configurable
+    return func(*args, **merged)
+  File "/Users/petrochuk/Documents/personal/independant-study/lib/nn/seq_to_label.py", line 14, in __init__
+    self.encoder = SeqEncoder(rnn_size=rnn_size, rnn_cell=rnn_cell)
+  File "/Users/petrochuk/Documents/personal/independant-study/lib/configurable.py", line 264, in configurable
+    return func(*args, **merged)
+TypeError: __init__() missing 1 required positional argument: 'vocab_size'
+2017-11-03 11:01:13,185 - MainProcess - lib.configurable - ERROR - setup_training() missing 1 required positional argument: 'random_seed'
+Traceback (most recent call last):
+  File "/home/michael/Desktop/lattice/independant-study/lib/configurable.py", line 269, in configurable
+    return func(*args, **merged)
+  File "scripts/python/train_seq_to_label.py", line 88, in train
+    checkpoint = setup_training(dataset, checkpoint_path, save_directory, device, random_seed)
+TypeError: setup_training() missing 1 required positional argument: 'random_seed'
