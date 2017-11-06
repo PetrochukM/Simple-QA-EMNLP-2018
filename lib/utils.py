@@ -9,7 +9,7 @@ import time
 
 import random
 import torch
-from lib.checkpoint import Checkpoint
+
 from lib.text_encoders import PADDING_INDEX
 from lib.configurable import log_config
 
@@ -233,6 +233,9 @@ def collate_fn(batch, input_key, output_key, sort_key=None, preprocess=pad):
 
 def setup_training(dataset, checkpoint_path, log_directory, device, random_seed):
     """ Utility function to settup logger, hyperparameters, seed, device and checkpoint """
+    # Prevent a circular dependency
+    from lib.checkpoint import Checkpoint
+
     # Setup Device
     device = device_default(device)
     if torch.cuda.is_available():

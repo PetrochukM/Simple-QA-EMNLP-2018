@@ -8,7 +8,7 @@ from torch.autograd import Variable
 import dill
 import torch
 
-import lib
+import lib.utils
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +40,8 @@ class Checkpoint(object):
         for (k, v) in data.items():
             setattr(self, k, v)
 
-        self.model.flatten_parameters()  # make RNN parameters contiguous
+        if hasattr(self.model, 'flatten_parameters'):
+            self.model.flatten_parameters()  # make RNN parameters contiguous
 
     @classmethod
     def recent(cls, log_directory, device=None):
@@ -112,18 +113,26 @@ class Checkpoint(object):
             batch_source = batch_source.t_()
         batch_source = Variable(batch_source.contiguous())
         batch_source_length = torch.LongTensor([tensor.size()[0]])
+        if torch.cuda.is_available():
+            batch_source = batch_source.cuda()
+            batch_source_length = batch_source_length.cuda()
 
         # Predict
         output_batch = self.model(batch_source, batch_source_length)[0]
-        output_tensor = output_batch.data.squeeze(1)  # Squeeze
-        output_sequences = output_tensor.topk(top_k, dim=1)[1]
+        if len(output_batch.size()) > 1:
+            output_batch = output_batch.data.squeeze(1)  # Squeeze 1 batch
+
+        output_sequences = output_batch.topk(top_k, dim=len(output_batch.size()) - 1)[1]
+        print('output_sequences', output_sequences.size())
 
         # Make human readable
         ret = []
-        for i in range(min(top_k, output_sequences.size()[1])):
-            output_sequence = output_sequences[:, i]
+        for i in range(min(top_k, output_sequences.size()[-1])):
+            print('output_sequences', output_sequences.size())
+            output_sequence = output_sequences[..., i]
+            print('output_sequence', output_sequence.size())
             log_confidence = [
-                output_tensor[j][token_index] for j, token_index in enumerate(output_sequence)
+                output_batch[j][token_index] for j, token_index in enumerate(output_sequence)
             ]
             confidence = [math.exp(x) for x in log_confidence]
 

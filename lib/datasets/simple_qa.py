@@ -29,6 +29,7 @@ def simple_qa_object(directory='data/simple_qa',
         full_path = os.path.join(directory, filename)
         data = pd.read_table(full_path)
         data = data[data['Object EN Mask'].notnull()]
+        # TODO: Investigate data. Look into preprocessing.
         rows = []
         for _, row in data.iterrows():
             rows.append({'source': row['Question EN'].strip(), 'target': row['Object EN Mask']})
