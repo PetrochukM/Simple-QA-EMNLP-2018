@@ -15,3 +15,4 @@ setuptools
 sh
 tqdm
 wrapt
+ujson

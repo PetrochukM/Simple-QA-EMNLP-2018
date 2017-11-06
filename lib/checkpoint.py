@@ -119,27 +119,32 @@ class Checkpoint(object):
 
         # Predict
         output_batch = self.model(batch_source, batch_source_length)[0]
+        output_batch = output_batch.data
         if len(output_batch.size()) > 1:
-            output_batch = output_batch.data.squeeze(1)  # Squeeze 1 batch
+            output_batch = output_batch.squeeze(1)  # Squeeze 1 batch
 
         output_sequences = output_batch.topk(top_k, dim=len(output_batch.size()) - 1)[1]
-        print('output_sequences', output_sequences.size())
 
-        # Make human readable
+        # Decode and compute confidence
         ret = []
         for i in range(min(top_k, output_sequences.size()[-1])):
-            print('output_sequences', output_sequences.size())
+            # Decoded
             output_sequence = output_sequences[..., i]
-            print('output_sequence', output_sequence.size())
-            log_confidence = [
-                output_batch[j][token_index] for j, token_index in enumerate(output_sequence)
-            ]
+            if isinstance(output_sequence, int):
+                output_sequence = torch.LongTensor([output_sequence])
+            decoded = self.output_text_encoder.decode(output_sequence)
+
+            # Get Confidence
+            output_sequence_flat = output_sequence.view(-1)
+            output_batch_flat = output_batch.view(-1, output_batch.size()[-1])
+            log_confidence = []
+            for j, token_index in enumerate(output_sequence_flat):
+                log_confidence.append(output_batch_flat[j][token_index])
             confidence = [math.exp(x) for x in log_confidence]
 
-            # Make sure not to have side affects
-            decoded = self.output_text_encoder.decode(output_sequence)
             ret.append([decoded, confidence])
 
+        # Make sure not to have side affects
         self.model.train(mode=True)
         if top_k == 1:
             return tuple(ret[0])

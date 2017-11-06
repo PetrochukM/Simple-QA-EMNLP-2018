@@ -89,6 +89,9 @@ class RelationClassifier(nn.Module):
             nn.Dropout(p=decode_dropout),
             nn.Linear(rnn_size, output_vocab_size))
 
+    def flatten_parameters(self):
+        self.encoder.rnn.flatten_parameters()
+
     def forward(self, question, question_lengths):
         # shape of `batch` - (sequence length, batch size)
         question_embed = self.embedding(question)

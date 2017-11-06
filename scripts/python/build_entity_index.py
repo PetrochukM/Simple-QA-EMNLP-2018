@@ -17,36 +17,47 @@ from elasticsearch.helpers import streaming_bulk
 
 from tqdm import tqdm
 
-FB5M = 'data/simple_qa/freebase-FB5M.txt'
+pp = pprint.PrettyPrinter(indent=2)
 
-# DOWNLOADED FROM: https://www.dropbox.com/s/yqbesl07hsw297w/FB5M.name.txt
-MID_TO_NAME = 'data/simple_qa/FB5M.name.txt'
 
 # Below we build an in memory representation of FB5M from the objects perspective.
+def get_object_to_fact(filename='data/simple_qa/freebase-FB5M.txt'):
+    object_to_fact = defaultdict(dict)
+    for line in tqdm(open(filename, 'r'), total=12010500):
+        split = line.split('\t')
+        assert len(split) == 3, 'Malformed row'
+        object_ = split[0].replace('www.freebase.com/m/', '').strip()
+        property_ = split[1].replace('www.freebase.com/', '').strip()
+        subjects = [url.replace('www.freebase.com/m/', '').strip() for url in split[2].split()]
+        if property_ in object_to_fact[object_]:
+            object_to_fact[object_][property_].update([subjects])
+        else:
+            object_to_fact[object_][property_] = set([subjects])
 
-object_to_fact = defaultdict(list)
-for line in tqdm(open(FB5M, 'r'), total=12010500):
-    split = line.split('\t')
-    assert len(split) == 3, 'Malformed row'
-    object_ = split[0].replace('www.freebase.com/m/', '').strip()
-    property_ = split[1].replace('www.freebase.com/', '').strip()
-    subjects = [url.replace('www.freebase.com/m/', '').strip() for url in split[2].split()]
-    object_to_fact[object_].append({'property': property_, 'subjects': subjects})
+    print('Number of Objects:', len(object_to_fact))
+    print('Sample:', pp.pformat(random.sample(object_to_fact.items(), 5)))
+    return object_to_fact
 
-pp = pprint.PrettyPrinter(indent=2)
-print('Number of Objects:', len(object_to_fact))
-print('Sample:', pp.pformat(random.sample(object_to_fact.items(), 5)))
 
+object_to_fact = get_object_to_fact()
+
+
+# DOWNLOADED FROM: https://www.dropbox.com/s/yqbesl07hsw297w/FB5M.name.txt
 # Below build a map to translate from MID to name. For each MID, we have multiple aliases that'll be
 # used for entity linking.
-mid_to_name = defaultdict(list)
-for line in tqdm(open(MID_TO_NAME), total=5507279):
-    split = line.strip().split('\t')
-    mid = split[0].replace('<fb:m.', '').replace('>', '')
-    name = split[2].replace('"', '').replace("'", '')
-    mid_to_name[mid].append(name)
-print('Number of entries:', len(mid_to_name))
-print('Sample:', pp.pformat(random.sample(mid_to_name.items(), 10)))
+def get_mid_to_name(filename='data/simple_qa/FB5M.name.txt'):
+    mid_to_name = defaultdict(list)
+    for line in tqdm(open(filename), total=5507279):
+        split = line.strip().split('\t')
+        mid = split[0].replace('<fb:m.', '').replace('>', '')
+        name = split[2].replace('"', '').replace("'", '')
+        mid_to_name[mid].append(name)
+    print('Number of entries:', len(mid_to_name))
+    print('Sample:', pp.pformat(random.sample(mid_to_name.items(), 10)))
+    return mid_to_name
+
+
+mid_to_name = get_mid_to_name()
 
 # Lets check if our elasticsearch cluster is healthy; afterwards, we'll attempt to populate it with
 # data.
@@ -93,13 +104,12 @@ class FreebaseEntity(DocType):
 
 # save entities to elastic search
 def get_entities():
+    # TODO: How many MIDs are lost?
     for mid, names in mid_to_name.items():
         if mid in object_to_fact:
             yield {'mid': mid, 'names': names, 'facts': object_to_fact[mid]}
-
-
-#         else:
-#             print('Lost MID:', mid, names)
+            # Free Memory
+            del object_to_fact[mid]
 
 
 def serialize_entity(mid, names, facts):
