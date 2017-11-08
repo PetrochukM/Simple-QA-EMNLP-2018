@@ -42,7 +42,7 @@ class SeqEncoder(BaseRNN):
                  vocab_size,
                  embeddings=None,
                  embedding_size=100,
-                 rnn_size=128,
+                 rnn_size=100,
                  embedding_dropout=0,
                  rnn_dropout=0,
                  rnn_variational_dropout=0,

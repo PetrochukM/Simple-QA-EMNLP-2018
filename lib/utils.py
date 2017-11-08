@@ -37,16 +37,17 @@ def get_log_directory_path(label='', parent_directory='logs/'):
     path = os.path.join(parent_directory, name)
 
     def exit_handler():
-        # Add runtime to the directory name sorting
-        difference = int(time.time() - start_time)
-        os.rename(path, path.replace('0000', '%04d' % difference))
+        if os.path.exists(path):
+            # Add runtime to the directory name sorting
+            difference = int(time.time() - start_time)
+            os.rename(path, path.replace('0000', '%04d' % difference))
 
     atexit.register(exit_handler)
     os.makedirs(path)
     return path
 
 
-init_logging_return = None
+_init_logging_return = None
 
 
 def init_logging(log_directory):
@@ -54,10 +55,10 @@ def init_logging(log_directory):
 
     Returns the same log_directory after init_logging is setup for the first time.
     """
-    global init_logging_return
+    global _init_logging_return
     # Only configure logging if it has not been configured yet
-    if init_logging_return is not None:
-        return init_logging_return
+    if _init_logging_return is not None:
+        return _init_logging_return
 
     logging.config.dictConfig({
         'formatters': {
@@ -98,7 +99,7 @@ def init_logging(log_directory):
         'version': 1
     })
 
-    init_logging_return = log_directory
+    _init_logging_return = log_directory
 
     return log_directory
 

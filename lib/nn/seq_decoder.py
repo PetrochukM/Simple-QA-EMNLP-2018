@@ -59,7 +59,7 @@ class SeqDecoder(BaseRNN):
                  vocab_size,
                  embeddings=None,
                  embedding_size=100,
-                 rnn_size=128,
+                 rnn_size=100,
                  n_layers=2,
                  rnn_cell='gru',
                  embedding_dropout=0,

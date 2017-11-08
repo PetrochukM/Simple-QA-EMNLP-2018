@@ -162,43 +162,27 @@ def _dict_to_flat_config_helper(dict_, flat_dict, keys):
             flat_dict[flat_key] = dict_[key]
 
 
-def get_decorators(cls):
-    # Reference:
-    # https://stackoverflow.com/questions/3232024/introspection-to-get-decorator-names-on-a-method
-    target = cls
-    decorators = {}
+def _check_configuration(dict_, keys=[]):
+    """ Check the parsed configuration every module that it points too exists with @configurable.
 
-    def visit_FunctionDef(node):
-        decorators[node.name] = []
-        for n in node.decorator_list:
-            name = ''
-            if isinstance(n, ast.Call):
-                name = n.func.attr if isinstance(n.func, ast.Attribute) else n.func.id
-            else:
-                name = n.attr if isinstance(n, ast.Attribute) else n.id
-
-            decorators[node.name].append(name)
-
-    node_iter = ast.NodeVisitor()
-    node_iter.visit_FunctionDef = visit_FunctionDef
-    node_iter.visit(ast.parse(inspect.getsource(target)))
-    return decorators
-
-
-def check_configuration(dict_, keys=[]):
-    # Check the parsed configuration every module that it points too exists with @configurable
-    # Most of my bugs are here
-    #
-    # Cases to handle recursively:
-    # 'seq_encoder.SeqEncoder.__init__': {
-    #     'bidirectional': True,
-    # },
-    # 'attention.Attention.__init__.attention_type': 'general',
+    Cases to handle recursively:
+        {
+            'lib.nn': {
+                'seq_encoder.SeqEncoder.__init__': {
+                    'bidirectional': True,
+                },
+                'attention.Attention.__init__.attention_type': 'general',
+            }
+        }
+    """
     if not isinstance(dict_, dict):
         # Recursive function walked up the chain and never found a @configurable
-        # FAILS: Note this is unable to deal with external librares decorated after import.
-        # FAILS: Note this is unable to deal with python
-        logger.warn('Path %s does not contain @configurable.', keys)
+        logger.warn("""
+            Path %s does not contain @configurable.
+            
+            NOTE: Due to Python remaining the __main__ module, this check can be ignored here.
+            NOTE: _check_configuration can be ignored for external libraries.
+        """.strip(), keys)
         return
 
     if len(keys) >= 2:
@@ -208,7 +192,9 @@ def check_configuration(dict_, keys=[]):
             module = import_module(module_path)
             if hasattr(module, keys[-1]):
                 function = getattr(module, keys[-1])
-                if 'configurable' in function.__dict__:
+                # `is True` to avoid truthy values
+                if ('configurable' in function.__dict__ and
+                        function.__dict__['configurable'] is True):
                     return
         except (ImportError, AttributeError):
             pass
@@ -221,15 +207,14 @@ def check_configuration(dict_, keys=[]):
             if hasattr(module, keys[-2]):
                 class_ = getattr(module, keys[-2])
                 function = getattr(class_, keys[-1])
-                if 'configurable' in function.__dict__:
+                if ('configurable' in function.__dict__ and
+                        function.__dict__['configurable'] is True):
                     return
         except (ImportError, AttributeError):
             pass
 
     for key in dict_:
-        copy = keys[:]
-        copy.append(key)
-        check_configuration(dict_[key], copy)
+        _check_configuration(dict_[key], keys[:] + [key])
 
 
 def add_config(dict_):
@@ -264,7 +249,7 @@ def add_config(dict_):
     global _configuration
     parsed = _parse_configuration(dict_)
     logger.info('Checking configuration...')
-    check_configuration(parsed)
+    _check_configuration(parsed)
     _dict_merge(_configuration, parsed, overwrite=True)
     _configuration = _KeyListDictionary(_configuration)
 

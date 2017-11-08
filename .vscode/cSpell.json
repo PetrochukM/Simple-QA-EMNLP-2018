@@ -24,6 +24,7 @@
         "isdir",
         "isfile",
         "ismethod",
+        "itertools",
         "itos",
         "jsonify",
         "kgdaily",

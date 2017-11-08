@@ -2,6 +2,8 @@ import torch
 import torch.nn as nn
 
 from lib.configurable import configurable
+from lib.nn.seq_encoder import SeqEncoder
+from lib.nn.seq_decoder import SeqDecoder
 
 # TODO: Encoder and decoder are dependent on each other resolve that by not taking them as inputs
 
@@ -12,15 +14,35 @@ class SeqToSeq(nn.Module):
     """
 
     @configurable
-    def __init__(self, encoder, decoder, tie_weights=False):
+    def __init__(self,
+                 input_vocab_size,
+                 output_vocab_size,
+                 embeddings=None,
+                 embedding_size=100,
+                 rnn_size=100,
+                 n_layers=2,
+                 rnn_cell='gru',
+                 tie_weights=False):
         """
         Args:
             encoder (EncoderRNN): object of EncoderRNN
             decoder (DecoderRNN): object of DecoderRNN
         """
         super(SeqToSeq, self).__init__()
-        self.encoder = encoder
-        self.decoder = decoder
+        self.encoder = SeqEncoder(
+            input_vocab_size,
+            embeddings=embeddings,
+            embedding_size=embedding_size,
+            rnn_size=rnn_size,
+            n_layers=n_layers,
+            rnn_cell=rnn_cell)
+        self.decoder = SeqDecoder(
+            output_vocab_size,
+            embeddings=embeddings,
+            embedding_size=embedding_size,
+            rnn_size=rnn_size,
+            n_layers=n_layers,
+            rnn_cell=rnn_cell)
         if tie_weights:
             self.decoder.embedding.weight = self.encoder.embedding.weight
 
