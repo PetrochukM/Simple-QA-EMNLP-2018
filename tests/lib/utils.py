@@ -269,6 +269,8 @@ def random_args(train=True, batch_size=None):
         'embedding_size': embedding_size,
         'input_encoder': input_encoder,
         'output_encoder': output_encoder,
+        'input_vocab_size': input_encoder.vocab_size,
+        'output_vocab_size': output_encoder.vocab_size,
         # torchtext.data.Dataset random datset with `seq_len` input and output sequences
         'dataset': dataset,
         # torchtext.data.Iterator over `dataset`

@@ -8,7 +8,7 @@ import unittest
 
 import torch
 
-from seq2seq.models import Attention
+from lib.nn import Attention
 from tests.lib.utils import kwargs_product
 from tests.lib.utils import random_args
 from tests.lib.utils import tensor

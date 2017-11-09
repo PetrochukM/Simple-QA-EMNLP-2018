@@ -7,14 +7,13 @@ import unittest
 
 import torch
 
-from seq2seq.models import EncoderRNN
-from tests.lib.utils import random_vocab
+from lib.nn import SeqEncoder
 from tests.lib.utils import kwargs_product
 from tests.lib.utils import tensor
 from tests.lib.utils import random_args
 
 
-class TestEncoderRNN(unittest.TestCase):
+class TestSeqEncoder(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
@@ -24,10 +23,7 @@ class TestEncoderRNN(unittest.TestCase):
 
         # Constant randomly generated tensors
         self.input = tensor(
-            self.input_seq_len,
-            self.batch_size,
-            max_=len(self.input_field.vocab),
-            type_=torch.LongTensor)
+            self.input_seq_len, self.batch_size, max_=self.input_vocab_size, type_=torch.LongTensor)
 
     def _encoders(self):
         """
@@ -43,14 +39,17 @@ class TestEncoderRNN(unittest.TestCase):
             'freeze_embeddings': [True, False],
         }
         for kwargs in kwargs_product(possible_kwargs):
-            decoder = EncoderRNN(self.input_field.vocab, self.embedding_size, self.rnn_size,
-                                 **kwargs)
+            decoder = SeqEncoder(
+                self.input_vocab_size,
+                embedding_size=self.embedding_size,
+                rnn_size=self.rnn_size,
+                **kwargs)
             for param in decoder.parameters():
                 param.data.uniform_(-1, 1)
             yield decoder, kwargs
 
     def test_init(self):
-        EncoderRNN(random_vocab(), self.embedding_size, self.rnn_size)
+        SeqEncoder(self.input_vocab_size)
 
     def test_parameters(self):
         """

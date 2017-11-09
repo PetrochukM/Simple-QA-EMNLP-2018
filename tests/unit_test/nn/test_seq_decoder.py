@@ -7,14 +7,13 @@ import unittest
 
 import torch
 
-from seq2seq.models import DecoderRNN
-from tests.lib.utils import random_vocab
+from lib.nn import SeqDecoder
 from tests.lib.utils import kwargs_product
 from tests.lib.utils import tensor
 from tests.lib.utils import random_args
 
 
-class TestDecoderRNN(unittest.TestCase):
+class TestSeqDecoder(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
@@ -27,10 +26,9 @@ class TestDecoderRNN(unittest.TestCase):
             self.input_seq_len,
             self.batch_size,
             self.rnn_size,
-            max_=len(self.input_field.vocab),
+            max_=self.input_vocab_size,
             type_=torch.FloatTensor)
-        self.hidden = tensor(
-            self.num_layers, self.batch_size, self.rnn_size, type_=torch.FloatTensor)
+        self.hidden = tensor(self.n_layers, self.batch_size, self.rnn_size, type_=torch.FloatTensor)
 
     def _decoders(self,
                   rnn_cell=['gru', 'lstm'],
@@ -56,14 +54,19 @@ class TestDecoderRNN(unittest.TestCase):
         if scheduled_sampling:
             possible_params['scheduled_sampling'] = scheduled_sampling
         for kwargs in kwargs_product(possible_params):
-            decoder = DecoderRNN(self.output_field.vocab, self.embedding_size, self.rnn_size,
-                                 self.num_layers, **kwargs)
+            decoder = SeqDecoder(
+                self.output_vocab_size,
+                embedding_size=self.embedding_size,
+                rnn_size=self.rnn_size,
+                n_layers=self.n_layers,
+                **kwargs)
             for param in decoder.parameters():
                 param.data.uniform_(-.1, .1)
             yield decoder, kwargs
 
     def test_init(self):
-        DecoderRNN(random_vocab(), self.embedding_size, self.rnn_size)
+        SeqDecoder(
+            self.output_vocab_size, embedding_size=self.embedding_size, rnn_size=self.rnn_size)
 
     def test_parameters(self):
         """
@@ -74,16 +77,16 @@ class TestDecoderRNN(unittest.TestCase):
             self.assertTrue(str(decoder) not in representations)
             representations.add(str(decoder))
 
-    # TODO: Test if `max_length=none` explicitly. This is challenging because the DecoderRNN only
+    # TODO: Test if `max_length=none` explicitly. This is challenging because the SeqDecoder only
     # stops if it predicts EOS token; therefore, without training it may loop forever.
     # NOTE: `max_length=none` is tested in the integration test where we do train.
 
     def test_forward_max_len(self):
         # Args
-        max_length = self.output_seq_len
+        max_length = self.output_seq_len + 2  # Account for <s> and </s>
         encoder_hidden = self.hidden
         target_output = tensor(
-            self.output_seq_len, self.batch_size, max_=len(self.output_field.vocab))
+            self.output_seq_len + 2, self.batch_size, max_=self.output_vocab_size)
 
         # Run
         for decoder, decoder_kwargs in self._decoders(rnn_dropout=None, embedding_dropout=None):
@@ -98,10 +101,9 @@ class TestDecoderRNN(unittest.TestCase):
                 decoder_hidden = decoder_hidden[0]
 
             # Check sizes
-            self.assertEqual(decoder_hidden.size(), (self.num_layers, self.batch_size,
-                                                     self.rnn_size))
+            self.assertEqual(decoder_hidden.size(), (self.n_layers, self.batch_size, self.rnn_size))
             self.assertEqual(decoder_outputs.size(), (max_length, self.batch_size,
-                                                      len(self.output_field.vocab)))
+                                                      self.output_vocab_size))
 
             if decoder_kwargs['use_attention']:
                 self.assertEqual(attention_weights.size(), (max_length, self.batch_size,
@@ -122,7 +124,7 @@ class TestDecoderRNN(unittest.TestCase):
         last_decoder_output = tensor(
             self.output_seq_len,
             self.batch_size,
-            max_=len(self.output_field.vocab),
+            max_=self.output_vocab_size,
             type_=torch.LongTensor)
 
         # Run
@@ -139,13 +141,13 @@ class TestDecoderRNN(unittest.TestCase):
                 decoder_hidden = decoder_hidden[0]  # Revert tuple
 
             # Check sizes
-            self.assertEqual(decoder_hidden_new.size(), (self.num_layers, self.batch_size,
+            self.assertEqual(decoder_hidden_new.size(), (self.n_layers, self.batch_size,
                                                          self.rnn_size))
             if kwargs['use_attention']:
                 self.assertEqual(attention.size(), (self.batch_size, self.output_seq_len,
                                                     self.input_seq_len))
             self.assertEqual(predicted_softmax.size(), (self.batch_size, self.output_seq_len,
-                                                        len(self.output_field.vocab)))
+                                                        self.output_vocab_size))
 
             # Check types
             self.assertEqual(decoder_hidden_new.data.type(), 'torch.FloatTensor')
