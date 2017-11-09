@@ -19,8 +19,8 @@ from lib.configurable import configurable
 from lib.configurable import add_config
 from lib.datasets import simple_qa_object
 from lib.metrics import get_accuracy
-from lib.metrics import get_bucket_accuracy
-from lib.metrics import get_random_sample
+from lib.metrics import print_bucket_accuracy
+from lib.metrics import print_random_sample
 from lib.metrics import get_token_accuracy
 from lib.nn import SeqDecoder
 from lib.nn import SeqEncoder
@@ -228,16 +228,15 @@ def train(
 
         optimizer.update(total_loss / n_words, epoch)
         buckets = [t.ne(PADDING_INDEX).sum() - 1 for t in targets]
-        get_random_sample(
+        print_random_sample(
             sources,
             targets,
             outputs,
             source_encoder,
             target_encoder,
             ignore_index=PADDING_INDEX,
-            n_samples=25,
-            print_=True)
-        get_bucket_accuracy(buckets, targets, outputs, ignore_index=PADDING_INDEX, print_=True)
+            n_samples=25)
+        print_bucket_accuracy(buckets, targets, outputs, ignore_index=PADDING_INDEX, print_=True)
         logger.info('Loss: %.03f', total_loss / n_words)
         get_accuracy(targets, outputs, ignore_index=PADDING_INDEX, print_=True)
         get_token_accuracy(targets, outputs, ignore_index=PADDING_INDEX, print_=True)

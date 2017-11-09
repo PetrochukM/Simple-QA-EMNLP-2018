@@ -9,8 +9,13 @@ from lib.utils import cuda_devices
 from lib.utils import device_default
 from lib.utils import get_log_directory_path
 from lib.utils import get_root_path
-from lib.utils import init_logging
 from lib.utils import get_total_parameters
+from lib.utils import init_logging
+from lib.utils import setup_training
+from lib.utils import pad_tensor
+from lib.utils import pad_batch
+from lib.utils import torch_equals_ignore_index
+from lib.text_encoders import PADDING_INDEX
 from tests.lib.utils import random_args
 
 
@@ -59,7 +64,7 @@ class TestUtil(unittest.TestCase):
         """ Run CUDA devices
         """
         if torch.cuda.is_available():
-            cuda_devices()
+            self.assertTrue(len(cuda_devices()) > 0)
         else:
             self.assertEqual(cuda_devices(), [])
 
@@ -76,3 +81,35 @@ class TestUtil(unittest.TestCase):
     def test_get_total_parameters(self):
         n_params = get_total_parameters(self.model)
         self.assertTrue(n_params > 0)
+
+    def test_pad_tensor(self):
+        tensor = torch.LongTensor([4])
+        padded = pad_tensor(tensor, 3)
+        padded_expected = torch.LongTensor([4, PADDING_INDEX, PADDING_INDEX])
+        self.assertTrue(torch.equal(padded, padded_expected))
+
+    def test_pad_batch(self):
+        batch = [torch.LongTensor([1]), torch.LongTensor([1, 2]), torch.LongTensor([1, 2, 3])]
+        padded, padded_lengths = pad_batch(batch)
+        self.assertEqual(len(padded), len(batch))
+        self.assertTrue(torch.equal(padded[0], torch.LongTensor([1, PADDING_INDEX, PADDING_INDEX])))
+        self.assertTrue(torch.equal(padded[1], torch.LongTensor([1, 2, PADDING_INDEX])))
+        self.assertTrue(torch.equal(padded[2], torch.LongTensor([1, 2, 3])))
+        self.assertEqual(padded_lengths, [1, 2, 3])
+
+    def test_setup_training(self):
+        checkpoint_path = ''
+        log_directory = 'logs/'
+        device = -1
+        random_seed = 123
+        # Make sure nothing dies
+        is_cuda, checkpoint = setup_training(checkpoint_path, log_directory, device, random_seed)
+        self.assertIsNone(checkpoint)
+
+    def test_torch_equals_ignore_index(self):
+        self.assertTrue(
+            torch_equals_ignore_index(
+                torch.LongTensor([1, 2, 3]), torch.LongTensor([1, 2, 4]), ignore_index=3))
+        self.assertFalse(
+            torch_equals_ignore_index(
+                torch.LongTensor([1, 2, 3]), torch.LongTensor([1, 2, 4]), ignore_index=4))

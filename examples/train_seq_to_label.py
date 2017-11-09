@@ -19,8 +19,8 @@ from lib.configurable import configurable
 from lib.datasets import count
 from lib.datasets import simple_qa_predicate
 from lib.metrics import get_accuracy
-from lib.metrics import get_bucket_accuracy
-from lib.metrics import get_random_sample
+from lib.metrics import print_bucket_accuracy
+from lib.metrics import print_random_sample
 from lib.nn import SeqToLabel
 from lib.optim import Optimizer
 from lib.samplers import BucketBatchSampler
@@ -140,7 +140,6 @@ def train(
         return Variable(text, volatile=not train), text_lengths, Variable(label, volatile=not train)
 
     # Train!
-    logger.info('Epochs: %d', epochs)
     for epoch in range(epochs):
         logger.info('Epoch %d', epoch)
         model.train(mode=True)
@@ -191,8 +190,8 @@ def train(
 
         optimizer.update(total_loss / len(dev_dataset), epoch)
         buckets = [label_encoder.decode(label) for label in labels]
-        get_random_sample(texts, labels, outputs, text_encoder, label_encoder, print_=True)
-        get_bucket_accuracy(buckets, labels, outputs, print_=True)
+        print_random_sample(texts, labels, outputs, text_encoder, label_encoder)
+        print_bucket_accuracy(buckets, labels, outputs, print_=True)
         logger.info('Loss: %.03f', total_loss / len(dev_dataset))
         get_accuracy(labels, outputs, print_=True)
 

@@ -15,13 +15,18 @@ There isn’t an asynchronous view of the world".
 In NLP deep learning, areas of research typically include datasets, models and training procedure.
 The goal of this repository is to add minimal overhead to these components of training.
 
-## TODO Prioritized
+## TODO
 
 - [x] Add classification model for Simple Questions predicate
-- [ ] Add a CLI and different hyperparameter configurations to train script
+- [x] Add a CLI and different hyperparameter configurations to train script
 - [ ] Recreate the Simple Questions using the new Simple Questions names
-- [ ] Import notebooks for Simple Questions end to end
+- [x] Import notebooks for Simple Questions end to end
 - [ ] Add CRF model for Simple Questions objects
+- [ ] Remove dependencies from the tests/ folder 
+- [ ] Consider adding iterators that wrap collate_fn, dataloaders, and prepare data think about
+      how to not introduce overhead with that for different types of iterators
+- [ ] Fix the seq_to_label model and remove the relation_classifier
+- [ ] Add credits to everyone who code has been copied from
 
 ## Important GitHub repositories
 - https://github.com/zihangdai/cfo

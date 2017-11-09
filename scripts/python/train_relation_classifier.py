@@ -18,8 +18,8 @@ from lib.configurable import add_config
 from lib.configurable import configurable
 from lib.datasets import simple_qa_predicate
 from lib.metrics import get_accuracy
-from lib.metrics import get_bucket_accuracy
-from lib.metrics import get_random_sample
+from lib.metrics import print_bucket_accuracy
+from lib.metrics import print_random_sample
 from lib.nn import RelationClassifier
 from lib.optim import Optimizer
 from lib.samplers import BucketBatchSampler
@@ -187,10 +187,9 @@ def train(
             outputs.extend(output.data.cpu().split(split_size=1, dim=0))
 
         optimizer.update(total_loss / len(dev_dataset), epoch)
-        get_random_sample(
-            texts, labels, outputs, text_encoder, label_encoder, n_samples=25, print_=True)
+        print_random_sample(texts, labels, outputs, text_encoder, label_encoder, n_samples=25)
         buckets = [label_encoder.decode(label) for label in labels]
-        get_bucket_accuracy(buckets, labels, outputs, print_=True)
+        print_bucket_accuracy(buckets, labels, outputs, print_=True)
         logger.info('Loss: %.03f', total_loss / len(dev_dataset))
         get_accuracy(labels, outputs, print_=True)
 

@@ -1,15 +1,14 @@
 import unittest
 
-from lib.metrics import print_random_sample
+from lib.metrics import print_bucket_accuracy
 from tests.lib.utils import get_batch
 from lib.text_encoders import WordEncoder
 
 
-class TestPrintRandomSample(unittest.TestCase):
+class TestPrintBucketAccuracy(unittest.TestCase):
 
     def setUp(self):
         self.output_text_encoder = WordEncoder(['a b c d e'], append_eos=False)
-        self.input_text_encoder = WordEncoder(['a b c d e'], append_eos=False)
         predictions = [
             self.output_text_encoder.encode('a b c d d').tolist(),
             self.output_text_encoder.encode('a a a a a').tolist(),
@@ -20,38 +19,20 @@ class TestPrintRandomSample(unittest.TestCase):
             self.output_text_encoder.encode('a a a a a').tolist(),
             self.output_text_encoder.encode('b b b b b').tolist(),
         ]
-        sources, targets, outputs = get_batch(
+        _, targets, outputs = get_batch(
             predictions=predictions,
             targets=targets,
             vocab_size=self.output_text_encoder.vocab_size)
-        self.sources = sources
+        self.buckets = [1, 2, 2]
         self.targets = targets
         self.outputs = outputs
 
     def test_ignore_index_none(self):
-        print_random_sample(
-            self.sources,
-            self.targets,
-            self.outputs,
-            self.input_text_encoder,
-            self.output_text_encoder,
-            n_samples=1)
+        print_bucket_accuracy(self.buckets, self.targets, self.outputs)
 
     def test_ignore_index(self):
-        print_random_sample(
-            self.sources,
+        print_bucket_accuracy(
+            self.buckets,
             self.targets,
             self.outputs,
-            self.input_text_encoder,
-            self.output_text_encoder,
-            n_samples=1,
             ignore_index=self.output_text_encoder.stoi['e'])
-
-    def test_n_samples_big(self):
-        print_random_sample(
-            self.sources,
-            self.targets,
-            self.outputs,
-            self.input_text_encoder,
-            self.output_text_encoder,
-            n_samples=40)

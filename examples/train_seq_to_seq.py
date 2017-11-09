@@ -19,8 +19,8 @@ from lib.configurable import configurable
 from lib.configurable import add_config
 from lib.datasets import reverse
 from lib.metrics import get_accuracy
-from lib.metrics import get_bucket_accuracy
-from lib.metrics import get_random_sample
+from lib.metrics import print_bucket_accuracy
+from lib.metrics import print_random_sample
 from lib.metrics import get_token_accuracy
 from lib.nn import SeqDecoder
 from lib.nn import SeqEncoder
@@ -29,7 +29,7 @@ from lib.optim import Optimizer
 from lib.samplers import BucketBatchSampler
 from lib.text_encoders import PADDING_INDEX
 from lib.text_encoders import WordEncoder
-from lib.utils import collate_fn
+from lib.utils import pad_batch
 from lib.utils import get_total_parameters
 from lib.utils import init_logging
 from lib.utils import setup_training
@@ -100,7 +100,7 @@ def train(
         dev_max_batch_size,
         checkpoint_path=None,
         device=None):
-    checkpoint = setup_training(dataset, checkpoint_path, log_directory, device, random_seed)
+    is_cuda, checkpoint = setup_training(checkpoint_path, log_directory, device, random_seed)
 
     # Init Dataset
     train_dataset, dev_dataset = dataset(train=True, dev=True, test=False)
@@ -132,12 +132,12 @@ def train(
     logger.info('Model:\n%s', model)
     logger.info('Total Parameters: %d', get_total_parameters(model))
 
-    if torch.cuda.is_available():
+    if is_cuda:
         model.cuda(device_id=device)
 
     # Init Loss
     criterion = NLLLoss(ignore_index=PADDING_INDEX, size_average=False)
-    if torch.cuda.is_available():
+    if is_cuda:
         criterion.cuda()
 
     # Init Optimizer
@@ -146,22 +146,24 @@ def train(
     optimizer = Optimizer(Adam(params=params))
     optimizer.set_scheduler(StepLR(optimizer.optimizer, step_size=1))
 
-    # collate function merges rows into tensor batches
-    collate_fn_partial = partial(
-        collate_fn, input_key='source', output_key='target', sort_key='source')
+    def collate_fn(batch, train=True):
+        """ list of tensors to a batch variable """
+        # PyTorch RNN requires sorting decreasing size
+        batch = sorted(batch, key=lambda row: len(row['source']), reverse=True)
+        input_batch, input_lengths = pad_batch([row['source'] for row in batch])
+        output_batch, output_lengths = pad_batch([row['target'] for row in batch])
 
-    def prepare_batch(batch, train=False):
-        # Prepare batch for model
-        source, source_lengths = batch['source']
-        target, target_lengths = batch['target']
-        if torch.cuda.is_available():
-            source, source_lengths = source.cuda(async=True), source_lengths.cuda(async=True)
-            target, target_lengths = target.cuda(async=True), target_lengths.cuda(async=True)
-        return Variable(
-            source, volatile=not train), source_lengths, Variable(
-                target, volatile=not train), target_lengths
+        def batch_to_variable(batch):
+            # PyTorch RNN requires batches to be transposed for speed and integration with CUDA
+            return Variable(torch.stack(batch).t_().contiguous(), volatile=not train)
 
-    logger.info('Epochs: %d', epochs)
+        # Async minibatch allocation for speed
+        # Reference: http://timdettmers.com/2015/03/09/deep-learning-hardware-guide/
+        cuda = lambda t: t.cuda(async=True) if is_cuda else t
+
+        return (cuda(batch_to_variable(input_batch)), cuda(torch.LongTensor(input_lengths)),
+                cuda(batch_to_variable(output_batch)), cuda(torch.LongTensor(output_lengths)))
+
     for epoch in range(epochs):
         # Train
         logger.info('Epoch %d', epoch)
@@ -171,12 +173,10 @@ def train(
         train_iterator = DataLoader(
             train_dataset,
             batch_sampler=batch_sampler,
-            collate_fn=collate_fn_partial,
-            pin_memory=torch.cuda.is_available(),
+            collate_fn=collate_fn,
+            pin_memory=is_cuda,
             num_workers=0)
-        for batch in tqdm(train_iterator):
-            source, source_lengths, target, target_lengths = prepare_batch(batch, True)
-
+        for source, source_lengths, target, target_lengths in tqdm(train_iterator):
             optimizer.zero_grad()
             output = model(source, source_lengths, target, target_lengths)[0]
 
@@ -204,13 +204,12 @@ def train(
         dev_iterator = DataLoader(
             dev_dataset,
             batch_size=dev_max_batch_size,
-            collate_fn=collate_fn_partial,
-            pin_memory=torch.cuda.is_available(),
+            collate_fn=partial(collate_fn, train=False),
+            pin_memory=is_cuda,
             num_workers=0)
         n_words = 0
         total_loss = 0
-        for batch in dev_iterator:
-            source, source_lengths, target, target_lengths = prepare_batch(batch)
+        for source, source_lengths, target, target_lengths in dev_iterator:
             output = model(source, source_lengths, target, target_lengths)[0]
 
             # Compute loss
@@ -227,7 +226,7 @@ def train(
 
         optimizer.update(total_loss / n_words, epoch)
         buckets = [t.ne(PADDING_INDEX).sum() - 1 for t in targets]
-        get_random_sample(
+        print_random_sample(
             sources,
             targets,
             outputs,
@@ -235,7 +234,7 @@ def train(
             target_encoder,
             ignore_index=PADDING_INDEX,
             print_=True)
-        get_bucket_accuracy(buckets, targets, outputs, ignore_index=PADDING_INDEX, print_=True)
+        print_bucket_accuracy(buckets, targets, outputs, ignore_index=PADDING_INDEX)
         logger.info('Loss: %.03f', total_loss / n_words)
         get_accuracy(targets, outputs, ignore_index=PADDING_INDEX, print_=True)
         get_token_accuracy(targets, outputs, ignore_index=PADDING_INDEX, print_=True)

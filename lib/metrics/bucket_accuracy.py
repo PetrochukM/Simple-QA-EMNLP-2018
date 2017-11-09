@@ -7,7 +7,7 @@ from lib.metrics.accuracy import get_accuracy
 logger = logging.getLogger(__name__)
 
 
-def get_bucket_accuracy(buckets, targets, outputs, ignore_index=None, print_=False):
+def print_bucket_accuracy(buckets, targets, outputs, ignore_index=None):
     """
     Args:
       buckets (list of keys)
@@ -30,6 +30,4 @@ def get_bucket_accuracy(buckets, targets, outputs, ignore_index=None, print_=Fal
         data.append([accuracy, n_correct, n_total])
 
     df = pd.DataFrame(data, index=keys, columns=columns)
-    if print_:
-        logger.info('Bucket Accuracy:\n%s\n', df)
-    return df
+    logger.info('Bucket Accuracy:\n%s\n', df)

@@ -147,7 +147,6 @@ def cuda_devices():
     ret = []  # Device IDs that are not used.
 
     def run(result, func, *args):
-        nonlocal error
         result = func(*args)
         if result != CUDA_SUCCESS:
             cuda.cuGetErrorString(result, ctypes.byref(error))
@@ -192,49 +191,37 @@ def get_total_parameters(model):
     return sum(x.size()[0] * x.size()[1] if len(x.size()) > 1 else x.size()[0] for x in params)
 
 
-def pad(batch):
-    """ Pad a list of tensors with PADDING_INDEX. Sort by decreasing lengths as well. """
+def pad_tensor(tensor, length):
+    """ Pad a tensor to length with PADDING_INDEX.
+    
+    Args:
+        tensor (torch.LongTensor)
+    Returns
+        torch.LongTensor
+    """
+    n_padding = length - len(tensor)
+    padding = torch.LongTensor(n_padding * [PADDING_INDEX])
+    return torch.cat((tensor, padding), 0)
+
+
+def pad_batch(batch):
+    """ Pad a list of tensors with PADDING_INDEX.
+    
+    Args:
+        batch (list of torch.LongTensor)
+    Returns
+        list of torch.LongTensor and original lengths
+    """
     # PyTorch RNN requires batches to be sorted in decreasing length order
     lengths = [len(row) for row in batch]
     max_len = max(lengths)
-    padded = []
-    for row in batch:
-        n_padding = max_len - len(row)
-        padding = torch.LongTensor(n_padding * [PADDING_INDEX])
-        padded.append(torch.cat((row, padding), 0))
+    padded = [pad_tensor(row, max_len) for row in batch]
     return padded, lengths
 
 
-def collate_fn(batch, input_key, output_key, sort_key=None, preprocess=pad):
-    """ Collate a batch of tensors not ready for training to padded, sorted, transposed,
-    contiguous and cuda tensors ready for training. Used with torch.utils.data.DataLoader. """
-    if sort_key:
-        batch = sorted(batch, key=lambda row: len(row[sort_key]), reverse=True)
-    input_batch, input_lengths = preprocess([row[input_key] for row in batch])
-    output_batch, output_lengths = preprocess([row[output_key] for row in batch])
-
-    # PyTorch RNN requires batches to be transposed for speed and integration with CUDA
-    ret = {}
-    ret[input_key] = [
-        torch.stack(input_batch).t_().squeeze(0).contiguous(),
-        torch.LongTensor(input_lengths)
-    ]
-    ret[output_key] = [
-        torch.stack(output_batch).t_().squeeze(0).contiguous(),
-        torch.LongTensor(output_lengths)
-    ]
-    for key in batch[0].keys():
-        if key not in [input_key, output_key]:
-            ret[key] = [row[key] for row in batch]
-
-    ret[input_key] = tuple(ret[input_key])
-    ret[output_key] = tuple(ret[output_key])
-    return ret
-
-
-def setup_training(dataset, checkpoint_path, log_directory, device, random_seed):
+def setup_training(checkpoint_path, log_directory, device, random_seed):
     """ Utility function to settup logger, hyperparameters, seed, device and checkpoint """
-    # Prevent a circular dependency
+    # Prevent a circular dependency where Checkpoint imports utils and utils imports Checkpoint
     from lib.checkpoint import Checkpoint
 
     # Setup Device
@@ -262,7 +249,10 @@ def setup_training(dataset, checkpoint_path, log_directory, device, random_seed)
     # Log the global configuration before starting to train.
     log_config()
 
-    return checkpoint
+    # Check if CUDA is used
+    is_cuda = torch.cuda.is_available() and device >= 0
+
+    return is_cuda, checkpoint
 
 
 def torch_equals_ignore_index(target, prediction, ignore_index=None):
@@ -274,6 +264,7 @@ def torch_equals_ignore_index(target, prediction, ignore_index=None):
     Returns:
         (bool) iff target and prediction are equal
     """
+    assert target.size() == prediction.size()
     if ignore_index is not None:
         mask_arr = target.ne(ignore_index)
         target = target.masked_select(mask_arr)

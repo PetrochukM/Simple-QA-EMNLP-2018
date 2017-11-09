@@ -1,43 +1,24 @@
 import unittest
 
-from seq2seq.metrics import Accuracy
-from tests.unit_test.metric.utils import get_batch
+from lib.metrics import get_accuracy
+from tests.lib.utils import get_batch
 
 
-class TestAccuracy(unittest.TestCase):
+class TestGetAccuracy(unittest.TestCase):
 
-    def test_init(self):
-        """ Check if init fails """
-        Accuracy(mask=None)
-        Accuracy(mask=1)
+    def setUp(self):
+        _, targets, outputs = get_batch(predictions=[[2, 0], [2, 0]], targets=[[2, 0], [2, 1]])
+        self.targets = targets
+        self.outputs = outputs
 
-    def test_str(self):
-        """ Check accuracy creates some string. """
-        str(Accuracy(mask=1))
-        str(Accuracy(mask=None))
+    def test_ignore_index_none(self):
+        accuracy, n_correct, n_total = get_accuracy(self.targets, self.outputs, print_=True)
+        self.assertAlmostEqual(accuracy, 0.5)
+        self.assertAlmostEqual(n_correct, 1)
+        self.assertAlmostEqual(n_total, 2)
 
-    def test_mask_none(self):
-        """ Check accuracy eval and get_measurement without mask. """
-        outputs, targets = get_batch(predictions=[[2, 0], [2, 0]], targets=[[2, 0], [2, 1]])
-        metric = Accuracy(mask=None)
-        metric.eval_batch(outputs, targets)
-        self.assertAlmostEqual(metric.get_measurement(), .5)
-
-    def test_mask(self):
-        """ Check accuracy eval and get_measurement with mask. """
-        outputs, targets = get_batch(predictions=[[2, 0], [2, 0]], targets=[[2, 0], [2, 1]])
-        metric = Accuracy(mask=1)
-        metric.eval_batch(outputs, targets)
-        self.assertAlmostEqual(metric.get_measurement(), 1)
-
-    def test_reset(self):
-        """ Check if accuracy reset, resets the accuracy.
-        """
-        outputs, targets = get_batch(predictions=[[2, 0]], targets=[[2, 0]])
-        metric = Accuracy(mask=None)
-        metric.eval_batch(outputs, targets)
-        self.assertAlmostEqual(metric.get_measurement(), 1)
-        metric.reset()
-        outputs, targets = get_batch(predictions=[[2, 0]], targets=[[2, 1]])
-        metric.eval_batch(outputs, targets)
-        self.assertAlmostEqual(metric.get_measurement(), 0)
+    def test_ignore_index(self):
+        accuracy, n_correct, n_total = get_accuracy(self.targets, self.outputs, ignore_index=1)
+        self.assertAlmostEqual(accuracy, 1)
+        self.assertAlmostEqual(n_correct, 2)
+        self.assertAlmostEqual(n_total, 2)

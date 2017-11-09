@@ -8,14 +8,13 @@ from lib.utils import torch_equals_ignore_index
 logger = logging.getLogger(__name__)
 
 
-def get_random_sample(sources,
-                      targets,
-                      outputs,
-                      input_text_encoder,
-                      output_text_encoder,
-                      n_samples=5,
-                      ignore_index=None,
-                      print_=False):
+def print_random_sample(sources,
+                        targets,
+                        outputs,
+                        input_text_encoder,
+                        output_text_encoder,
+                        n_samples=5,
+                        ignore_index=None):
     """ Print a random sample of positive and negative samples """
     positive_indexes = []
     negative_indexes = []
@@ -43,7 +42,4 @@ def get_random_sample(sources,
         ret += '\n%s Samples:\n%s\n' % (prefix, pd.DataFrame(
             data, columns=['Source', 'Target', 'Prediction']))
 
-    if print_:
-        logger.info(ret)
-
-    return data
+    logger.info(ret)
