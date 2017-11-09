@@ -6,6 +6,8 @@ from lib.text_encoders.reserved_tokens import RESERVED_ITOS
 from lib.text_encoders.reserved_tokens import RESERVED_STOI
 from lib.text_encoders.text_encoders import TextEncoder
 
+# TODO: Think about should the encoder during decoding include <eos> or not?
+
 
 class StaticTokenizerEncoder(TextEncoder):
     """ Encoder where the tokenizer is not learned and a static function. """
