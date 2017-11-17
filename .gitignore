@@ -83,3 +83,6 @@ data/**
 
 # Checkpoint files are large
 *.pt
+
+# Sensitive
+*.pass
