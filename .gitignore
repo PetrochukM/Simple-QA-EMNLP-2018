@@ -86,3 +86,5 @@ data/**
 
 # Sensitive
 *.pass
+abc.py
+note.txt
