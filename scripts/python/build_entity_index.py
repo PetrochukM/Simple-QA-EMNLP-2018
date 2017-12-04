@@ -20,28 +20,6 @@ from tqdm import tqdm
 pp = pprint.PrettyPrinter(indent=2)
 
 
-# Below we build an in memory representation of FB5M from the objects perspective.
-def get_object_to_fact(filename='data/simple_qa/freebase-FB5M.txt'):
-    object_to_fact = defaultdict(dict)
-    for line in tqdm(open(filename, 'r'), total=12010500):
-        split = line.split('\t')
-        assert len(split) == 3, 'Malformed row'
-        object_ = split[0].replace('www.freebase.com/m/', '').strip()
-        property_ = split[1].replace('www.freebase.com/', '').strip()
-        subjects = [url.replace('www.freebase.com/m/', '').strip() for url in split[2].split()]
-        if property_ in object_to_fact[object_]:
-            object_to_fact[object_][property_].update([subjects])
-        else:
-            object_to_fact[object_][property_] = set([subjects])
-
-    print('Number of Objects:', len(object_to_fact))
-    print('Sample:', pp.pformat(random.sample(object_to_fact.items(), 5)))
-    return object_to_fact
-
-
-object_to_fact = get_object_to_fact()
-
-
 # DOWNLOADED FROM: https://www.dropbox.com/s/yqbesl07hsw297w/FB5M.name.txt
 # Below build a map to translate from MID to name. For each MID, we have multiple aliases that'll be
 # used for entity linking.
