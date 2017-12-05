@@ -45,6 +45,7 @@
         "shutil",
         "siri",
         "skopt",
+        "spacy",
         "stoi",
         "strftime",
         "tanh",

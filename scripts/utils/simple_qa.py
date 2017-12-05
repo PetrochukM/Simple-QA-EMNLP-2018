@@ -1,5 +1,11 @@
 import pandas as pd
 
+# Simple QA Dataset statistics
+# Num Test Rows: 21687
+# Num Dev Rows: 10845
+# Num Train Rows: 75910
+# Total Rows: 108442
+
 simple_qa = {
     'train': '../../data/SimpleQuestions_v2/annotated_fb_data_train.txt',
     'dev': '../../data/SimpleQuestions_v2/annotated_fb_data_valid.txt',

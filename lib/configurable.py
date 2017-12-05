@@ -178,10 +178,9 @@ def _check_configuration(dict_, keys=[]):
     if not isinstance(dict_, dict):
         # Recursive function walked up the chain and never found a @configurable
         logger.warn("""
-            Path %s does not contain @configurable.
-            
-            NOTE: Due to Python remaining the __main__ module, this check can be ignored here.
-            NOTE: _check_configuration can be ignored for external libraries.
+Path %s does not contain @configurable.
+NOTE: Due to Python remaining the __main__ module, this check can be ignored here.
+NOTE: _check_configuration can be ignored for external libraries.
         """.strip(), keys)
         return
 
@@ -193,8 +192,7 @@ def _check_configuration(dict_, keys=[]):
             if hasattr(module, keys[-1]):
                 function = getattr(module, keys[-1])
                 # `is True` to avoid truthy values
-                if ('configurable' in function.__dict__ and
-                        function.__dict__['configurable'] is True):
+                if (hasattr(function, '__wrapped__')):  # TODO: Find a better check
                     return
         except (ImportError, AttributeError):
             pass
@@ -207,8 +205,7 @@ def _check_configuration(dict_, keys=[]):
             if hasattr(module, keys[-2]):
                 class_ = getattr(module, keys[-2])
                 function = getattr(class_, keys[-1])
-                if ('configurable' in function.__dict__ and
-                        function.__dict__['configurable'] is True):
+                if (hasattr(function, '__wrapped__')):
                     return
         except (ImportError, AttributeError):
             pass
@@ -293,7 +290,6 @@ def configurable(func, instance, args, kwargs):
     Args/Return are defined by `wrapt.decorator`.
     """
     global _configuration
-    func.__dict__['configurable'] = True
     parameters = inspect.signature(func).parameters
     module_keys = _get_module_name(func).split('.')
     keys = module_keys + func.__qualname__.split('.')

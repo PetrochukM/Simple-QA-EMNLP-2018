@@ -25,11 +25,11 @@ from lib.optim import Optimizer
 from lib.samplers import BucketBatchSampler
 from lib.text_encoders import IdentityEncoder
 from lib.text_encoders import TreebankEncoder
-from lib.utils import collate_fn
 from lib.utils import get_log_directory_path
 from lib.utils import get_total_parameters
 from lib.utils import init_logging
 from lib.utils import setup_training
+from lib.utils import pad_batch
 
 Adam.__init__ = configurable(Adam.__init__)
 
@@ -42,30 +42,30 @@ SIMPLE_PREDICATE_HYPERPARAMETERS = {
             'relation_classifier.RelationClassifier.__init__': {
                 'bidirectional': True,
                 'embedding_size': 300,
-                'rnn_size': 200,
+                'rnn_size': 300,
                 'freeze_embeddings': False,
-                'rnn_cell': 'lstm',
-                'decode_dropout': 0.25,
-                'embedding_dropout': 0.4,
+                'rnn_cell': 'gru',
+                'decode_dropout': 0.2,
+                'embedding_dropout': 0.0,
             },
             'relation_classifier.Encoder.__init__': {
                 'n_layers': 2,
-                'rnn_variational_dropout': 0.0,
+                'rnn_variational_dropout': 0.3,
             }
         },
         'optim.Optimizer.__init__': {
-            'max_grad_norm': 0.6,
+            'max_grad_norm': 1.0,
         }
     },
     'torch.optim.Adam.__init__': {
-        'lr': .0015,
+        'lr': 1e-4,
         'weight_decay': 0,
     },
     'scripts.python.train_relation_classifier.train': {
         'dataset': simple_qa_predicate,
-        'random_seed': 1111,
-        'epochs': 20,
-        'train_max_batch_size': 32,
+        'random_seed': 3435,
+        'epochs': 30,
+        'train_max_batch_size': 16,
         'dev_max_batch_size': 128
     }
 }
@@ -83,7 +83,7 @@ def train(
         dev_max_batch_size,
         checkpoint_path=None,
         device=None):
-    checkpoint = setup_training(dataset, checkpoint_path, log_directory, device, random_seed)
+    is_cuda, checkpoint = setup_training(checkpoint_path, log_directory, device, random_seed)
 
     # Init Dataset
     train_dataset, dev_dataset = dataset(train=True, dev=True, test=False)
@@ -125,17 +125,23 @@ def train(
     params = filter(lambda p: p.requires_grad, model.parameters())
     optimizer = Optimizer(Adam(params=params))
 
-    # collate function merges rows into tensor batches
-    collate_fn_partial = partial(collate_fn, input_key='text', output_key='label', sort_key='text')
+    def collate_fn(batch, train=True):
+        """ list of tensors to a batch variable """
+        # PyTorch RNN requires sorting decreasing size
+        batch = sorted(batch, key=lambda row: len(row['text']), reverse=True)
+        input_batch, input_lengths = pad_batch([row['text'] for row in batch])
+        labels = [row['label'] for row in batch]
 
-    def prepare_batch(batch, train=False):
-        # Prepare batch for model
-        text, text_lengths = batch['text']
-        label, _ = batch['label']
-        if torch.cuda.is_available():
-            text, text_lengths = text.cuda(async=True), text_lengths.cuda(async=True)
-            label = label.cuda(async=True)
-        return Variable(text, volatile=not train), text_lengths, Variable(label, volatile=not train)
+        def batch_to_variable(batch):
+            # PyTorch RNN requires batches to be transposed for speed and integration with CUDA
+            return Variable(torch.stack(batch).t_().squeeze(0).contiguous(), volatile=not train)
+
+        return (batch_to_variable(input_batch), torch.LongTensor(input_lengths),
+                batch_to_variable(labels))
+
+    # Async minibatch allocation for speed
+    # Reference: http://timdettmers.com/2015/03/09/deep-learning-hardware-guide/
+    cuda = lambda t: t.cuda(async=True) if is_cuda else t
 
     # Train!
     for epoch in range(epochs):
@@ -146,13 +152,13 @@ def train(
         train_iterator = DataLoader(
             train_dataset,
             batch_sampler=batch_sampler,
-            collate_fn=collate_fn_partial,
-            pin_memory=torch.cuda.is_available(),
+            collate_fn=collate_fn,
+            pin_memory=is_cuda,
             num_workers=0)
-        for batch in tqdm(train_iterator):
-            text, text_lengths, label = prepare_batch(batch, True)
+        for text, text_lengths, label in tqdm(train_iterator):
             optimizer.zero_grad()
-            output = model(text, text_lengths)
+            label = cuda(label)
+            output = model(cuda(text), cuda(text_lengths))
             loss = criterion(output, label) / label.size()[0]
 
             # Backward propagation
@@ -173,13 +179,13 @@ def train(
         dev_iterator = DataLoader(
             dev_dataset,
             batch_size=dev_max_batch_size,
-            collate_fn=collate_fn_partial,
-            pin_memory=torch.cuda.is_available(),
+            collate_fn=partial(collate_fn, train=False),
+            pin_memory=is_cuda,
             num_workers=0)
         total_loss = 0
-        for batch in dev_iterator:
-            text, text_lengths, label = prepare_batch(batch)
-            output = model(text, text_lengths)
+        for text, text_lengths, label in dev_iterator:
+            label = cuda(label)
+            output = model(cuda(text), cuda(text_lengths))
             total_loss += criterion(output, label).data[0]
             # Prevent memory leak by moving output from variable to tensor
             texts.extend(text.data.cpu().transpose(0, 1).split(split_size=1, dim=0))
@@ -189,7 +195,7 @@ def train(
         optimizer.update(total_loss / len(dev_dataset), epoch)
         print_random_sample(texts, labels, outputs, text_encoder, label_encoder, n_samples=25)
         buckets = [label_encoder.decode(label) for label in labels]
-        print_bucket_accuracy(buckets, labels, outputs, print_=True)
+        print_bucket_accuracy(buckets, labels, outputs)
         logger.info('Loss: %.03f', total_loss / len(dev_dataset))
         get_accuracy(labels, outputs, print_=True)
 

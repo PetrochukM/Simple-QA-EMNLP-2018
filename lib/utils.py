@@ -238,10 +238,10 @@ def setup_training(checkpoint_path, log_directory, device, random_seed):
         if torch.cuda.is_available():
             torch.cuda.manual_seed(random_seed)
             torch.cuda.manual_seed_all(random_seed)
-        torch.manual_seed(args.seed)
-        np.random.seed(args.seed)
-        random.seed(args.seed)
-        torch.backends.cudnn.deterministic = True
+        # torch.manual_seed(args.seed)
+        # np.random.seed(args.seed)
+        # random.seed(args.seed)
+        # torch.backends.cudnn.deterministic = True
     logger.info('Seed: %s', random_seed)
 
     # Load Checkpoint
