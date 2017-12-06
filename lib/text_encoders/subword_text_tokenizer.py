@@ -188,11 +188,6 @@ class SubwordTextTokenizer(object):
         return unicode_to_native(decode(self._subtoken_to_tokens(subtokens)))
 
     @property
-    def vocab_size(self):
-        """The subtoken vocabulary size."""
-        return len(self._all_subtoken_strings)
-
-    @property
     def vocab(self):
         return self._all_subtoken_strings
 

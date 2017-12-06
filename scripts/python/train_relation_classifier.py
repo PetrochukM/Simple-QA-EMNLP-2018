@@ -22,51 +22,58 @@ from lib.metrics import print_bucket_accuracy
 from lib.metrics import print_random_sample
 from lib.nn import RelationClassifier
 from lib.optim import Optimizer
+from lib.pretrained_embeddings import GloVe
 from lib.samplers import BucketBatchSampler
+from lib.samplers import SortedSampler
 from lib.text_encoders import IdentityEncoder
 from lib.text_encoders import TreebankEncoder
 from lib.utils import get_log_directory_path
 from lib.utils import get_total_parameters
 from lib.utils import init_logging
-from lib.utils import setup_training
 from lib.utils import pad_batch
+from lib.utils import setup_training
 
 Adam.__init__ = configurable(Adam.__init__)
+
+# TODO: Train this in Notebook
 
 pd.set_option('display.expand_frame_repr', False)
 pd.set_option('max_colwidth', 80)
 
+embedding_size = 300
+unk_init = lambda t: torch.FloatTensor(t).uniform_(-0.25, 0.25)
+
 SIMPLE_PREDICATE_HYPERPARAMETERS = {
     'lib': {
-        'nn': {
-            'relation_classifier.RelationClassifier.__init__': {
-                'bidirectional': True,
-                'embedding_size': 300,
-                'rnn_size': 300,
-                'freeze_embeddings': False,
-                'rnn_cell': 'gru',
-                'decode_dropout': 0.2,
-                'embedding_dropout': 0.0,
-            },
-            'relation_classifier.Encoder.__init__': {
-                'n_layers': 2,
-                'rnn_variational_dropout': 0.3,
-            }
+        'nn.relation_classifier.RelationClassifier.__init__': {
+            'bidirectional': True,
+            'embedding_size': embedding_size,
+            'rnn_size': 300,
+            'freeze_embeddings': True,
+            'rnn_cell': 'gru',
+            'decode_dropout': 0.3,  # dropout before fully connected layer in RNN
+            'rnn_layers': 2,
+            'rnn_variational_dropout': 0.3,
         },
-        'optim.Optimizer.__init__': {
-            'max_grad_norm': 1.0,
-        }
+        'optim.Optimizer.__init__.max_grad_norm': None,
     },
-    'torch.optim.Adam.__init__': {
+    'torch.optim.adam.Adam.__init__': {
         'lr': 1e-4,
         'weight_decay': 0,
     },
     'scripts.python.train_relation_classifier.train': {
-        'dataset': simple_qa_predicate,
-        'random_seed': 3435,
-        'epochs': 30,
-        'train_max_batch_size': 16,
-        'dev_max_batch_size': 128
+        'get_dataset':
+            lambda: simple_qa_predicate,
+        'random_seed':
+            3435,
+        'epochs':
+            30,
+        'train_max_batch_size':
+            32,
+        'dev_max_batch_size':
+            128,
+        'get_pretrained_embedding':
+            lambda: GloVe(name='6B', dim=str(embedding_size), unk_init=unk_init),
     }
 }
 
@@ -76,16 +83,23 @@ add_config(SIMPLE_PREDICATE_HYPERPARAMETERS)
 @configurable
 def train(
         log_directory,  # Logs experiments, checkpoints, etc are saved
-        dataset,
+        get_dataset,
         random_seed,
         epochs,
         train_max_batch_size,
         dev_max_batch_size,
+        get_pretrained_embedding=None,
         checkpoint_path=None,
         device=None):
-    is_cuda, checkpoint = setup_training(checkpoint_path, log_directory, device, random_seed)
+    is_cuda, checkpoint = setup_training(checkpoint_path, log_directory, device,
+                                         random_seed)  # Async minibatch allocation for speed
+    # Reference: http://timdettmers.com/2015/03/09/deep-learning-hardware-guide/
+    # TODO: look into cuda_async device=device
+    cuda_async = lambda t: t.cuda(async=True) if is_cuda else t  # Use with tensors
+    cuda = lambda t: t.cuda(device_id=device) if is_cuda else t  # Use with nn.modules
 
     # Init Dataset
+    dataset = get_dataset()
     train_dataset, dev_dataset = dataset(train=True, dev=True, test=False)
     logger.info('Num Training Data: %d', len(train_dataset))
     logger.info('Num Development Data: %d', len(dev_dataset))
@@ -94,8 +108,11 @@ def train(
     if checkpoint:
         text_encoder, label_encoder = checkpoint.input_encoder, checkpoint.output_encoder
     else:
-        text_encoder = TreebankEncoder(train_dataset['text'], lower=True)
-        label_encoder = IdentityEncoder(train_dataset['label'])
+        text_encoder = TreebankEncoder(
+            train_dataset['text'] + dev_dataset['text'], lower=True, append_eos=False)
+        logger.info('Text encoder vocab size: %d' % text_encoder.vocab_size)
+        label_encoder = IdentityEncoder(train_dataset['label'] + dev_dataset['label'])
+        logger.info('Label encoder vocab size: %d' % label_encoder.vocab_size)
     for dataset in [train_dataset, dev_dataset]:
         for row in dataset:
             row['text'] = text_encoder.encode(row['text'])
@@ -109,16 +126,21 @@ def train(
         for param in model.parameters():
             param.data.uniform_(-0.1, 0.1)
 
+        # Load embeddings
+        if get_pretrained_embedding:
+            pretrained_embedding = get_pretrained_embedding()
+            embedding_weights = torch.Tensor(text_encoder.vocab_size, pretrained_embedding.dim)
+            for i, token in enumerate(text_encoder.vocab):
+                embedding_weights[i] = pretrained_embedding[token]
+            model.embedding.weight.data.copy_(embedding_weights)
+
+    cuda(model)
+
     logger.info('Model:\n%s', model)
     logger.info('Total Parameters: %d', get_total_parameters(model))
 
-    if torch.cuda.is_available():
-        model.cuda(device_id=device)
-
     # Init Loss
-    criterion = NLLLoss(size_average=False)
-    if torch.cuda.is_available():
-        criterion.cuda()
+    criterion = cuda(NLLLoss())
 
     # Init Optimizer
     # https://github.com/pytorch/pytorch/issues/679
@@ -132,23 +154,18 @@ def train(
         input_batch, input_lengths = pad_batch([row['text'] for row in batch])
         labels = [row['label'] for row in batch]
 
-        def batch_to_variable(batch):
-            # PyTorch RNN requires batches to be transposed for speed and integration with CUDA
-            return Variable(torch.stack(batch).t_().squeeze(0).contiguous(), volatile=not train)
+        # PyTorch RNN requires batches to be transposed for speed and integration with CUDA
+        to_variable = (
+            lambda b: Variable(torch.stack(b).t_().squeeze(0).contiguous(), volatile=not train))
 
-        return (batch_to_variable(input_batch), torch.LongTensor(input_lengths),
-                batch_to_variable(labels))
-
-    # Async minibatch allocation for speed
-    # Reference: http://timdettmers.com/2015/03/09/deep-learning-hardware-guide/
-    cuda = lambda t: t.cuda(async=True) if is_cuda else t
+        return (to_variable(input_batch), torch.LongTensor(input_lengths), to_variable(labels))
 
     # Train!
+    sort_key = lambda r: r['text'].size()[0]
     for epoch in range(epochs):
         logger.info('Epoch %d', epoch)
         model.train(mode=True)
-        batch_sampler = BucketBatchSampler(train_dataset, lambda r: r['text'].size()[0],
-                                           train_max_batch_size)
+        batch_sampler = BucketBatchSampler(train_dataset, sort_key, train_max_batch_size)
         train_iterator = DataLoader(
             train_dataset,
             batch_sampler=batch_sampler,
@@ -157,9 +174,9 @@ def train(
             num_workers=0)
         for text, text_lengths, label in tqdm(train_iterator):
             optimizer.zero_grad()
-            label = cuda(label)
-            output = model(cuda(text), cuda(text_lengths))
-            loss = criterion(output, label) / label.size()[0]
+            label = cuda_async(label)
+            output = model(cuda_async(text), cuda_async(text_lengths))
+            loss = criterion(output, label)
 
             # Backward propagation
             loss.backward()
@@ -179,23 +196,24 @@ def train(
         dev_iterator = DataLoader(
             dev_dataset,
             batch_size=dev_max_batch_size,
+            sampler=SortedSampler(dev_dataset, sort_key, sort_noise=0.0),
             collate_fn=partial(collate_fn, train=False),
             pin_memory=is_cuda,
             num_workers=0)
         total_loss = 0
         for text, text_lengths, label in dev_iterator:
-            label = cuda(label)
-            output = model(cuda(text), cuda(text_lengths))
-            total_loss += criterion(output, label).data[0]
+            label = cuda_async(label)
+            output = model(cuda_async(text), cuda_async(text_lengths))
+            total_loss += criterion(output, label).data[0] * label.size()[0]
             # Prevent memory leak by moving output from variable to tensor
             texts.extend(text.data.cpu().transpose(0, 1).split(split_size=1, dim=0))
             labels.extend(label.data.cpu().split(split_size=1, dim=0))
             outputs.extend(output.data.cpu().split(split_size=1, dim=0))
 
         optimizer.update(total_loss / len(dev_dataset), epoch)
-        print_random_sample(texts, labels, outputs, text_encoder, label_encoder, n_samples=25)
-        buckets = [label_encoder.decode(label) for label in labels]
-        print_bucket_accuracy(buckets, labels, outputs)
+        print_random_sample(texts, labels, outputs, text_encoder, label_encoder, n_samples=5)
+        # buckets = [label_encoder.decode(label) for label in labels]
+        # print_bucket_accuracy(buckets, labels, outputs)
         logger.info('Loss: %.03f', total_loss / len(dev_dataset))
         get_accuracy(labels, outputs, print_=True)
 

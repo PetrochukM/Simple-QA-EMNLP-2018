@@ -14,11 +14,9 @@ class TextEncoder(object):
     @property
     def vocab_size(self):
         """ Return the size of the vocab used to encode the text """
-        raise NotImplementedError
+        return len(self.vocab)
 
     @property
-    def embeddings(self):
-        """ Return an embedding tensor such that for each index 0 to vocab_size there exists an
-        embedding """
-        # TODO: https://github.com/pytorch/text/blob/master/torchtext/vocab.py
-        return None
+    def vocab(self):
+        """ Return an array of the vocab such that index matches the token in encode """
+        return NotImplementedError

@@ -88,3 +88,4 @@ data/**
 *.pass
 abc.py
 note.txt
+.pretrained_embeddings_cache/

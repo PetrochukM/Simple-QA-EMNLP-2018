@@ -15,7 +15,7 @@ class SubwordEncoder(TextEncoder):
 
     def __init__(self,
                  sample,
-                 append_eos=True,
+                 append_eos=False,
                  lower=True,
                  target_size=None,
                  min_val=1,
@@ -50,8 +50,8 @@ class SubwordEncoder(TextEncoder):
             self.stoi[token] = len(self.itos) - 1
 
     @property
-    def vocab_size(self):
-        return len(self.itos)
+    def vocab(self):
+        return self.itos
 
     def encode(self, text):
         if self.lower:

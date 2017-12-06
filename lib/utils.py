@@ -9,6 +9,7 @@ import time
 
 import random
 import torch
+import numpy as np
 
 from lib.text_encoders import PADDING_INDEX
 from lib.configurable import log_config
@@ -226,7 +227,13 @@ def setup_training(checkpoint_path, log_directory, device, random_seed):
 
     # Setup Device
     device = device_default(device)
-    if torch.cuda.is_available():
+
+    # Check if CUDA is used
+    is_cuda = torch.cuda.is_available() and device >= 0
+    if torch.cuda.is_available() and not is_cuda:
+        logger.warn('You have CUDA but are not using it. You are using your CPU.')
+
+    if is_cuda:
         torch.cuda.set_device(device)
 
     logger.info('Device: %s', device)
@@ -235,13 +242,12 @@ def setup_training(checkpoint_path, log_directory, device, random_seed):
     if random_seed is not None:
         random.seed(random_seed)
         torch.manual_seed(random_seed)
-        if torch.cuda.is_available():
+        if is_cuda:
             torch.cuda.manual_seed(random_seed)
             torch.cuda.manual_seed_all(random_seed)
-        # torch.manual_seed(args.seed)
-        # np.random.seed(args.seed)
-        # random.seed(args.seed)
-        # torch.backends.cudnn.deterministic = True
+        np.random.seed(random_seed)
+        torch.backends.cudnn.deterministic = True
+
     logger.info('Seed: %s', random_seed)
 
     # Load Checkpoint
@@ -252,9 +258,6 @@ def setup_training(checkpoint_path, log_directory, device, random_seed):
 
     # Log the global configuration before starting to train.
     log_config()
-
-    # Check if CUDA is used
-    is_cuda = torch.cuda.is_available() and device >= 0
 
     return is_cuda, checkpoint
 

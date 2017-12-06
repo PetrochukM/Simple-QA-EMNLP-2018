@@ -260,5 +260,5 @@ if __name__ == '__main__':
     else:
         log_directory = get_log_directory_path('object_recognition')
     log_directory = init_logging(log_directory)
-    logger = logging.getLogger(__name__)  # Root logger
+    logger = logging.getLogger(__name__)
     train(checkpoint_path=args.checkpoint_path, log_directory=log_directory)

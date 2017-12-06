@@ -41,13 +41,13 @@ def simple_qa_object(directory='data/simple_qa',
         return tuple(ret)
 
 
-def simple_qa_predicate(directory='data/simple_qa',
+def simple_qa_predicate(directory='data/SimpleQuestions_v2',
                         train=False,
                         dev=False,
                         test=False,
-                        train_filename='train.tsv',
-                        dev_filename='dev.tsv',
-                        test_filename='test.tsv'):
+                        train_filename='annotated_fb_data_train.txt',
+                        dev_filename='annotated_fb_data_valid.txt',
+                        test_filename='annotated_fb_data_test.txt'):
     """
     Sample Data:
         Input: what is the book e about?
@@ -59,11 +59,11 @@ def simple_qa_predicate(directory='data/simple_qa',
         if not is_requested:
             continue
         full_path = os.path.join(directory, filename)
-        data = pd.read_table(full_path)
-        data = data[data['Freebase Property'].notnull()]
+        data = pd.read_table(
+            full_path, header=None, names=['subject', 'relation', 'object', 'question'])
         rows = []
         for _, row in data.iterrows():
-            rows.append({'text': row['Question EN'].strip(), 'label': row['Freebase Property']})
+            rows.append({'text': row['question'].strip(), 'label': row['relation']})
         ret.append(Dataset(rows))
 
     if len(ret) == 1:
