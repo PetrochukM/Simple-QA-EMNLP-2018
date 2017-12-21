@@ -191,6 +191,10 @@ class SubwordTextTokenizer(object):
     def vocab(self):
         return self._all_subtoken_strings
 
+    @property
+    def vocab_size(self):
+        return len(self._all_subtoken_strings)
+
     def _tokens_to_subtoken(self, tokens):
         """
         Converts a list of tokens to a list of subtoken.

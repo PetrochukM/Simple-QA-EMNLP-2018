@@ -1,7 +1,8 @@
 import torch.nn as nn
+import torch.nn.functional as F
 
-from lib.nn.seq_encoder import SeqEncoder
 from lib.configurable import configurable
+from lib.nn.seq_encoder import SeqEncoder
 
 
 class SeqToLabel(nn.Module):
@@ -10,36 +11,43 @@ class SeqToLabel(nn.Module):
     def __init__(self,
                  input_vocab_size,
                  output_vocab_size,
+                 freeze_embeddings=False,
+                 bidirectional=False,
+                 embedding_size=128,
                  rnn_size=128,
                  rnn_cell='lstm',
-                 decode_dropout=0.0):
+                 rnn_layers=1,
+                 decode_dropout=0.0,
+                 rnn_variational_dropout=0.0,
+                 embedding_dropout=0.0):
         super().__init__()
-        self.rnn_size = rnn_size
-        self.rnn_cell = rnn_cell
-        self.encoder = SeqEncoder(input_vocab_size, rnn_size=rnn_size, rnn_cell=rnn_cell)
-        self.decode = nn.Sequential(
-            nn.Linear(self.rnn_size, self.rnn_size),  # can apply batch norm after this - add later
-            nn.BatchNorm1d(self.rnn_size),
+
+        self.encoder = SeqEncoder(
+            vocab_size=input_vocab_size,
+            embedding_size=embedding_size,
+            rnn_size=rnn_size,
+            embedding_dropout=embedding_dropout,
+            rnn_variational_dropout=rnn_variational_dropout,
+            n_layers=rnn_layers,
+            rnn_cell=rnn_cell,
+            bidirectional=bidirectional,
+            freeze_embeddings=freeze_embeddings)
+
+        self.out = nn.Sequential(
+            nn.Linear(rnn_size, rnn_size),  # can apply batch norm after this - add later
+            nn.BatchNorm1d(rnn_size),
             nn.ReLU(),
             nn.Dropout(p=decode_dropout),
-            nn.Linear(self.rnn_size, output_vocab_size),
-            nn.Softmax())
+            nn.Linear(rnn_size, output_vocab_size))
 
     def flatten_parameters(self):
         self.encoder.rnn.flatten_parameters()
 
     def forward(self, text, text_lengths):
-        output, hidden = self.encoder(text, text_lengths)
-
-        if self.rnn_cell == 'gru':
-            hidden = hidden
-        elif self.rnn_cell == 'lstm':
+        _, hidden = self.encoder(text, text_lengths)
+        if self.encoder.rnn_cell == nn.LSTM:
             hidden = hidden[0]
-        else:
-            raise ValueError('Unsupported RNN_CELL')
 
-        # [layers, batch, rnn_size] -> [batch, rnn_size]
-        hidden = hidden[-1]
-        # [batch, rnn_size] -> [batch, output_vocab_size]
-        output = self.decode(hidden)
-        return output
+        output = self.out(hidden[-1])
+        scores = F.log_softmax(output)
+        return scores

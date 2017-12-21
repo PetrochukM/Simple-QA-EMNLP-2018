@@ -1,4 +1,5 @@
 from functools import partial
+from collections import defaultdict
 
 import argparse
 import logging
@@ -20,13 +21,14 @@ from lib.datasets import simple_qa_predicate
 from lib.metrics import get_accuracy
 from lib.metrics import print_bucket_accuracy
 from lib.metrics import print_random_sample
-from lib.nn import SeqToLabel
+from lib.nn import SeqToSeq
 from lib.optim import Optimizer
 from lib.pretrained_embeddings import GloVe
 from lib.samplers import BucketBatchSampler
 from lib.samplers import SortedSampler
-from lib.text_encoders import IdentityEncoder
 from lib.text_encoders import TreebankEncoder
+from lib.text_encoders import DelimiterEncoder
+from lib.text_encoders import PADDING_INDEX
 from lib.utils import get_log_directory_path
 from lib.utils import get_total_parameters
 from lib.utils import init_logging
@@ -41,22 +43,31 @@ pd.set_option('display.expand_frame_repr', False)
 pd.set_option('max_colwidth', 80)
 
 embedding_size = 300
-unk_init = lambda t: torch.FloatTensor(t).uniform_(-0.1, 0.1)
 
 SIMPLE_PREDICATE_HYPERPARAMETERS = {
     'lib': {
-        'nn.seq_to_label.SeqToLabel.__init__': {
-            'bidirectional': True,
+        'nn.seq_to_seq.SeqToSeq.__init__': {
             'embedding_size': embedding_size,
             'rnn_size': 600,
-            'freeze_embeddings': True,
+            'n_layers': 2,
             'rnn_cell': 'gru',
-            'decode_dropout': 0.3,  # dropout before fully connected layer in RNN
-            'rnn_layers': 2,
-            'rnn_variational_dropout': 0.3,
-            'embedding_dropout': 0.0
+            'tie_weights': False
         },
-        'optim.Optimizer.__init__.max_grad_norm': None,
+        'nn.seq_encoder.SeqEncoder.__init__': {
+            'embedding_dropout': 0.0,
+            'rnn_dropout': 0.3,
+            'bidirectional': True,
+            'freeze_embeddings': True,
+        },
+        'nn.seq_decoder.SeqDecoder.__init__': {
+            'embedding_dropout': 0.0,
+            'use_attention': True,
+            'rnn_dropout': 0.0,
+            'freeze_embeddings': False,
+            'decode_dropout': 0.3,
+        },
+        'optim.Optimizer.__init__.max_grad_norm': 1.0,
+        'attention.Attention.__init__.attention_type': 'general',
     },
     'torch.optim.adam.Adam.__init__': {
         'lr': 1e-4,
@@ -66,7 +77,7 @@ SIMPLE_PREDICATE_HYPERPARAMETERS = {
         'get_dataset':
             lambda: simple_qa_predicate,
         'random_seed':
-            3435,
+            123,
         'epochs':
             30,
         'train_max_batch_size':
@@ -74,7 +85,7 @@ SIMPLE_PREDICATE_HYPERPARAMETERS = {
         'dev_max_batch_size':
             128,
         'get_pretrained_embedding':
-            lambda: GloVe(name='6B', dim=str(embedding_size), unk_init=unk_init),
+            lambda **kwargs: GloVe(name='6B', dim=str(embedding_size), **kwargs),
     }
 }
 
@@ -92,6 +103,7 @@ def train(
         get_pretrained_embedding=None,
         checkpoint_path=None,
         device=None):
+    relation_tree = {}
     is_cuda, checkpoint = setup_training(checkpoint_path, log_directory, device,
                                          random_seed)  # Async minibatch allocation for speed
     # Reference: http://timdettmers.com/2015/03/09/deep-learning-hardware-guide/
@@ -109,31 +121,51 @@ def train(
     if checkpoint:
         text_encoder, relation_encoder = checkpoint.input_encoder, checkpoint.output_encoder
     else:
-        text_encoder = TreebankEncoder(
-            train_dataset['text'] + dev_dataset['text'], lower=True, append_eos=False)
+        text_encoder = TreebankEncoder(train_dataset['text'], lower=True)
         logger.info('Text encoder vocab size: %d' % text_encoder.vocab_size)
-        relation_encoder = IdentityEncoder(train_dataset['relation'] + dev_dataset['relation'])
+        relation_encoder = DelimiterEncoder('/', train_dataset['relation'], append_eos=True)
         logger.info('Relation encoder vocab size: %d' % relation_encoder.vocab_size)
     for dataset in [train_dataset, dev_dataset]:
         for row in dataset:
             row['text'] = text_encoder.encode(row['text'])
+            row['relation'] = row['relation'].replace('www.freebase.com/', '')
             row['relation'] = relation_encoder.encode(row['relation'])
+
+            # Build up a tree of all possible relations
+            tree_node = relation_tree
+            for index in row['relation']:
+                if index not in tree_node:
+                    tree_node[index] = {}
+                tree_node = tree_node[index]
+
+    def include_vocab(predictions):
+        tree_node = relation_tree
+        for prediction in predictions:
+            if prediction not in tree_node:
+                return cuda_async(torch.LongTensor([]))
+            tree_node = tree_node[prediction]
+        return cuda_async(torch.LongTensor(list(tree_node.keys())))
 
     # Init Model
     if checkpoint:
         model = checkpoint.model
     else:
-        model = SeqToLabel(text_encoder.vocab_size, relation_encoder.vocab_size)
-        for param in model.parameters():
-            param.data.uniform_(-0.1, 0.1)
-
+        unk_init = lambda t: torch.FloatTensor(t).uniform_(-0.1, 0.1)
         # Load embeddings
         if get_pretrained_embedding:
-            pretrained_embedding = get_pretrained_embedding()
+            pretrained_embedding = get_pretrained_embedding(unk_init=unk_init)
             embedding_weights = torch.Tensor(text_encoder.vocab_size, pretrained_embedding.dim)
             for i, token in enumerate(text_encoder.vocab):
                 embedding_weights[i] = pretrained_embedding[token]
-            model.encoder.embedding.weight.data.copy_(embedding_weights)
+
+        model = SeqToSeq(
+            text_encoder.vocab_size,
+            relation_encoder.vocab_size,
+            embeddings_encoder=embedding_weights,
+            include_vocab=include_vocab)
+
+        for param in model.parameters():
+            param.data.uniform_(-0.1, 0.1)
 
     cuda(model)
 
@@ -153,13 +185,14 @@ def train(
         # PyTorch RNN requires sorting decreasing size
         batch = sorted(batch, key=lambda row: len(row['text']), reverse=True)
         input_batch, input_lengths = pad_batch([row['text'] for row in batch])
-        relations = [row['relation'] for row in batch]
+        output_batch, output_lengths = pad_batch([row['relation'] for row in batch])
 
         # PyTorch RNN requires batches to be transposed for speed and integration with CUDA
         to_variable = (
             lambda b: Variable(torch.stack(b).t_().squeeze(0).contiguous(), volatile=not train))
 
-        return (to_variable(input_batch), torch.LongTensor(input_lengths), to_variable(relations))
+        return (to_variable(input_batch), torch.LongTensor(input_lengths),
+                to_variable(output_batch), torch.LongTensor(output_lengths))
 
     # Train!
     sort_key = lambda r: r['text'].size()[0]
@@ -173,11 +206,18 @@ def train(
             collate_fn=collate_fn,
             pin_memory=is_cuda,
             num_workers=0)
-        for text, text_lengths, relation in tqdm(train_iterator):
+        for text, text_lengths, relation, relation_lengths in tqdm(train_iterator):
             optimizer.zero_grad()
             relation = cuda_async(relation)
-            output = model(cuda_async(text), cuda_async(text_lengths))
-            loss = criterion(output, relation)
+            output = model(
+                cuda_async(text), cuda_async(text_lengths), relation,
+                cuda_async(relation_lengths))[0]
+
+            # Compute loss
+            # NOTE: flattening the tensors allows for the computation to be done once per batch
+            output_flat = output.view(-1, output.size(2))
+            relation_flat = relation.view(-1)
+            loss = criterion(output_flat, relation_flat)
 
             # Backward propagation
             loss.backward()
@@ -202,14 +242,27 @@ def train(
             pin_memory=is_cuda,
             num_workers=0)
         total_loss = 0
-        for text, text_lengths, relation in dev_iterator:
+        for text, text_lengths, relation, _ in tqdm(dev_iterator):
+            output = model(cuda_async(text), cuda_async(text_lengths))[0]
+
+            # Output could of stopped early or late;
+            # therefore, it is not same sequence length as relation
             relation = cuda_async(relation)
-            output = model(cuda_async(text), cuda_async(text_lengths))
-            total_loss += criterion(output, relation).data[0] * relation.size()[0]
+            if output.size()[0] > relation.size()[0]:
+                output = output[:relation.size()[0]]
+            elif output.size()[0] < relation.size()[0]:
+                relation = relation[:output.size()[0]]
+
+            # Compute loss
+            # NOTE: flattening the tensors allows for the computation to be done once per batch
+            output_flat = output.view(-1, output.size(2))
+            relation_flat = relation.view(-1)
+            total_loss += criterion(output_flat, relation_flat).data[0] * relation_flat.size()[0]
+
             # Prevent memory leak by moving output from variable to tensor
             texts.extend(text.data.cpu().transpose(0, 1).split(split_size=1, dim=0))
-            relations.extend(relation.data.cpu().split(split_size=1, dim=0))
-            outputs.extend(output.data.cpu().split(split_size=1, dim=0))
+            relations.extend(relation.data.cpu().transpose(0, 1).split(split_size=1, dim=0))
+            outputs.extend(output.data.cpu().transpose(0, 1).split(split_size=1, dim=0))
 
         optimizer.update(total_loss / len(dev_dataset), epoch)
         print_random_sample(texts, relations, outputs, text_encoder, relation_encoder, n_samples=5)

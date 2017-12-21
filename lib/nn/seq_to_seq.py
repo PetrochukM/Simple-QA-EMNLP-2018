@@ -17,12 +17,14 @@ class SeqToSeq(nn.Module):
     def __init__(self,
                  input_vocab_size,
                  output_vocab_size,
-                 embeddings=None,
+                 embeddings_encoder=None,
+                 embeddings_decoder=None,
                  embedding_size=100,
                  rnn_size=100,
                  n_layers=2,
                  rnn_cell='gru',
-                 tie_weights=False):
+                 tie_weights=False,
+                 include_vocab=None):
         """
         Args:
             encoder (EncoderRNN): object of EncoderRNN
@@ -31,18 +33,19 @@ class SeqToSeq(nn.Module):
         super(SeqToSeq, self).__init__()
         self.encoder = SeqEncoder(
             input_vocab_size,
-            embeddings=embeddings,
+            embeddings=embeddings_encoder,
             embedding_size=embedding_size,
             rnn_size=rnn_size,
             n_layers=n_layers,
             rnn_cell=rnn_cell)
         self.decoder = SeqDecoder(
             output_vocab_size,
-            embeddings=embeddings,
+            embeddings=embeddings_decoder,
             embedding_size=embedding_size,
             rnn_size=rnn_size,
             n_layers=n_layers,
-            rnn_cell=rnn_cell)
+            rnn_cell=rnn_cell,
+            include_vocab=include_vocab)
         if tie_weights:
             self.decoder.embedding.weight = self.encoder.embedding.weight
 
@@ -75,7 +78,7 @@ class SeqToSeq(nn.Module):
             max_length = None
 
         return self.decoder(
-            max_length=max_length,
+            fixed_length=max_length,
             target_output=target,
             encoder_hidden=encoder_hidden,
             encoder_outputs=encoder_outputs)

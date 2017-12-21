@@ -24,9 +24,10 @@ class BaseRNN(nn.Module):
     def __init__(self, vocab_size, embeddings, embedding_size, embedding_dropout, rnn_dropout,
                  rnn_cell, freeze_embeddings):
         super(BaseRNN, self).__init__()
-        embedding_size = int(embedding_size)
         self.vocab_size = vocab_size
-        self.embeddings = embeddings
+        self.embedding = nn.Embedding(
+            self.vocab_size, int(embedding_size), padding_idx=PADDING_INDEX)
+        self.embedding.weight.requires_grad = not freeze_embeddings
         self.embedding_dropout = nn.Dropout(p=embedding_dropout)
 
         self.rnn_dropout = LockedDropout(p=rnn_dropout)
@@ -38,13 +39,9 @@ class BaseRNN(nn.Module):
         else:
             raise ValueError("Unsupported RNN Cell: {0}".format(rnn_cell))
 
-        self.embedding = nn.Embedding(self.vocab_size, embedding_size, padding_idx=PADDING_INDEX)
-        if self.embeddings is not None:
+        if embeddings is not None:
             logger.info('Loading embeddings...')
-            self.embedding.weight.data.copy_(self.embeddings)
-
-        if freeze_embeddings:
-            self.embedding.weight.requires_grad = False
+            self.embedding.weight.data.copy_(embeddings)
 
     def forward(self, *args, **kwargs):
 

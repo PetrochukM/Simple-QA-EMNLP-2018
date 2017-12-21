@@ -41,7 +41,8 @@ class _PretrainedEmbeddings(object):
                  name,
                  cache='.pretrained_embeddings_cache',
                  url=None,
-                 unk_init=torch.Tensor.zero_):
+                 unk_init=torch.Tensor.zero_,
+                 is_include=None):
         """Arguments:
                name: name of the file that contains the vectors
                cache: directory for cached vectors
@@ -49,10 +50,14 @@ class _PretrainedEmbeddings(object):
                unk_init (callback): by default, initalize out-of-vocabulary word vectors
                    to zero vectors; can be any function that takes in a Tensor and
                    returns a Tensor of the same size
+               is_include (callable): callable returns True if to include a token in memory vectors
+                   cache; some of these embedding files are gigantic so filtering it can cut
+                   down on the memory usage. 
          """
         self.unk_init = unk_init
-        self.cache(name, cache, url=url)
+        self.is_include = is_include
         self.name = name
+        self.cache(name, cache, url=url)
 
     def __getitem__(self, token):
         if token in self.stoi:
@@ -71,7 +76,7 @@ class _PretrainedEmbeddings(object):
             path = os.path.join(cache, name)
             path_pt = path + '.pt'
 
-        if not os.path.isfile(path_pt):
+        if not os.path.isfile(path_pt) or self.is_include is not None:
             if not os.path.isfile(path) and url:
                 logger.info('Downloading vectors from {}'.format(url))
                 if not os.path.exists(cache):
@@ -137,6 +142,10 @@ class _PretrainedEmbeddings(object):
                     except:
                         logger.info("Skipping non-UTF8 token {}".format(repr(word)))
                         continue
+
+                if self.is_include is not None and not self.is_include(word):
+                    continue
+
                 vectors.extend(float(x) for x in entries)
                 itos.append(word)
 

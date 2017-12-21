@@ -14,3 +14,4 @@ from lib.text_encoders.character_encoder import CharacterEncoder
 from lib.text_encoders.moses_encoder import MosesEncoder
 from lib.text_encoders.identity_encoder import IdentityEncoder
 from lib.text_encoders.subword_encoder import SubwordEncoder
+from lib.text_encoders.delimiter_encoder import DelimiterEncoder

@@ -63,7 +63,7 @@ def simple_qa_predicate(directory='data/SimpleQuestions_v2',
             full_path, header=None, names=['subject', 'relation', 'object', 'question'])
         rows = []
         for _, row in data.iterrows():
-            rows.append({'text': row['question'].strip(), 'label': row['relation']})
+            rows.append({'text': row['question'].strip(), 'relation': row['relation']})
         ret.append(Dataset(rows))
 
     if len(ret) == 1:

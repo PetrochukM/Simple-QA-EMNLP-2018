@@ -11,6 +11,7 @@ from lib.nn.base_rnn import BaseRNN
 from lib.configurable import configurable
 from lib.text_encoders import EOS_INDEX
 from lib.text_encoders import SOS_INDEX
+from lib.text_encoders import PADDING_INDEX
 
 logger = logging.getLogger(__name__)
 
@@ -65,9 +66,12 @@ class SeqDecoder(BaseRNN):
                  embedding_dropout=0,
                  rnn_dropout=0,
                  rnn_variational_dropout=0,
+                 decode_dropout=0,
                  use_attention=True,
                  scheduled_sampling=False,
-                 freeze_embeddings=False):
+                 freeze_embeddings=False,
+                 fixed_length=None,
+                 include_vocab=None):  # Only used during unrolling
         super().__init__(
             vocab_size=vocab_size,
             embeddings=embeddings,
@@ -80,6 +84,8 @@ class SeqDecoder(BaseRNN):
         rnn_size = int(rnn_size)
 
         self.use_attention = use_attention
+        self.fixed_length = fixed_length
+        self.include_vocab = include_vocab
 
         self.rnn_size = rnn_size
         self.rnn = self.rnn_cell(
@@ -88,7 +94,15 @@ class SeqDecoder(BaseRNN):
             # TODO: Add a mask to padding index?
             self.attention = Attention(rnn_size)
 
-        self.out = nn.Linear(rnn_size, vocab_size)
+        self.decode_dropout = nn.Dropout(p=decode_dropout)
+        self.relu = nn.ReLU()
+        self.out = nn.Sequential(
+            nn.Linear(rnn_size, rnn_size),  # can apply batch norm after this - add later
+            nn.BatchNorm1d(rnn_size),
+            self.relu,
+            self.decode_dropout,
+            nn.Linear(rnn_size, vocab_size))
+
         self.scheduled_sampling = scheduled_sampling
 
     def _init_start_input(self, batch_size):
@@ -101,7 +115,7 @@ class SeqDecoder(BaseRNN):
             SOS (torch.LongTensor [1, batch_size]): Start of sequence token
         """
         init_input = Variable(torch.LongTensor(1, batch_size).fill_(SOS_INDEX), requires_grad=False)
-        if torch.cuda.is_available():
+        if torch.cuda.is_available():  # TODO: Fix by having a is_cuda parameter
             init_input = init_input.cuda()
         return init_input
 
@@ -122,7 +136,7 @@ class SeqDecoder(BaseRNN):
                 batch_size = encoder_hidden.size(1)
         return batch_size
 
-    def forward_step(self, last_decoder_output, decoder_hidden, encoder_outputs):
+    def step(self, last_decoder_output, decoder_hidden, encoder_outputs):
         """
         Using last decoder output, decoder hidden, and encoder outputs predict the next token.
 
@@ -136,7 +150,7 @@ class SeqDecoder(BaseRNN):
         Returns:
             predicted_softmax (torch.FloatTensor [batch_size, output_len, vocab_size]): variable containing the
                 confidence for one token per sequence in the batch.
-            decoder_hidden_new (tuple or tensor): variable containing the features in the hidden
+            decoder_hidden (tuple or tensor): variable containing the features in the hidden
                 state dependant on torch.nn.GRU or torch.nn.LSTM
             attention (torch.FloatTensor [batch_size, output_len, input_len]): Attention weights on per token.
         """
@@ -147,14 +161,15 @@ class SeqDecoder(BaseRNN):
         embedded = self.embedding(last_decoder_output)
         embedded = self.embedding_dropout(embedded)
 
-        output, decoder_hidden_new = self.rnn(embedded, decoder_hidden)
+        output, decoder_hidden = self.rnn(embedded, decoder_hidden)
         output = self.rnn_dropout(output)
+        # (output_len, batch_size, rnn_size) -> (batch_size, output_len, rnn_size)
+        output = output.transpose(0, 1).contiguous()
 
         attention_weights = None
         if self.use_attention:
             # Batch first encoder_outputs
             encoder_outputs = encoder_outputs.transpose(0, 1).contiguous()
-            output = output.transpose(0, 1).contiguous()
             output, attention_weights = self.attention(output, encoder_outputs)
 
         # (batch_size, output_len, rnn_size) -> (batch_size * output_len, rnn_size)
@@ -164,9 +179,9 @@ class SeqDecoder(BaseRNN):
         predicted_softmax = F.log_softmax(output)
         # (batch_size * output_len, vocab_size) -> (batch_size, output_len, vocab_size)
         predicted_softmax = predicted_softmax.view(batch_size, output_len, self.vocab_size)
-        return predicted_softmax, decoder_hidden_new, attention_weights
+        return predicted_softmax, decoder_hidden, attention_weights
 
-    def _get_eos_indexes(self, decoder_output):
+    def _get_eos_indexes(self, predictions):
         """
         Args:
             decoder_output (torch.FloatTensor [batch_size, vocab_size]): decoder output for a single
@@ -174,14 +189,93 @@ class SeqDecoder(BaseRNN):
         Returns:
             (list) indexes of EOS tokens
         """
-        predictions = decoder_output.data.topk(1)[1]
-        eos_batches = predictions.view(-1).eq(EOS_INDEX).nonzero()
+        eos_batches = predictions.data.view(-1).eq(EOS_INDEX).nonzero()
         if eos_batches.dim() > 0:
             return eos_batches.squeeze(1).tolist()
         else:
             return []
 
-    def forward_unrolled(self, encoder_hidden, encoder_outputs, batch_size, max_length=None):
+    def beam_search(self, n_beams, encoder_hidden, encoder_outputs, batch_size, fixed_length=None):
+        """
+        Using encoder hidden and encoder outputs make a prediction for the decoded sequence.
+        This uses the decoder output to guess the next sequence.
+
+        Args:
+            n_beams (int): number of beams to search and return
+            decoder_hidden (tuple or tensor): variable containing the features in the hidden state
+                dependant on torch.nn.GRU or torch.nn.LSTM
+            encoder_outputs (torch.FloatTensor [seq_len, batch_size, rnn_size]): variable containing
+                the encoded features of the input sequence
+            batch_size (int) size of the batch
+        Returns:
+            decoder_outputs (torch.FloatTensor [fixed_length - 1, batch_size, vocab_size]): outputs
+                of the decoder at each timestep
+            decoder_hidden (tuple or tensor): variable containing the features in the hidden state
+                dependant on torch.nn.GRU or torch.nn.LSTM
+            attention_weights (torch.FloatTensor [fixed_length - 1, batch_size, input_len]) attention
+                weights for every decoder_output 
+        """
+        # TODO: Add a vocabulary filter depending on the current output
+        # For each step, instead of picking max_1, we pick max topk
+        batch_size = encoder_outputs.size(1)
+
+        fixed_length = self.fixed_length if fixed_length is None else fixed_length
+        decoder_hidden = None if self.use_attention else encoder_hidden
+        decoder_input = self._init_start_input(batch_size)
+        eos_tokens = set()
+        # Start n_beams per row at 100% proability
+        beam_probability = torch.FloatTensor(batch_size, n_beams).fill_(1.0)
+        beam_output = torch.LongTensor(batch_size, n_beams).fill_(SOS_INDEX)
+
+        while True:
+            decoder_output, decoder_hidden, step_attention_weights = self.step(
+                decoder_input, decoder_hidden, encoder_outputs)
+
+            decoder_output = decoder_output.squeeze(1)
+            if batch_size == decoder_output.shape()[0]:
+                # decoder_output -> (batch_size, vocab_size)
+                topk_output, topk_indices = decoder_output.topk(n_beams, dim=1)
+                beam_probability *= topk_output  # Updated probability of each beam
+                beam_output = torch.stack((beam_output, topk_indices))
+                decoder_input = topk_output.view(1, batch_size * n_beams)
+            elif batch_size * n_beams == decoder_output.shape()[0]:
+                # (batch_size * n_beams, vocab_size) -> (batch_size, n_beams, vocab_size)
+                decoder_output = decoder_output.view(batch_size, n_beams, self.vocab_size)
+                # topk_output -> (batch_size, n_beams, n_beams)
+                # topk_indices -> (batch_size, n_beams, n_beams)
+                topk_output, topk_indices = decoder_output.topk(n_beams, dim=2)
+                # For each output, multiply the probability of the beam prior with the probability
+                # of the next token
+                # topk_output -> (batch_size, n_beams, n_beams)
+                topk_output = beam_probability * topk_output
+                # topk_output -> (batch_size, n_beams * n_beams)
+                topk_output = topk_output.view(batch_size, n_beams * n_beams)
+                topk_indices = topk_indices.view(batch_size, n_beams * n_beams)
+                # Get the next topk beams
+                # beam_probability -> (batch_size, n_beams)
+                # beam_indices -> (batch_size, n_beams)
+                beam_probability, beam_indices = topk_output.topk(n_beams, dim=1)
+                # TODO: Given the beam_indices, we need to wrap back to what the beam_output is
+                # For each n_beams^2 beam_indices get the prior beam in n_beams
+                beam_indices = beam_indices / n_beams
+                beam_output = beam_output[:, beam_indices]
+                new_output = topk_indices[:, beam_indices]
+                beam_output = torch.stack((beam_output, new_output))
+
+            # Check if every batch has an eos_token
+            if fixed_length is None:  # CASE: Stop unrolling if EOS is found
+                eos_tokens.update(self._get_eos_indexes(beam_output))
+                if len(eos_tokens) == batch_size * n_beams:
+                    break
+                if beam_output.shape(0) == 1000:  # CASE: Something has probably gone wrong
+                    logger.warn('Decoder has not predicted EOS in 1000 iterations. Breaking.')
+                    break
+            elif beam_output.shape(0) == fixed_length:  # CASE: Stop unrolling at a fixed length
+                break
+
+        return beam_output, beam_probability
+
+    def unroll(self, encoder_hidden, encoder_outputs, batch_size, fixed_length=None):
         """
         Using encoder hidden and encoder outputs make a prediction for the decoded sequence.
         This uses the decoder output to guess the next sequence.
@@ -192,49 +286,73 @@ class SeqDecoder(BaseRNN):
             encoder_outputs (torch.FloatTensor [seq_len, batch_size, rnn_size]): variable containing
                 the encoded features of the input sequence
             batch_size (int) size of the batch
+            filter (callable): Given the current prediction filter the vocabulary 
         Returns:
-            decoder_outputs (torch.FloatTensor [max_length - 1, batch_size, vocab_size]): outputs
+            decoder_outputs (torch.FloatTensor [fixed_length - 1, batch_size, vocab_size]): outputs
                 of the decoder at each timestep
             decoder_hidden (tuple or tensor): variable containing the features in the hidden state
                 dependant on torch.nn.GRU or torch.nn.LSTM
-            attention_weights (torch.FloatTensor [max_length - 1, batch_size, input_len]) attention
+            attention_weights (torch.FloatTensor [fixed_length - 1, batch_size, input_len]) attention
                 weights for every decoder_output 
         """
         # https://arxiv.org/pdf/1609.08144.pdf
         # https://arxiv.org/abs/1508.04025
+        fixed_length = self.fixed_length if fixed_length is None else fixed_length
         decoder_hidden = None if self.use_attention else encoder_hidden
         decoder_input = self._init_start_input(batch_size)
         decoder_outputs = []
+        predictions = []
         eos_tokens = set()
         attention_weights = [] if self.use_attention else None
-        lengths = torch.LongTensor(batch_size).zero_()
-        if torch.cuda.is_available():
-            lengths = lengths.cuda()
 
         while True:
-            decoder_output, decoder_hidden, step_attention_weights = self.forward_step(
+            decoder_output, decoder_hidden, step_attention_weights = self.step(
                 decoder_input, decoder_hidden, encoder_outputs)
 
             # (batch_size, 1, vocab_size) -> (batch_size, vocab_size)
             decoder_output = decoder_output.squeeze(1)
             decoder_outputs.append(decoder_output)
-            # (batch_size, vocab_size) -> (1, batch_size)
-            decoder_input = decoder_output.max(1)[1].view(1, batch_size)
+
+            # Filter the vocabulary before making the prediction
+            if self.include_vocab is not None:
+                batch_prediction = []
+                for i in range(batch_size):
+                    # (batch_size, vocab_size) -> (vocab_size)
+                    current_predictions = [p[i].data[0] for p in predictions]
+                    include_vocab_indices = self.include_vocab(current_predictions)
+                    if len(include_vocab_indices) == 0:
+                        batch_prediction.append(PADDING_INDEX)
+                        continue
+                    # include_vocab_indices is an array of vocabulary indices to keep
+                    # Example: include_vocab_indices = torch.LongTensor([1, 3, 5])
+                    # (batch_size, vocab_size) -> (vocab_size)
+                    one_decoder_output = decoder_output[i]
+                    one_decoder_output = one_decoder_output[include_vocab_indices]
+                    max_one_decoder_output = one_decoder_output.max(0)[1]
+                    predicted_index = include_vocab_indices[max_one_decoder_output.data[0]]
+                    batch_prediction.append(predicted_index)
+                batch_prediction = Variable(torch.LongTensor(batch_prediction).contiguous()).cuda()
+            else:
+                # (batch_size, vocab_size) -> (batch_size)
+                batch_prediction = decoder_output.max(1)[1].view(batch_size)
+
+            predictions.append(batch_prediction)
+            # Feed the predictions as the next decoder_input
+            decoder_input = batch_prediction.view(1, batch_size)
             if self.use_attention:
                 # (batch_size, 1, input_len) -> (batch_size, input_len)
                 step_attention_weights = step_attention_weights.squeeze(1)
                 attention_weights.append(step_attention_weights)
 
             # Check if every batch has an eos_token
-            if max_length is None:
-                eos_tokens.update(self._get_eos_indexes(decoder_output))
+            if fixed_length is None:  # CASE: Stop unrolling if EOS is found
+                eos_tokens.update(self._get_eos_indexes(batch_prediction))
                 if len(eos_tokens) == batch_size:
                     break
-                if len(decoder_outputs) == 1000:
+                if len(decoder_outputs) == 1000:  # CASE: Something has probably gone wrong
                     logger.warn('Decoder has not predicted EOS in 1000 iterations. Breaking.')
                     break
-
-            if max_length and len(decoder_outputs) == max_length:
+            elif len(decoder_outputs) == fixed_length:  # CASE: Stop unrolling at a fixed length
                 break
 
         decoder_outputs = torch.stack(decoder_outputs)
@@ -244,7 +362,7 @@ class SeqDecoder(BaseRNN):
         return decoder_outputs, decoder_hidden, attention_weights
 
     def forward(self,
-                max_length=None,
+                fixed_length=None,
                 encoder_hidden=None,
                 encoder_outputs=None,
                 target_output=None):
@@ -252,21 +370,20 @@ class SeqDecoder(BaseRNN):
         Using encoder hidden and encoder outputs make a prediction for the decoded sequence
 
         Args:
-            max_length (int): max length of a sequence
-            target_output (torch.LongTensor [max_length, batch_size]): tensor containing the target
+            target_output (torch.LongTensor [N, batch_size]): tensor containing the target
                 sequence
             encoder_outputs (torch.FloatTensor [seq_len, batch_size, rnn_size]): variable containing
                 the encoded features of the input sequence
             encoder_hidden (tuple or tensor): variable containing the features in the hidden state
                 dependant on torch.nn.GRU or torch.nn.LSTM
         Returns:
-            decoder_outputs (torch.FloatTensor [max_length - 1, batch_size, vocab_size]): outputs
+            decoder_outputs (torch.FloatTensor [N - 1, batch_size, vocab_size]): outputs
                 of the decoder at each timestep
             decoder_hidden(tuple or tensor): variable containing the features in the hidden state
                 dependant on torch.nn.GRU or torch.nn.LSTM
             attention_weights
         """
-        if max_length is not None and max_length < 2:
+        if fixed_length is not None and fixed_length < 2:
             raise ValueError('Max length of 1 will only generate <s> token. Below 1, it not valid.')
 
         if self.use_attention and encoder_outputs is None:
@@ -274,12 +391,12 @@ class SeqDecoder(BaseRNN):
 
         batch_size = self._get_batch_size(target_output, encoder_hidden)
 
-        if not self.scheduled_sampling and max_length and target_output is not None:
+        if not self.scheduled_sampling and target_output is not None:
             decoder_input = torch.cat([self._init_start_input(batch_size), target_output[0:-1]])
             # https://arxiv.org/pdf/1609.08144.pdf
             # https://arxiv.org/abs/1508.04025
             decoder_hidden = None if self.use_attention else encoder_hidden
-            decoder_outputs, decoder_hidden, attention_weights = self.forward_step(
+            decoder_outputs, decoder_hidden, attention_weights = self.step(
                 decoder_input, decoder_hidden, encoder_outputs)
             # (batch_size, vocab_size, output_len) -> (output_len, batch_size, vocab_size)
             decoder_outputs = decoder_outputs.transpose(0, 1).contiguous()
@@ -287,5 +404,4 @@ class SeqDecoder(BaseRNN):
                 attention_weights = attention_weights.transpose(0, 1).contiguous()
             return decoder_outputs, decoder_hidden, attention_weights
 
-        return self.forward_unrolled(
-            encoder_hidden, encoder_outputs, batch_size, max_length=max_length)
+        return self.unroll(encoder_hidden, encoder_outputs, batch_size, fixed_length=fixed_length)
