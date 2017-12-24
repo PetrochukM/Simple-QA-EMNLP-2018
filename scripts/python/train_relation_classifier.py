@@ -16,17 +16,20 @@ import pandas as pd
 from lib.checkpoint import Checkpoint
 from lib.configurable import add_config
 from lib.configurable import configurable
+from lib.datasets import simple_qa_predicate_preprocessed
 from lib.datasets import simple_qa_predicate
 from lib.metrics import get_accuracy
+from lib.metrics import get_accuracy_top_k
 from lib.metrics import print_bucket_accuracy
 from lib.metrics import print_random_sample
 from lib.nn import SeqToLabel
 from lib.optim import Optimizer
-from lib.pretrained_embeddings import GloVe
+from lib.pretrained_embeddings import FastText
 from lib.samplers import BucketBatchSampler
 from lib.samplers import SortedSampler
 from lib.text_encoders import IdentityEncoder
 from lib.text_encoders import TreebankEncoder
+from lib.text_encoders import WordEncoder
 from lib.utils import get_log_directory_path
 from lib.utils import get_total_parameters
 from lib.utils import init_logging
@@ -48,13 +51,13 @@ SIMPLE_PREDICATE_HYPERPARAMETERS = {
         'nn.seq_to_label.SeqToLabel.__init__': {
             'bidirectional': True,
             'embedding_size': embedding_size,
-            'rnn_size': 600,
+            'rnn_size': 300,
             'freeze_embeddings': True,
-            'rnn_cell': 'gru',
+            'rnn_cell': 'lstm',
             'decode_dropout': 0.3,  # dropout before fully connected layer in RNN
             'rnn_layers': 2,
             'rnn_variational_dropout': 0.3,
-            'embedding_dropout': 0.0
+            'embedding_dropout': 0.3
         },
         'optim.Optimizer.__init__.max_grad_norm': None,
     },
@@ -63,18 +66,12 @@ SIMPLE_PREDICATE_HYPERPARAMETERS = {
         'weight_decay': 0,
     },
     'scripts.python.train_relation_classifier.train': {
-        'get_dataset':
-            lambda: simple_qa_predicate,
-        'random_seed':
-            3435,
-        'epochs':
-            30,
-        'train_max_batch_size':
-            32,
-        'dev_max_batch_size':
-            128,
-        'get_pretrained_embedding':
-            lambda: GloVe(name='6B', dim=str(embedding_size), unk_init=unk_init),
+        'get_dataset': lambda: simple_qa_predicate,
+        'random_seed': 3435,
+        'epochs': 30,
+        'train_max_batch_size': 16,
+        'dev_max_batch_size': 128,
+        'get_pretrained_embedding': lambda: FastText(language="en"),
     }
 }
 
@@ -217,6 +214,9 @@ def train(
         # print_bucket_accuracy(buckets, relations, outputs)
         logger.info('Loss: %.03f', total_loss / len(dev_dataset))
         get_accuracy(relations, outputs, print_=True)
+        get_accuracy_top_k(relations, outputs, k=3, print_=True)
+        get_accuracy_top_k(relations, outputs, k=5, print_=True)
+        print()
 
     # TODO: Return the best loss if hyperparameter tunning.
 

@@ -1,8 +1,6 @@
 // Place your settings in this file to overwrite default and user settings.
 {
   "files.autoSave": "onFocusChange",
-  "python.linting.lintOnTextChange": true,
-  "python.formatting.formatOnSave": true,
   "editor.tabSize": 2,
   "editor.formatOnSave": true,
   "python.formatting.provider": "yapf",

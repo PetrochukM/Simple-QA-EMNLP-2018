@@ -72,6 +72,36 @@ def simple_qa_predicate(directory='data/SimpleQuestions_v2',
         return tuple(ret)
 
 
+def simple_qa_predicate_preprocessed(directory='data',
+                                     train=False,
+                                     dev=False,
+                                     test=False,
+                                     train_filename='preprocessed_question_relation_train.tsv',
+                                     dev_filename='preprocessed_question_relation_dev.tsv',
+                                     test_filename='preprocessed_question_relation_test.tsv'):
+    """
+    Sample Data:
+        Input: what is the book e about?
+        Output: www.freebase.com/book/written_work/subjects
+    """
+    ret = []
+    datasets = [(train, train_filename), (dev, dev_filename), (test, test_filename)]
+    for is_requested, filename in datasets:
+        if not is_requested:
+            continue
+        full_path = os.path.join(directory, filename)
+        data = pd.read_table(full_path)
+        rows = []
+        for _, row in data.iterrows():
+            rows.append({'text': row['question'].strip(), 'relation': row['relation']})
+        ret.append(Dataset(rows))
+
+    if len(ret) == 1:
+        return ret[0]
+    else:
+        return tuple(ret)
+
+
 def simple_qa_question_generation(directory='data/simple_qa',
                                   train=False,
                                   dev=False,

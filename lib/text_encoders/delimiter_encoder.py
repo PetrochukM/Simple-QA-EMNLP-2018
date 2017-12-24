@@ -17,3 +17,4 @@ class DelimiterEncoder(StaticTokenizerEncoder):
         while len(tokens) > 0 and tokens[-1] in RESERVED_STOI:
             reserved.insert(0, tokens.pop())
         return self.delimiter.join(tokens) + ''.join(reserved)
+

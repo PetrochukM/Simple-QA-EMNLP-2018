@@ -7,11 +7,11 @@ import torch.nn.functional as F
 from torch.autograd import Variable
 
 from lib.nn.attention import Attention
-from lib.nn.base_rnn import BaseRNN
 from lib.configurable import configurable
 from lib.text_encoders import EOS_INDEX
 from lib.text_encoders import SOS_INDEX
 from lib.text_encoders import PADDING_INDEX
+from lib.nn.lock_dropout import LockedDropout
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 # Helps with marking
 
 
-class SeqDecoder(BaseRNN):
+class SeqDecoder(nn.Module):
     r"""
     Provides functionality for decoding in a SeqToSeq framework, with an option for attention.
 
@@ -58,7 +58,6 @@ class SeqDecoder(BaseRNN):
     @configurable
     def __init__(self,
                  vocab_size,
-                 embeddings=None,
                  embedding_size=100,
                  rnn_size=100,
                  n_layers=2,
@@ -72,38 +71,47 @@ class SeqDecoder(BaseRNN):
                  freeze_embeddings=False,
                  fixed_length=None,
                  include_vocab=None):  # Only used during unrolling
-        super().__init__(
-            vocab_size=vocab_size,
-            embeddings=embeddings,
-            embedding_size=embedding_size,
-            embedding_dropout=embedding_dropout,
-            rnn_dropout=rnn_dropout,
-            rnn_cell=rnn_cell,
-            freeze_embeddings=freeze_embeddings)
-        n_layers = int(n_layers)
-        rnn_size = int(rnn_size)
+        super().__init__()
 
+        self.vocab_size = vocab_size
+        self.n_layers = int(n_layers)
+        self.rnn_size = int(rnn_size)
         self.use_attention = use_attention
         self.fixed_length = fixed_length
         self.include_vocab = include_vocab
-
-        self.rnn_size = rnn_size
-        self.rnn = self.rnn_cell(
-            embedding_size, rnn_size, n_layers, dropout=rnn_variational_dropout)
-        if use_attention:
-            # TODO: Add a mask to padding index?
-            self.attention = Attention(rnn_size)
-
-        self.decode_dropout = nn.Dropout(p=decode_dropout)
-        self.relu = nn.ReLU()
-        self.out = nn.Sequential(
-            nn.Linear(rnn_size, rnn_size),  # can apply batch norm after this - add later
-            nn.BatchNorm1d(rnn_size),
-            self.relu,
-            self.decode_dropout,
-            nn.Linear(rnn_size, vocab_size))
-
         self.scheduled_sampling = scheduled_sampling
+        self.rnn_size = rnn_size
+
+        self.embedding = nn.Embedding(
+            self.vocab_size, int(embedding_size), padding_idx=PADDING_INDEX)
+        self.embedding.weight.requires_grad = not freeze_embeddings
+        self.embedding_dropout = nn.Dropout(p=embedding_dropout)
+
+        self.rnn_dropout = LockedDropout(p=rnn_dropout)
+
+        rnn_cell = rnn_cell.lower()
+        if rnn_cell == 'lstm':
+            self.rnn_cell = nn.LSTM
+        elif rnn_cell == 'gru':
+            self.rnn_cell = nn.GRU
+        else:
+            raise ValueError("Unsupported RNN Cell: {0}".format(rnn_cell))
+
+        self.rnn = self.rnn_cell(
+            input_size=embedding_size,
+            hidden_size=self.rnn_size,
+            num_layers=self.n_layers,
+            dropout=rnn_variational_dropout)
+
+        if use_attention:
+            self.attention = Attention(self.rnn_size)
+
+        self.out = nn.Sequential(
+            nn.Linear(rnn_size, rnn_size),
+            nn.BatchNorm1d(rnn_size),
+            nn.ReLU(),
+            nn.Dropout(p=decode_dropout),
+            nn.Linear(rnn_size, vocab_size))
 
     def _init_start_input(self, batch_size):
         """
@@ -161,7 +169,7 @@ class SeqDecoder(BaseRNN):
         embedded = self.embedding(last_decoder_output)
         embedded = self.embedding_dropout(embedded)
 
-        output, decoder_hidden = self.rnn(embedded, decoder_hidden)
+        output, hidden = self.rnn(embedded, decoder_hidden)
         output = self.rnn_dropout(output)
         # (output_len, batch_size, rnn_size) -> (batch_size, output_len, rnn_size)
         output = output.transpose(0, 1).contiguous()
@@ -179,7 +187,7 @@ class SeqDecoder(BaseRNN):
         predicted_softmax = F.log_softmax(output)
         # (batch_size * output_len, vocab_size) -> (batch_size, output_len, vocab_size)
         predicted_softmax = predicted_softmax.view(batch_size, output_len, self.vocab_size)
-        return predicted_softmax, decoder_hidden, attention_weights
+        return predicted_softmax, hidden, attention_weights
 
     def _get_eos_indexes(self, predictions):
         """
@@ -304,6 +312,7 @@ class SeqDecoder(BaseRNN):
         predictions = []
         eos_tokens = set()
         attention_weights = [] if self.use_attention else None
+        cuda = lambda t: t.cuda() if encoder_outputs.is_cuda else t
 
         while True:
             decoder_output, decoder_hidden, step_attention_weights = self.step(
@@ -311,34 +320,36 @@ class SeqDecoder(BaseRNN):
 
             # (batch_size, 1, vocab_size) -> (batch_size, vocab_size)
             decoder_output = decoder_output.squeeze(1)
-            decoder_outputs.append(decoder_output)
 
-            # Filter the vocabulary before making the prediction
             if self.include_vocab is not None:
-                batch_prediction = []
+                # mask the vocabulary before making the prediction
+                batch_mask = []
                 for i in range(batch_size):
                     # (batch_size, vocab_size) -> (vocab_size)
-                    current_predictions = [p[i].data[0] for p in predictions]
-                    include_vocab_indices = self.include_vocab(current_predictions)
-                    if len(include_vocab_indices) == 0:
-                        batch_prediction.append(PADDING_INDEX)
-                        continue
-                    # include_vocab_indices is an array of vocabulary indices to keep
-                    # Example: include_vocab_indices = torch.LongTensor([1, 3, 5])
-                    # (batch_size, vocab_size) -> (vocab_size)
-                    one_decoder_output = decoder_output[i]
-                    one_decoder_output = one_decoder_output[include_vocab_indices]
-                    max_one_decoder_output = one_decoder_output.max(0)[1]
-                    predicted_index = include_vocab_indices[max_one_decoder_output.data[0]]
-                    batch_prediction.append(predicted_index)
-                batch_prediction = Variable(torch.LongTensor(batch_prediction).contiguous()).cuda()
-            else:
-                # (batch_size, vocab_size) -> (batch_size)
-                batch_prediction = decoder_output.max(1)[1].view(batch_size)
+                    prediction_row = [p[i].data[0] for p in predictions]
 
-            predictions.append(batch_prediction)
+                    # include_vocab_indices is an array of vocabulary indices to include
+                    # (batch_size, vocab_size) -> (vocab_size)
+                    include_vocab_indices = self.include_vocab(prediction_row)
+                    if include_vocab_indices is None or len(include_vocab_indices) == 0:
+                        # By default only include PADDING_INDEX
+                        assert EOS_INDEX in prediction_row
+                        include_vocab_indices = [PADDING_INDEX]
+
+                    mask = torch.FloatTensor(self.vocab_size).fill_(float('inf'))
+                    for vocab_index in include_vocab_indices:
+                        mask[vocab_index] = 1
+                    batch_mask.append(mask)
+
+                decoder_output = decoder_output * Variable(
+                    cuda(torch.stack(batch_mask)), requires_grad=False)
+
+            decoder_outputs.append(decoder_output)
+            # (batch_size, vocab_size) -> (batch_size)
+            prediction = decoder_output.max(1)[1].view(batch_size)
+            predictions.append(prediction)
             # Feed the predictions as the next decoder_input
-            decoder_input = batch_prediction.view(1, batch_size)
+            decoder_input = prediction.view(1, batch_size)
             if self.use_attention:
                 # (batch_size, 1, input_len) -> (batch_size, input_len)
                 step_attention_weights = step_attention_weights.squeeze(1)
@@ -346,7 +357,7 @@ class SeqDecoder(BaseRNN):
 
             # Check if every batch has an eos_token
             if fixed_length is None:  # CASE: Stop unrolling if EOS is found
-                eos_tokens.update(self._get_eos_indexes(batch_prediction))
+                eos_tokens.update(self._get_eos_indexes(prediction))
                 if len(eos_tokens) == batch_size:
                     break
                 if len(decoder_outputs) == 1000:  # CASE: Something has probably gone wrong

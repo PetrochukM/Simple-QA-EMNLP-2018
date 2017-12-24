@@ -27,7 +27,7 @@ from lib.pretrained_embeddings import GloVe
 from lib.samplers import BucketBatchSampler
 from lib.samplers import SortedSampler
 from lib.text_encoders import TreebankEncoder
-from lib.text_encoders import DelimiterEncoder
+from lib.text_encoders import WordEncoder
 from lib.text_encoders import PADDING_INDEX
 from lib.utils import get_log_directory_path
 from lib.utils import get_total_parameters
@@ -48,19 +48,19 @@ SIMPLE_PREDICATE_HYPERPARAMETERS = {
     'lib': {
         'nn.seq_to_seq.SeqToSeq.__init__': {
             'embedding_size': embedding_size,
-            'rnn_size': 600,
+            'rnn_size': 256,
             'n_layers': 2,
-            'rnn_cell': 'gru',
+            'rnn_cell': 'lstm',
             'tie_weights': False
         },
         'nn.seq_encoder.SeqEncoder.__init__': {
-            'embedding_dropout': 0.0,
-            'rnn_dropout': 0.3,
+            'embedding_dropout': 0.2,
+            'rnn_dropout': 0.25,
             'bidirectional': True,
             'freeze_embeddings': True,
         },
         'nn.seq_decoder.SeqDecoder.__init__': {
-            'embedding_dropout': 0.0,
+            'embedding_dropout': 0.4,
             'use_attention': True,
             'rnn_dropout': 0.0,
             'freeze_embeddings': False,
@@ -70,18 +70,18 @@ SIMPLE_PREDICATE_HYPERPARAMETERS = {
         'attention.Attention.__init__.attention_type': 'general',
     },
     'torch.optim.adam.Adam.__init__': {
-        'lr': 1e-4,
+        'lr': 0.001584,
         'weight_decay': 0,
     },
-    'scripts.python.train_relation_classifier.train': {
+    'scripts.python.train_relation_seq_to_seq.train': {
         'get_dataset':
             lambda: simple_qa_predicate,
         'random_seed':
-            123,
+            3435,
         'epochs':
             30,
         'train_max_batch_size':
-            32,
+            16,
         'dev_max_batch_size':
             128,
         'get_pretrained_embedding':
@@ -117,18 +117,26 @@ def train(
     logger.info('Num Training Data: %d', len(train_dataset))
     logger.info('Num Development Data: %d', len(dev_dataset))
 
+    # Preprocess dataset
+    for dataset in [train_dataset, dev_dataset]:
+        for row in dataset:
+            row['relation'] = row['relation'].replace('www.freebase.com/', '')
+            row['relation'] = row['relation'].replace('_', ' _ ')
+            row['relation'] = row['relation'].replace('/', ' / ')
+
     # Init Encoders and encode dataset
     if checkpoint:
         text_encoder, relation_encoder = checkpoint.input_encoder, checkpoint.output_encoder
     else:
-        text_encoder = TreebankEncoder(train_dataset['text'], lower=True)
+        text_encoder = TreebankEncoder(train_dataset['text'] + dev_dataset['text'], lower=True)
         logger.info('Text encoder vocab size: %d' % text_encoder.vocab_size)
-        relation_encoder = DelimiterEncoder('/', train_dataset['relation'], append_eos=True)
+        relation_encoder = WordEncoder(
+            train_dataset['relation'] + dev_dataset['relation'], append_eos=True)
         logger.info('Relation encoder vocab size: %d' % relation_encoder.vocab_size)
+
     for dataset in [train_dataset, dev_dataset]:
         for row in dataset:
             row['text'] = text_encoder.encode(row['text'])
-            row['relation'] = row['relation'].replace('www.freebase.com/', '')
             row['relation'] = relation_encoder.encode(row['relation'])
 
             # Build up a tree of all possible relations
@@ -138,34 +146,33 @@ def train(
                     tree_node[index] = {}
                 tree_node = tree_node[index]
 
+    # Using the tree, check if a particular sequence is possible
     def include_vocab(predictions):
         tree_node = relation_tree
         for prediction in predictions:
             if prediction not in tree_node:
-                return cuda_async(torch.LongTensor([]))
+                return None
             tree_node = tree_node[prediction]
-        return cuda_async(torch.LongTensor(list(tree_node.keys())))
+        return list(tree_node.keys())
 
     # Init Model
     if checkpoint:
         model = checkpoint.model
     else:
-        unk_init = lambda t: torch.FloatTensor(t).uniform_(-0.1, 0.1)
+        model = SeqToSeq(
+            text_encoder.vocab_size, relation_encoder.vocab_size, include_vocab=include_vocab)
+
+        for param in model.parameters():
+            param.data.uniform_(-0.1, 0.1)
+
         # Load embeddings
         if get_pretrained_embedding:
+            unk_init = lambda t: torch.FloatTensor(t).uniform_(-0.1, 0.1)
             pretrained_embedding = get_pretrained_embedding(unk_init=unk_init)
             embedding_weights = torch.Tensor(text_encoder.vocab_size, pretrained_embedding.dim)
             for i, token in enumerate(text_encoder.vocab):
                 embedding_weights[i] = pretrained_embedding[token]
-
-        model = SeqToSeq(
-            text_encoder.vocab_size,
-            relation_encoder.vocab_size,
-            embeddings_encoder=embedding_weights,
-            include_vocab=include_vocab)
-
-        for param in model.parameters():
-            param.data.uniform_(-0.1, 0.1)
+            model.encoder.embedding.weight.data.copy_(embedding_weights)
 
     cuda(model)
 
@@ -289,7 +296,7 @@ if __name__ == '__main__':
     if args.checkpoint_path:
         log_directory = os.path.dirname(args.checkpoint_path)
     else:
-        log_directory = get_log_directory_path('relation_classifier')
+        log_directory = get_log_directory_path('relation_seq_to_seq')
     log_directory = init_logging(log_directory)
     logger = logging.getLogger(__name__)
     train(checkpoint_path=args.checkpoint_path, log_directory=log_directory)

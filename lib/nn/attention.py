@@ -10,17 +10,13 @@ class Attention(nn.Module):
     Attributes:
         linear_out (torch.nn.Linear): applies a linear transformation to the incoming data:
             :math:`y = Ax + b`.
-        mask (torch.ByteTensor, optional): applies a :math:`-inf` to the indices specified in the
-            `Tensor`.
     """
 
     @configurable
-    def __init__(self, dimensions, mask=None, attention_type='general'):
+    def __init__(self, dimensions, attention_type='general'):
         """
         Args:
             dimensions (int): The number of expected features in the output
-            mask (torch.ByteTensor [batch_size, output_len, input_len]): applies a `-inf` to the indices specified
-                in the `Tensor`.
         """
         super(Attention, self).__init__()
 
@@ -32,7 +28,6 @@ class Attention(nn.Module):
         self.linear_out = nn.Linear(dimensions * 2, dimensions, bias=False)
         self.softmax = nn.Softmax()
         self.tanh = nn.Tanh()
-        self.mask = mask
 
     def forward(self, input_, context):
         """
@@ -54,11 +49,11 @@ class Attention(nn.Module):
             input_ = self.linear_in(input_)
             input_ = input_.view(batch_size, output_len, dimensions)
 
+        # TODO: Include mask on padding_indx?
+
         # (batch_size, output_len, dimensions) * (batch_size, input_len, dimensions) ->
         # (batch_size, output_len, input_len)
         attention_scores = torch.bmm(input_, context.transpose(1, 2).contiguous())
-        if self.mask is not None:
-            attention_scores.data.masked_fill_(self.mask, -float('inf'))
 
         # Compute weights across every context sequence
         attention_scores = attention_scores.view(batch_size * output_len, input_len)

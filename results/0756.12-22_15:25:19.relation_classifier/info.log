@@ -1,0 +1,684 @@
+2017-12-22 15:25:19,184 - MainProcess - lib.configurable - INFO - train_relation_classifier.train was configured with:
+{   'checkpoint_path': None,
+    'dev_max_batch_size': 128,
+    'epochs': 30,
+    'get_dataset': <function <lambda> at 0x7f1a0f7ff6a8>,
+    'get_pretrained_embedding': <function <lambda> at 0x7f1a0f7ff730>,
+    'log_directory': 'logs/0000.12-22_15:25:19.relation_classifier',
+    'random_seed': 3435,
+    'train_max_batch_size': 16}
+2017-12-22 15:25:19,238 - MainProcess - lib.utils - INFO - Device: 0
+2017-12-22 15:25:19,238 - MainProcess - lib.utils - INFO - Seed: 3435
+2017-12-22 15:25:19,238 - MainProcess - lib.configurable - INFO - Global configuration:
+2017-12-22 15:25:19,239 - MainProcess - root - INFO - {   'lib': {   'nn': {   'seq_to_label': {   'SeqToLabel': {   '__init__': {   'bidirectional': True,
+                                                                               'decode_dropout': 0.3,
+                                                                               'embedding_dropout': 0.3,
+                                                                               'embedding_size': 300,
+                                                                               'freeze_embeddings': True,
+                                                                               'rnn_cell': 'gru',
+                                                                               'rnn_layers': 2,
+                                                                               'rnn_size': 600,
+                                                                               'rnn_variational_dropout': 0.3}}}},
+               'optim': {'Optimizer': {'__init__': {'max_grad_norm': None}}}},
+    'scripts': {   'python': {   'train_relation_classifier': {   'train': {   'dev_max_batch_size': 128,
+                                                                               'epochs': 30,
+                                                                               'get_dataset': <function <lambda> at 0x7f1a0f7ff6a8>,
+                                                                               'get_pretrained_embedding': <function <lambda> at 0x7f1a0f7ff730>,
+                                                                               'random_seed': 3435,
+                                                                               'train_max_batch_size': 16}}}},
+    'torch': {   'optim': {   'adam': {   'Adam': {   '__init__': {   'lr': 0.0001,
+                                                                      'weight_decay': 0}}}}}}
+2017-12-22 15:25:24,246 - MainProcess - __main__ - INFO - Num Training Data: 75910
+2017-12-22 15:25:24,247 - MainProcess - __main__ - INFO - Num Development Data: 10845
+2017-12-22 15:25:29,777 - MainProcess - __main__ - INFO - Text encoder vocab size: 53052
+2017-12-22 15:25:29,842 - MainProcess - __main__ - INFO - Relation encoder vocab size: 1703
+2017-12-22 15:25:35,214 - MainProcess - lib.configurable - INFO - seq_to_label.SeqToLabel.__init__ was configured with:
+{   'bidirectional': True,
+    'decode_dropout': 0.3,
+    'embedding_dropout': 0.3,
+    'embedding_size': 300,
+    'freeze_embeddings': True,
+    'input_vocab_size': 53052,
+    'output_vocab_size': 1703,
+    'rnn_cell': 'gru',
+    'rnn_layers': 2,
+    'rnn_size': 600,
+    'rnn_variational_dropout': 0.3}
+2017-12-22 15:25:35,216 - MainProcess - lib.configurable - INFO - seq_encoder.SeqEncoder.__init__ no config for: lib.nn.seq_encoder.SeqEncoder.__init__
+2017-12-22 15:25:35,216 - MainProcess - lib.configurable - INFO - seq_encoder.SeqEncoder.__init__ was configured with:
+{   'bidirectional': True,
+    'embedding_dropout': 0.3,
+    'embedding_size': 300,
+    'freeze_embeddings': True,
+    'n_layers': 2,
+    'rnn_cell': 'gru',
+    'rnn_size': 600,
+    'rnn_variational_dropout': 0.3,
+    'vocab_size': 53052}
+2017-12-22 15:25:36,188 - MainProcess - lib.pretrained_embeddings - INFO - Loading vectors from .pretrained_embeddings_cache/wiki.en.vec.pt
+2017-12-22 15:25:43,036 - MainProcess - __main__ - INFO - Model:
+SeqToLabel (
+  (encoder): SeqEncoder (
+    (embedding): Embedding(53052, 300, padding_idx=0)
+    (rnn): GRU(300, 300, num_layers=2, dropout=0.3, bidirectional=True)
+    (rnn_dropout): LockedDropout (
+    )
+    (embedding_dropout): Dropout (p = 0.3)
+  )
+  (out): Sequential (
+    (0): Linear (600 -> 600)
+    (1): BatchNorm1d(600, eps=1e-05, momentum=0.1, affine=True)
+    (2): ReLU ()
+    (3): Dropout (p = 0.3)
+    (4): Linear (600 -> 1703)
+  )
+)
+2017-12-22 15:25:43,037 - MainProcess - __main__ - INFO - Total Parameters: 4092503
+2017-12-22 15:25:43,037 - MainProcess - lib.configurable - INFO - adam.Adam.__init__ was configured with:
+{'lr': 0.0001, 'params': <filter object at 0x7f1a168402e8>, 'weight_decay': 0}
+2017-12-22 15:25:43,037 - MainProcess - lib.configurable - INFO - adam.Adam.__init__ was configured with:
+{'lr': 0.0001, 'params': <filter object at 0x7f1a168402e8>, 'weight_decay': 0}
+2017-12-22 15:25:43,037 - MainProcess - lib.configurable - INFO - optim.Optimizer.__init__ was configured with:
+{   'max_grad_norm': None,
+    'optim': <torch.optim.adam.Adam object at 0x7f1a1640e940>}
+2017-12-22 15:25:43,037 - MainProcess - __main__ - INFO - Epoch 0
+2017-12-22 15:26:10,336 - MainProcess - lib.checkpoint - INFO - Saving checkpoint 12m_22d_15h_26m_10s.pt
+2017-12-22 15:26:11,575 - MainProcess - lib.metrics.random_sample - INFO - Random Sample:
+
+Positive Samples:
+                                                   Source                                                Target                                            Prediction
+0                            where is santa maria located        www.freebase.com/location/location/containedby        www.freebase.com/location/location/containedby
+1  which language is primarily used in nuba conversations                   www.freebase.com/film/film/language                   www.freebase.com/film/film/language
+2                       what country is michele berk from            www.freebase.com/people/person/nationality            www.freebase.com/people/person/nationality
+3                     where was abdul halim of kedah born         www.freebase.com/people/person/place_of_birth         www.freebase.com/people/person/place_of_birth
+4                   what 's a short film released in 1912  www.freebase.com/film/film_genre/films_in_this_genre  www.freebase.com/film/film_genre/films_in_this_genre
+
+Negative Samples:
+                                                                           Source                                                                           Target                                                      Prediction
+0  what type of establishment is the general mitchell international airport <pad>                                      www.freebase.com/common/topic/notable_types  www.freebase.com/education/educational_institution/school_type
+1                                           what is a tourist attraction in basel                   www.freebase.com/travel/travel_destination/tourist_attractions                     www.freebase.com/location/location/contains
+2                                    which character in the wire is a detective ?  www.freebase.com/fictional_universe/character_occupation/characters_with_thi...                    www.freebase.com/tv/tv_series_episode/series
+3             what organization was founded by kathleen kennedy ( film producer )         www.freebase.com/organization/organization_founder/organizations_founded                             www.freebase.com/film/producer/film
+4                          what is the name of a book published by bantam spectra                         www.freebase.com/book/publishing_company/books_published                        www.freebase.com/book/book_subject/works
+
+2017-12-22 15:26:11,579 - MainProcess - __main__ - INFO - Loss: 2.006
+2017-12-22 15:26:11,652 - MainProcess - lib.metrics.accuracy - INFO - Accuracy: 0.6201936376210235 [6726 of 10845]
+2017-12-22 15:26:11,948 - MainProcess - lib.metrics.accuracy - INFO - Accuracy Top 3: 0.766159520516367 [8309 of 10845]
+2017-12-22 15:26:12,254 - MainProcess - lib.metrics.accuracy - INFO - Accuracy Top 5: 0.8019363762102352 [8697 of 10845]
+2017-12-22 15:26:12,254 - MainProcess - __main__ - INFO - Epoch 1
+2017-12-22 15:26:39,113 - MainProcess - lib.checkpoint - INFO - Saving checkpoint 12m_22d_15h_26m_39s.pt
+2017-12-22 15:26:40,186 - MainProcess - lib.metrics.random_sample - INFO - Random Sample:
+
+Positive Samples:
+                                     Source                                                  Target                                              Prediction
+0          saathiya is this genre of film .                        www.freebase.com/film/film/genre                        www.freebase.com/film/film/genre
+1      what is isabell masters 's ethnicity                www.freebase.com/people/person/ethnicity                www.freebase.com/people/person/ethnicity
+2  what object does 25511 annlipinsky orbit  www.freebase.com/astronomy/orbital_relationship/orbits  www.freebase.com/astronomy/orbital_relationship/orbits
+3        which city was helen grant born in           www.freebase.com/people/person/place_of_birth           www.freebase.com/people/person/place_of_birth
+4          what is jim davidson birth place           www.freebase.com/people/person/place_of_birth           www.freebase.com/people/person/place_of_birth
+
+Negative Samples:
+                                            Source                                                           Target                                          Prediction
+0  which movie is tim lahaye a film contributor to  www.freebase.com/film/film_story_contributor/film_story_credits                 www.freebase.com/film/director/film
+1           what is a version of the single free ?                           www.freebase.com/music/single/versions  www.freebase.com/music/recording/canonical_version
+2                   what county is in lima ? <pad>                www.freebase.com/location/hud_county_place/county      www.freebase.com/location/location/containedby
+3   plugged nickle was an example of what animal ?                  www.freebase.com/biology/organism/organism_type         www.freebase.com/common/topic/notable_types
+4             what 's a track from blame the world                        www.freebase.com/music/release/track_list                www.freebase.com/music/release/track
+
+2017-12-22 15:26:40,189 - MainProcess - __main__ - INFO - Loss: 1.482
+2017-12-22 15:26:40,261 - MainProcess - lib.metrics.accuracy - INFO - Accuracy: 0.7078838174273859 [7677 of 10845]
+2017-12-22 15:26:40,549 - MainProcess - lib.metrics.accuracy - INFO - Accuracy Top 3: 0.845643153526971 [9171 of 10845]
+2017-12-22 15:26:40,847 - MainProcess - lib.metrics.accuracy - INFO - Accuracy Top 5: 0.8792070078377132 [9535 of 10845]
+2017-12-22 15:26:40,848 - MainProcess - __main__ - INFO - Epoch 2
+2017-12-22 15:27:07,293 - MainProcess - lib.checkpoint - INFO - Saving checkpoint 12m_22d_15h_27m_07s.pt
+2017-12-22 15:27:08,447 - MainProcess - lib.metrics.random_sample - INFO - Random Sample:
+
+Positive Samples:
+                                             Source                                               Target                                           Prediction
+0  what is craig mcaughtrie 's position in football   www.freebase.com/soccer/football_player/position_s   www.freebase.com/soccer/football_player/position_s
+1    who developed the story for the asphalt jungle                  www.freebase.com/film/film/story_by                  www.freebase.com/film/film/story_by
+2    who was the artist for homesick for the road ?                  www.freebase.com/music/album/artist                  www.freebase.com/music/album/artist
+3  who is a person that was born in sao paulo <pad>  www.freebase.com/location/location/people_born_here  www.freebase.com/location/location/people_born_here
+4                   what is a song by barry mcguire                  www.freebase.com/music/artist/track                  www.freebase.com/music/artist/track
+
+Negative Samples:
+                                                              Source                                                                  Target                                                     Prediction
+0                                  name a city in sebastian county ?                    www.freebase.com/location/us_county/hud_county_place                    www.freebase.com/location/location/contains
+1  what is the active moiety of formulation of matricaria chamomilla  www.freebase.com/medicine/drug_ingredient/active_moiety_of_formulation  www.freebase.com/medicine/drug_formulation/active_ingredients
+2                                             where is dovima from ?                              www.freebase.com/people/person/nationality                           www.freebase.com/music/artist/origin
+3                                               where is bowman lake                         www.freebase.com/geography/lake/basin_countries                 www.freebase.com/location/location/containedby
+4                 what is the name of a track released from shine on                                    www.freebase.com/music/release/track                   www.freebase.com/music/release_track/release
+
+2017-12-22 15:27:08,449 - MainProcess - __main__ - INFO - Loss: 1.270
+2017-12-22 15:27:08,520 - MainProcess - lib.metrics.accuracy - INFO - Accuracy: 0.7514983863531581 [8150 of 10845]
+2017-12-22 15:27:08,809 - MainProcess - lib.metrics.accuracy - INFO - Accuracy Top 3: 0.8784693407100046 [9527 of 10845]
+2017-12-22 15:27:09,104 - MainProcess - lib.metrics.accuracy - INFO - Accuracy Top 5: 0.9071461502996773 [9838 of 10845]
+2017-12-22 15:27:09,104 - MainProcess - __main__ - INFO - Epoch 3
+2017-12-22 15:27:35,533 - MainProcess - lib.checkpoint - INFO - Saving checkpoint 12m_22d_15h_27m_35s.pt
+2017-12-22 15:27:36,608 - MainProcess - lib.metrics.random_sample - INFO - Random Sample:
+
+Positive Samples:
+                                           Source                                                                    Target                                                                Prediction
+0  what organization was founded by chuck smith ?  www.freebase.com/organization/organization_founder/organizations_founded  www.freebase.com/organization/organization_founder/organizations_founded
+1           who was involved in the world war i ?   www.freebase.com/military/military_conflict/military_personnel_involved   www.freebase.com/military/military_conflict/military_personnel_involved
+2               who makes adderall 5/5/5/5 tablet             www.freebase.com/medicine/manufactured_drug_form/manufacturer             www.freebase.com/medicine/manufactured_drug_form/manufacturer
+3        what 's a place in province of frosinone                               www.freebase.com/location/location/contains                               www.freebase.com/location/location/contains
+4          what is a symptom of turner syndrome ?                                www.freebase.com/medicine/disease/symptoms                                www.freebase.com/medicine/disease/symptoms
+
+Negative Samples:
+                                               Source                                                                 Target                                       Prediction
+0  where did dick grayson make his first appearance ?     www.freebase.com/comic_books/comic_book_character/first_appearance             www.freebase.com/music/artist/origin
+1              what university is cu online a part of  www.freebase.com/education/educational_institution/parent_institution      www.freebase.com/location/location/contains
+2        what language is america and lewis hine in ?                                    www.freebase.com/film/film/language         www.freebase.com/tv/tv_program/languages
+3                    what album was sirius recorded ?                           www.freebase.com/music/release_track/release              www.freebase.com/music/artist/album
+4       what kind of album is ten thousand lightyears                            www.freebase.com/common/topic/notable_types  www.freebase.com/music/album/album_content_type
+
+2017-12-22 15:27:36,611 - MainProcess - __main__ - INFO - Loss: 1.159
+2017-12-22 15:27:36,683 - MainProcess - lib.metrics.accuracy - INFO - Accuracy: 0.7710465652374366 [8362 of 10845]
+2017-12-22 15:27:36,968 - MainProcess - lib.metrics.accuracy - INFO - Accuracy Top 3: 0.8966343937298294 [9724 of 10845]
+2017-12-22 15:27:37,258 - MainProcess - lib.metrics.accuracy - INFO - Accuracy Top 5: 0.9196864914707238 [9974 of 10845]
+2017-12-22 15:27:37,258 - MainProcess - __main__ - INFO - Epoch 4
+2017-12-22 15:28:03,679 - MainProcess - lib.checkpoint - INFO - Saving checkpoint 12m_22d_15h_28m_03s.pt
+2017-12-22 15:28:04,928 - MainProcess - lib.metrics.random_sample - INFO - Random Sample:
+
+Positive Samples:
+                                            Source                                                  Target                                              Prediction
+0  what genre of music does hoodie allen play in ?                     www.freebase.com/music/artist/genre                     www.freebase.com/music/artist/genre
+1               what position does nap lajoie play    www.freebase.com/baseball/baseball_player/position_s    www.freebase.com/baseball/baseball_player/position_s
+2        in what city did herbert b. warburton die  www.freebase.com/people/deceased_person/place_of_death  www.freebase.com/people/deceased_person/place_of_death
+3         what record label is tori amos signed to                     www.freebase.com/music/artist/label                     www.freebase.com/music/artist/label
+4       what is the release format of bloodline ep                   www.freebase.com/music/release/format                   www.freebase.com/music/release/format
+
+Negative Samples:
+                                                    Source                                                              Target                                              Prediction
+0            which empire did didius julianus ruled over ?  www.freebase.com/user/robert/roman_empire/roman_emperor/emperor_of  www.freebase.com/people/deceased_person/place_of_death
+1  what is the name of a death cab for cutie album ? <pad>                                 www.freebase.com/music/artist/album                     www.freebase.com/music/genre/albums
+2               what is spyridon trikoupis 's profession ?                         www.freebase.com/common/topic/notable_types               www.freebase.com/people/person/profession
+3      what type of museum is the world museum liverpool ?                 www.freebase.com/architecture/museum/type_of_museum             www.freebase.com/common/topic/notable_types
+4                     who recorded the track count on me ?                      www.freebase.com/music/release_track/recording                 www.freebase.com/music/recording/artist
+
+2017-12-22 15:28:04,930 - MainProcess - __main__ - INFO - Loss: 1.105
+2017-12-22 15:28:05,005 - MainProcess - lib.metrics.accuracy - INFO - Accuracy: 0.7796219455970493 [8455 of 10845]
+2017-12-22 15:28:05,300 - MainProcess - lib.metrics.accuracy - INFO - Accuracy Top 3: 0.9049331489165514 [9814 of 10845]
+2017-12-22 15:28:05,612 - MainProcess - lib.metrics.accuracy - INFO - Accuracy Top 5: 0.9289995389580452 [10075 of 10845]
+2017-12-22 15:28:05,612 - MainProcess - __main__ - INFO - Epoch 5
+2017-12-22 15:28:34,982 - MainProcess - lib.checkpoint - INFO - Saving checkpoint 12m_22d_15h_28m_34s.pt
+2017-12-22 15:28:36,118 - MainProcess - lib.metrics.random_sample - INFO - Random Sample:
+
+Positive Samples:
+                                                            Source                                                            Target                                                        Prediction
+0                                           how did indie film die              www.freebase.com/film/film_genre/films_in_this_genre              www.freebase.com/film/film_genre/films_in_this_genre
+1      which association football position did stefan thesker play                www.freebase.com/soccer/football_player/position_s                www.freebase.com/soccer/football_player/position_s
+2           what is the name of a mystery movie on netflix ? <pad>                www.freebase.com/media_common/netflix_genre/titles                www.freebase.com/media_common/netflix_genre/titles
+3  which film did antonio tentori help provide the story credits ?   www.freebase.com/film/film_story_contributor/film_story_credits   www.freebase.com/film/film_story_contributor/film_story_credits
+4                          what is a 1998 speculative fiction book  www.freebase.com/media_common/literary_genre/books_in_this_genre  www.freebase.com/media_common/literary_genre/books_in_this_genre
+
+Negative Samples:
+                                                 Source                                            Target                                                       Prediction
+0           what 's the name of the pixie 's live album  www.freebase.com/music/album_content_type/albums                              www.freebase.com/music/artist/album
+1  what would be a music spin with the topic of hawkeye       www.freebase.com/common/topic/notable_types                               www.freebase.com/music/album/genre
+2                   who is the artist of love is a gift           www.freebase.com/music/recording/artist                              www.freebase.com/music/album/artist
+3                  which pg-13 film stars jackie chan ?         www.freebase.com/film/content_rating/film  www.freebase.com/film/film_story_contributor/film_story_credits
+4           which albums were released by deep purple ?  www.freebase.com/music/album_release_type/albums                              www.freebase.com/music/artist/album
+
+2017-12-22 15:28:36,121 - MainProcess - __main__ - INFO - Loss: 1.048
+2017-12-22 15:28:36,195 - MainProcess - lib.metrics.accuracy - INFO - Accuracy: 0.7873674504379898 [8539 of 10845]
+2017-12-22 15:28:36,493 - MainProcess - lib.metrics.accuracy - INFO - Accuracy Top 3: 0.9121254034117104 [9892 of 10845]
+2017-12-22 15:28:36,793 - MainProcess - lib.metrics.accuracy - INFO - Accuracy Top 5: 0.9367450437989857 [10159 of 10845]
+2017-12-22 15:28:36,793 - MainProcess - __main__ - INFO - Epoch 6
+2017-12-22 15:29:05,095 - MainProcess - lib.checkpoint - INFO - Saving checkpoint 12m_22d_15h_29m_05s.pt
+2017-12-22 15:29:06,260 - MainProcess - lib.metrics.random_sample - INFO - Random Sample:
+
+Positive Samples:
+                                                  Source                                                      Target                                                  Prediction
+0       who directed the tv show viking bikers from hell              www.freebase.com/tv/tv_series_episode/director              www.freebase.com/tv/tv_series_episode/director
+1  what netflix genre is stripteaser 2 categorized under  www.freebase.com/media_common/netflix_title/netflix_genres  www.freebase.com/media_common/netflix_title/netflix_genres
+2                      what is the gender of bert weedon                       www.freebase.com/people/person/gender                       www.freebase.com/people/person/gender
+3             what is the talking from 9 to 5 book about                 www.freebase.com/book/written_work/subjects                 www.freebase.com/book/written_work/subjects
+4                 what is roscoe lee browne 's ethnicity                    www.freebase.com/people/person/ethnicity                    www.freebase.com/people/person/ethnicity
+
+Negative Samples:
+                                        Source                                                          Target                                          Prediction
+0  about what country is the absurd film about      www.freebase.com/media_common/netflix_title/netflix_genres                 www.freebase.com/film/film/subjects
+1                what kind of film is panorama                            www.freebase.com/tv/tv_program/genre                    www.freebase.com/film/film/genre
+2    what position does félix rodríguez play ?            www.freebase.com/baseball/baseball_player/position_s  www.freebase.com/soccer/football_player/position_s
+3   what profession did jewish emery roth have                     www.freebase.com/common/topic/notable_types           www.freebase.com/people/person/profession
+4   what gender is salvatore the boss maroni ?  www.freebase.com/fictional_universe/fictional_character/gender               www.freebase.com/people/person/gender
+
+2017-12-22 15:29:06,264 - MainProcess - __main__ - INFO - Loss: 0.996
+2017-12-22 15:29:06,336 - MainProcess - lib.metrics.accuracy - INFO - Accuracy: 0.7998155832180729 [8674 of 10845]
+2017-12-22 15:29:06,630 - MainProcess - lib.metrics.accuracy - INFO - Accuracy Top 3: 0.9189488243430152 [9966 of 10845]
+2017-12-22 15:29:06,932 - MainProcess - lib.metrics.accuracy - INFO - Accuracy Top 5: 0.9422775472568004 [10219 of 10845]
+2017-12-22 15:29:06,932 - MainProcess - __main__ - INFO - Epoch 7
+2017-12-22 15:29:35,021 - MainProcess - lib.checkpoint - INFO - Saving checkpoint 12m_22d_15h_29m_35s.pt
+2017-12-22 15:29:36,135 - MainProcess - lib.metrics.random_sample - INFO - Random Sample:
+
+Positive Samples:
+                                               Source                                          Target                                      Prediction
+0          what is ali akbar nategh nouri 's religion         www.freebase.com/people/person/religion         www.freebase.com/people/person/religion
+1  what media is santa maria della salute , venice in       www.freebase.com/visual_art/artwork/media       www.freebase.com/visual_art/artwork/media
+2                             where is kettle falls ?  www.freebase.com/location/location/containedby  www.freebase.com/location/location/containedby
+3                what is cynthia ozick 's ethnicity ?        www.freebase.com/people/person/ethnicity        www.freebase.com/people/person/ethnicity
+4      what type of music is featured in australia ep              www.freebase.com/music/album/genre              www.freebase.com/music/album/genre
+
+Negative Samples:
+                                                                        Source                                                 Target                                      Prediction
+0                              name a periodical that 's subject is leadership   www.freebase.com/book/periodical_subject/periodicals        www.freebase.com/book/book_subject/works
+1  what medical specialty is the disease streptococcal pharyngitis a part of ?  www.freebase.com/medicine/disease/medical_specialties  www.freebase.com/medicine/risk_factor/diseases
+2                                                 what subject is used in nasa             www.freebase.com/base/yupgrade/user/topics     www.freebase.com/book/written_work/subjects
+3                                                         where is look from ?                     www.freebase.com/film/film/country            www.freebase.com/music/artist/origin
+4                                           what is a gunfighter also known as   www.freebase.com/people/profession/specialization_of     www.freebase.com/common/topic/notable_types
+
+2017-12-22 15:29:36,138 - MainProcess - __main__ - INFO - Loss: 1.001
+2017-12-22 15:29:36,208 - MainProcess - lib.metrics.accuracy - INFO - Accuracy: 0.8021207929921623 [8699 of 10845]
+2017-12-22 15:29:36,500 - MainProcess - lib.metrics.accuracy - INFO - Accuracy Top 3: 0.921161825726141 [9990 of 10845]
+2017-12-22 15:29:36,788 - MainProcess - lib.metrics.accuracy - INFO - Accuracy Top 5: 0.9459658828953434 [10259 of 10845]
+2017-12-22 15:29:36,788 - MainProcess - __main__ - INFO - Epoch 8
+2017-12-22 15:30:05,599 - MainProcess - lib.checkpoint - INFO - Saving checkpoint 12m_22d_15h_30m_05s.pt
+2017-12-22 15:30:06,827 - MainProcess - lib.metrics.random_sample - INFO - Random Sample:
+
+Positive Samples:
+                                         Source                                                 Target                                             Prediction
+0      which film was produced by david klawans                    www.freebase.com/film/producer/film                    www.freebase.com/film/producer/film
+1  what type of object is 10888 yamatano-orochi   www.freebase.com/astronomy/celestial_object/category   www.freebase.com/astronomy/celestial_object/category
+2                    which area does kdge serve       www.freebase.com/broadcast/broadcast/area_served       www.freebase.com/broadcast/broadcast/area_served
+3        which industry is epicenter studios in  www.freebase.com/business/business_operation/industry  www.freebase.com/business/business_operation/industry
+4                what types of book is gridiron                       www.freebase.com/book/book/genre                       www.freebase.com/book/book/genre
+
+Negative Samples:
+                                                                            Source                                                                    Target                                              Prediction
+0                                 what album did the thewatchmusic release in 2011                                       www.freebase.com/music/artist/album        www.freebase.com/music/album_release_type/albums
+1                                              what album is the tourist a part of                              www.freebase.com/music/release_track/release               www.freebase.com/music/recording/releases
+2  who is a current member of united states house committee on the judiciary <pad>  www.freebase.com/user/robert/us_congress/house_committee/current_members                  www.freebase.com/people/family/members
+3                                               what is the name of a period piece                      www.freebase.com/film/film_genre/films_in_this_genre  www.freebase.com/music/compositional_form/compositions
+4                                                       who wrote the magic show ?                                 www.freebase.com/book/written_work/author            www.freebase.com/tv/tv_series_episode/writer
+
+2017-12-22 15:30:06,830 - MainProcess - __main__ - INFO - Loss: 0.966
+2017-12-22 15:30:06,906 - MainProcess - lib.metrics.accuracy - INFO - Accuracy: 0.8103273397879207 [8788 of 10845]
+2017-12-22 15:30:07,222 - MainProcess - lib.metrics.accuracy - INFO - Accuracy Top 3: 0.9268787459658829 [10052 of 10845]
+2017-12-22 15:30:07,528 - MainProcess - lib.metrics.accuracy - INFO - Accuracy Top 5: 0.9482710926694329 [10284 of 10845]
+2017-12-22 15:30:07,528 - MainProcess - __main__ - INFO - Epoch 9
+2017-12-22 15:30:35,510 - MainProcess - lib.checkpoint - INFO - Saving checkpoint 12m_22d_15h_30m_35s.pt
+2017-12-22 15:30:36,667 - MainProcess - lib.metrics.random_sample - INFO - Random Sample:
+
+Positive Samples:
+                                                           Source                                          Target                                      Prediction
+0  who is the lyricist for the composition whats this ? ! ! <pad>     www.freebase.com/music/composition/lyricist     www.freebase.com/music/composition/lyricist
+1                                where is the wood river township  www.freebase.com/location/location/containedby  www.freebase.com/location/location/containedby
+2                                           what genre is volym 3              www.freebase.com/music/album/genre              www.freebase.com/music/album/genre
+3                                    what drug class is ibuprofen       www.freebase.com/medicine/drug/drug_class       www.freebase.com/medicine/drug/drug_class
+4                          which song is contained of count on me    www.freebase.com/music/release_track/release    www.freebase.com/music/release_track/release
+
+Negative Samples:
+                                         Source                                                Target                                      Prediction
+0                         what is iota crucis ?  www.freebase.com/astronomy/celestial_object/category     www.freebase.com/common/topic/notable_types
+1    what 's a song from brothers in arms <pad>               www.freebase.com/music/recording/tracks            www.freebase.com/music/release/track
+2                   who created deadlines <pad>                   www.freebase.com/music/album/artist  www.freebase.com/tv/tv_program/program_creator
+3  what track is featured on o céu pode esperar             www.freebase.com/music/release/track_list            www.freebase.com/music/release/track
+4                         who sings eye97 <pad>             www.freebase.com/broadcast/content/artist         www.freebase.com/music/recording/artist
+
+2017-12-22 15:30:36,670 - MainProcess - __main__ - INFO - Loss: 0.947
+2017-12-22 15:30:36,743 - MainProcess - lib.metrics.accuracy - INFO - Accuracy: 0.8078377132319041 [8761 of 10845]
+2017-12-22 15:30:37,034 - MainProcess - lib.metrics.accuracy - INFO - Accuracy Top 3: 0.9295527893038267 [10081 of 10845]
+2017-12-22 15:30:37,327 - MainProcess - lib.metrics.accuracy - INFO - Accuracy Top 5: 0.9514061779621945 [10318 of 10845]
+2017-12-22 15:30:37,327 - MainProcess - __main__ - INFO - Epoch 10
+2017-12-22 15:31:04,892 - MainProcess - lib.checkpoint - INFO - Saving checkpoint 12m_22d_15h_31m_04s.pt
+2017-12-22 15:31:06,058 - MainProcess - lib.metrics.random_sample - INFO - Random Sample:
+
+Positive Samples:
+                                             Source                                                                     Target                                                                 Prediction
+0                        what gender is adam wilson                                      www.freebase.com/people/person/gender                                      www.freebase.com/people/person/gender
+1           what is an episode from gilmore girls ?                                    www.freebase.com/tv/tv_program/episodes                                    www.freebase.com/tv/tv_program/episodes
+2          what condition did flannery oconnor have  www.freebase.com/medicine/notable_person_with_medical_condition/condition  www.freebase.com/medicine/notable_person_with_medical_condition/condition
+3                         who composed only got one                                www.freebase.com/music/composition/composer                                www.freebase.com/music/composition/composer
+4  what country produced the album heal my violence                                      www.freebase.com/music/release/region                                      www.freebase.com/music/release/region
+
+Negative Samples:
+                                             Source                                                    Target                                        Prediction
+0        maryna zanevska is what kind of a player ?                 www.freebase.com/people/person/profession       www.freebase.com/common/topic/notable_types
+1                   who wrote new york , i love you                     www.freebase.com/film/film/written_by         www.freebase.com/book/written_work/author
+2  what album did the thewatchmusic release in 2011                       www.freebase.com/music/artist/album  www.freebase.com/music/album_release_type/albums
+3              what was unpleasantville rated <pad>           www.freebase.com/tv/tv_series_episode/tv_rating                 www.freebase.com/film/film/rating
+4                what does larry darby advocate for  www.freebase.com/base/activism/activist/area_of_activism       www.freebase.com/common/topic/notable_types
+
+2017-12-22 15:31:06,061 - MainProcess - __main__ - INFO - Loss: 0.942
+2017-12-22 15:31:06,137 - MainProcess - lib.metrics.accuracy - INFO - Accuracy: 0.8180728446288612 [8872 of 10845]
+2017-12-22 15:31:06,433 - MainProcess - lib.metrics.accuracy - INFO - Accuracy Top 3: 0.9311203319502075 [10098 of 10845]
+2017-12-22 15:31:06,735 - MainProcess - lib.metrics.accuracy - INFO - Accuracy Top 5: 0.9528815122176117 [10334 of 10845]
+2017-12-22 15:31:06,735 - MainProcess - __main__ - INFO - Epoch 11
+2017-12-22 15:31:34,119 - MainProcess - lib.checkpoint - INFO - Saving checkpoint 12m_22d_15h_31m_34s.pt
+2017-12-22 15:31:35,237 - MainProcess - lib.metrics.random_sample - INFO - Random Sample:
+
+Positive Samples:
+                                                           Source                                                           Target                                                       Prediction
+0                           what format is the release daybreak ?                            www.freebase.com/music/release/format                            www.freebase.com/music/release/format
+1           which was a film poem is contributed by tony harrison  www.freebase.com/film/film_story_contributor/film_story_credits  www.freebase.com/film/film_story_contributor/film_story_credits
+2                    what was the teller of tales written about ?                      www.freebase.com/book/written_work/subjects                      www.freebase.com/book/written_work/subjects
+3                       where was face to face - fever released ?                            www.freebase.com/music/release/region                            www.freebase.com/music/release/region
+4  what type of music is laugh ? i nearly bought one ! considered                               www.freebase.com/music/album/genre                               www.freebase.com/music/album/genre
+
+Negative Samples:
+                                                         Source                                            Target                                       Prediction
+0                   is happy reunion an album or studio album ?         www.freebase.com/music/album/release_type  www.freebase.com/music/album/album_content_type
+1                            name a music album from lara croft  www.freebase.com/music/album_content_type/albums              www.freebase.com/music/genre/albums
+2                                   what is a song on excalibur           www.freebase.com/music/recording/tracks             www.freebase.com/music/release/track
+3                            what album was made by katie melua      www.freebase.com/music/composer/compositions              www.freebase.com/music/artist/album
+4  what is the music genre of soundtracks for the blind ? <pad>                www.freebase.com/music/album/genre              www.freebase.com/music/artist/genre
+
+2017-12-22 15:31:35,240 - MainProcess - __main__ - INFO - Loss: 0.931
+2017-12-22 15:31:35,313 - MainProcess - lib.metrics.accuracy - INFO - Accuracy: 0.817888427846934 [8870 of 10845]
+2017-12-22 15:31:35,606 - MainProcess - lib.metrics.accuracy - INFO - Accuracy Top 3: 0.9325956662056247 [10114 of 10845]
+2017-12-22 15:31:35,929 - MainProcess - lib.metrics.accuracy - INFO - Accuracy Top 5: 0.9535269709543569 [10341 of 10845]
+2017-12-22 15:31:35,930 - MainProcess - __main__ - INFO - Epoch 12
+2017-12-22 15:32:03,496 - MainProcess - lib.checkpoint - INFO - Saving checkpoint 12m_22d_15h_32m_03s.pt
+2017-12-22 15:32:04,563 - MainProcess - lib.metrics.random_sample - INFO - Random Sample:
+
+Positive Samples:
+                                                               Source                                                                 Target                                                             Prediction
+0                                       what kinds of movie is bottle                                       www.freebase.com/film/film/genre                                       www.freebase.com/film/film/genre
+1                  what style of music does mrhjeffreynothing perform                                    www.freebase.com/music/artist/genre                                    www.freebase.com/music/artist/genre
+2                                what films did james cameron write ?                                      www.freebase.com/film/writer/film                                      www.freebase.com/film/writer/film
+3  what is an active ingredient moiety of silver nitrate 0.025 liquid  www.freebase.com/medicine/drug_formulation/active_ingredient_moieties  www.freebase.com/medicine/drug_formulation/active_ingredient_moieties
+4                     who is considered to be a psychedelic rock band                                   www.freebase.com/music/genre/artists                                   www.freebase.com/music/genre/artists
+
+Negative Samples:
+                                                           Source                                                          Target                                             Prediction
+0      how is elf flawless finish foundation spf 15 oil free sold         www.freebase.com/medicine/drug_formulation/legal_status      www.freebase.com/medicine/drug_formulation/routes
+1  what 's a game that tengen ( company ) developed for the amiga      www.freebase.com/cvg/cvg_developer/game_versions_developed     www.freebase.com/cvg/cvg_developer/games_developed
+2       what is the language that is spoken in imperio de cristal                        www.freebase.com/tv/tv_program/languages                    www.freebase.com/film/film/language
+3                         who do nasa astronauts communicate with                      www.freebase.com/base/yupgrade/user/topics  www.freebase.com/spaceflight/space_mission/astronauts
+4            which baseball player played for the red sox briefly  www.freebase.com/people/profession/people_with_this_profession    www.freebase.com/baseball/baseball_position/players
+
+2017-12-22 15:32:04,568 - MainProcess - __main__ - INFO - Loss: 0.935
+2017-12-22 15:32:04,639 - MainProcess - lib.metrics.accuracy - INFO - Accuracy: 0.8191793453204241 [8884 of 10845]
+2017-12-22 15:32:04,936 - MainProcess - lib.metrics.accuracy - INFO - Accuracy Top 3: 0.9338865836791148 [10128 of 10845]
+2017-12-22 15:32:05,235 - MainProcess - lib.metrics.accuracy - INFO - Accuracy Top 5: 0.954817888427847 [10355 of 10845]
+2017-12-22 15:32:05,235 - MainProcess - __main__ - INFO - Epoch 13
+2017-12-22 15:32:33,762 - MainProcess - lib.checkpoint - INFO - Saving checkpoint 12m_22d_15h_32m_33s.pt
+2017-12-22 15:32:34,990 - MainProcess - lib.metrics.random_sample - INFO - Random Sample:
+
+Positive Samples:
+                                                             Source                                              Target                                          Prediction
+0                        what position does samuel radlinger play ?  www.freebase.com/soccer/football_player/position_s  www.freebase.com/soccer/football_player/position_s
+1  what is the film from the production company working title films      www.freebase.com/film/production_company/films      www.freebase.com/film/production_company/films
+2                           the black cauldron is what type of book                    www.freebase.com/book/book/genre                    www.freebase.com/book/book/genre
+3                                             what album is cuba on        www.freebase.com/music/release_track/release        www.freebase.com/music/release_track/release
+4                   which track came from the release titled occult                www.freebase.com/music/release/track                www.freebase.com/music/release/track
+
+Negative Samples:
+                                                            Source                                                                    Target                                                                Prediction
+0                   what group was created by william s. burroughs                           www.freebase.com/book/author/school_or_movement  www.freebase.com/organization/organization_founder/organizations_founded
+1                                    what sport did john wood play                             www.freebase.com/sports/sports_official/sport                         www.freebase.com/base/fight/sports_official/sport
+2                         what is the ad campaign of coca-cola vis  www.freebase.com/user/micahsaul/advertising/ad_campaign/advertised_thing  www.freebase.com/user/micahsaul/advertising/ad_campaign/type_of_campaign
+3                          what genre includes paisley underground                                 www.freebase.com/music/genre/parent_genre                                        www.freebase.com/music/album/genre
+4  which event included the chickamauga wars ( 1776–1794 ) ? <pad>                             www.freebase.com/time/event/included_in_event                                www.freebase.com/time/event/includes_event
+
+2017-12-22 15:32:34,993 - MainProcess - __main__ - INFO - Loss: 0.932
+2017-12-22 15:32:35,067 - MainProcess - lib.metrics.accuracy - INFO - Accuracy: 0.8217611802674043 [8912 of 10845]
+2017-12-22 15:32:35,361 - MainProcess - lib.metrics.accuracy - INFO - Accuracy Top 3: 0.9343476256339327 [10133 of 10845]
+2017-12-22 15:32:35,662 - MainProcess - lib.metrics.accuracy - INFO - Accuracy Top 5: 0.9556477639465192 [10364 of 10845]
+2017-12-22 15:32:35,663 - MainProcess - __main__ - INFO - Epoch 14
+2017-12-22 15:33:03,299 - MainProcess - lib.checkpoint - INFO - Saving checkpoint 12m_22d_15h_33m_03s.pt
+2017-12-22 15:33:04,437 - MainProcess - lib.metrics.random_sample - INFO - Random Sample:
+
+Positive Samples:
+                                                     Source                                        Target                                    Prediction
+0                   what kind of music does barry gibb play           www.freebase.com/music/artist/genre           www.freebase.com/music/artist/genre
+1                         who is the author of bad hare day     www.freebase.com/book/written_work/author     www.freebase.com/book/written_work/author
+2             what language was once in a while composed in   www.freebase.com/music/composition/language   www.freebase.com/music/composition/language
+3                        who is the artist of baroque pop ?          www.freebase.com/music/genre/artists          www.freebase.com/music/genre/artists
+4  what is a company that specializes in financial services  www.freebase.com/business/industry/companies  www.freebase.com/business/industry/companies
+
+Negative Samples:
+                                                                            Source                                                                 Target                                                      Prediction
+0                                 what kind of work does birdlife international do                     www.freebase.com/organization/organization/sectors                     www.freebase.com/common/topic/notable_types
+1                                              who sang last dollar ( fly away ) ?                                    www.freebase.com/music/album/artist                         www.freebase.com/music/recording/artist
+2  what is the name of the independent filmmaker director of portrait of jason ...                                   www.freebase.com/film/film/edited_by  www.freebase.com/people/profession/people_with_this_profession
+3                                   what is a song on bluegrass 1956-68 ( disc 1 )                              www.freebase.com/music/release/track_list                            www.freebase.com/music/release/track
+4                        what 's an ingredient in tabasco brand green pepper sauce  www.freebase.com/user/micahsaul/five_alarm_food/hot_sauce/ingredients                          www.freebase.com/food/dish/ingredients
+
+2017-12-22 15:33:04,440 - MainProcess - __main__ - INFO - Loss: 0.938
+2017-12-22 15:33:04,514 - MainProcess - lib.metrics.accuracy - INFO - Accuracy: 0.8205624711848778 [8899 of 10845]
+2017-12-22 15:33:04,813 - MainProcess - lib.metrics.accuracy - INFO - Accuracy Top 3: 0.935361917934532 [10144 of 10845]
+2017-12-22 15:33:05,115 - MainProcess - lib.metrics.accuracy - INFO - Accuracy Top 5: 0.9551867219917013 [10359 of 10845]
+2017-12-22 15:33:05,115 - MainProcess - __main__ - INFO - Epoch 15
+2017-12-22 15:33:32,990 - MainProcess - lib.checkpoint - INFO - Saving checkpoint 12m_22d_15h_33m_32s.pt
+2017-12-22 15:33:34,180 - MainProcess - lib.metrics.random_sample - INFO - Random Sample:
+
+Positive Samples:
+                                                                            Source                                                          Target                                                      Prediction
+0                                what was the cause of death of edward uhl ? <pad>          www.freebase.com/people/deceased_person/cause_of_death          www.freebase.com/people/deceased_person/cause_of_death
+1  what track list is in the release where 'd you learn to kiss that way ? <pad...                       www.freebase.com/music/release/track_list                       www.freebase.com/music/release/track_list
+2                          what kind of school is capital area school for the arts  www.freebase.com/education/educational_institution/school_type  www.freebase.com/education/educational_institution/school_type
+3                                                 whats jim beggarlys gender <pad>                           www.freebase.com/people/person/gender                           www.freebase.com/people/person/gender
+4                                             which country is mads heldtberg from                      www.freebase.com/people/person/nationality                      www.freebase.com/people/person/nationality
+
+Negative Samples:
+                                           Source                                                     Target                                            Prediction
+0            what position does greg pateryn play  www.freebase.com/ice_hockey/hockey_player/hockey_position  www.freebase.com/baseball/baseball_player/position_s
+1             what album was release by koul funk           www.freebase.com/music/album_release_type/albums                   www.freebase.com/music/artist/album
+2                    what art medium is trinity ?               www.freebase.com/visual_art/artwork/art_form             www.freebase.com/visual_art/artwork/media
+3              what university sponsored lc <pad>         www.freebase.com/internet/top_level_domain/sponsor   www.freebase.com/organization/organization/founders
+4  what is located on bourke street , melbourne ?             www.freebase.com/location/location/containedby           www.freebase.com/location/location/contains
+
+2017-12-22 15:33:34,183 - MainProcess - __main__ - INFO - Loss: 0.953
+2017-12-22 15:33:34,254 - MainProcess - lib.metrics.accuracy - INFO - Accuracy: 0.8209313047487321 [8903 of 10845]
+2017-12-22 15:33:34,554 - MainProcess - lib.metrics.accuracy - INFO - Accuracy Top 3: 0.9372060857538036 [10164 of 10845]
+2017-12-22 15:33:34,858 - MainProcess - lib.metrics.accuracy - INFO - Accuracy Top 5: 0.9579529737206086 [10389 of 10845]
+2017-12-22 15:33:34,858 - MainProcess - __main__ - INFO - Epoch 16
+2017-12-22 15:34:01,569 - MainProcess - lib.checkpoint - INFO - Saving checkpoint 12m_22d_15h_34m_01s.pt
+2017-12-22 15:34:02,650 - MainProcess - lib.metrics.random_sample - INFO - Random Sample:
+
+Positive Samples:
+                                                                      Source                                               Target                                           Prediction
+0                                                what is the origin of t-max                 www.freebase.com/music/artist/origin                 www.freebase.com/music/artist/origin
+1                                   what kind of music is straight no chaser                   www.freebase.com/music/album/genre                   www.freebase.com/music/album/genre
+2  what foreign language is an option for the film bill & teds bogus journey                  www.freebase.com/film/film/language                  www.freebase.com/film/film/language
+3                               what religion is practiced at the mihinthale  www.freebase.com/religion/place_of_worship/religion  www.freebase.com/religion/place_of_worship/religion
+4                                              what is tristania 's origin ?                 www.freebase.com/music/artist/origin                 www.freebase.com/music/artist/origin
+
+Negative Samples:
+                                                  Source                                                       Target                                                                       Prediction
+0                 which department is calvados a part of                  www.freebase.com/common/topic/notable_types         www.freebase.com/education/fraternity_sorority/colleges_and_universities
+1         kunio maekawa 's architectural style is this .  www.freebase.com/architecture/architect/architectural_style                      www.freebase.com/architecture/structure/architectural_style
+2                                     who is cleve jones                    www.freebase.com/people/person/profession                                      www.freebase.com/common/topic/notable_types
+3    who is the creator of the walking with thoreau book                    www.freebase.com/book/written_work/author                                 www.freebase.com/book/book_edition/author_editor
+4  which park is the toy story midway mania ! located in                   www.freebase.com/amusement_parks/ride/park  www.freebase.com/architecture/lighthouse_construction_material/used_on_light...
+
+2017-12-22 15:34:02,653 - MainProcess - __main__ - INFO - Loss: 0.941
+2017-12-22 15:34:02,724 - MainProcess - lib.metrics.accuracy - INFO - Accuracy: 0.8234209313047487 [8930 of 10845]
+2017-12-22 15:34:03,015 - MainProcess - lib.metrics.accuracy - INFO - Accuracy Top 3: 0.9394190871369295 [10188 of 10845]
+2017-12-22 15:34:03,309 - MainProcess - lib.metrics.accuracy - INFO - Accuracy Top 5: 0.9584140156754265 [10394 of 10845]
+2017-12-22 15:34:03,309 - MainProcess - __main__ - INFO - Epoch 17
+2017-12-22 15:34:29,758 - MainProcess - lib.checkpoint - INFO - Saving checkpoint 12m_22d_15h_34m_29s.pt
+2017-12-22 15:34:30,918 - MainProcess - lib.metrics.random_sample - INFO - Random Sample:
+
+Positive Samples:
+                                                           Source                                                 Target                                             Prediction
+0                                 is amanda conner male or female                  www.freebase.com/people/person/gender                  www.freebase.com/people/person/gender
+1                     what kind of album is here comes the indian        www.freebase.com/music/album/album_content_type        www.freebase.com/music/album/album_content_type
+2                what constellation is the star lambda aquarii in          www.freebase.com/astronomy/star/constellation          www.freebase.com/astronomy/star/constellation
+3  what manufacturer made the kodak z712 is zoom digital camera ?  www.freebase.com/digicams/digital_camera/manufacturer  www.freebase.com/digicams/digital_camera/manufacturer
+4                     what artist is on the album natural history                    www.freebase.com/music/album/artist                    www.freebase.com/music/album/artist
+
+Negative Samples:
+                                               Source                                                                 Target                                                      Prediction
+0            what is chaminade university of honolulu                            www.freebase.com/common/topic/notable_types  www.freebase.com/education/educational_institution/school_type
+1  what is the active ingredient in sad soother <pad>  www.freebase.com/medicine/drug_formulation/active_ingredient_moieties   www.freebase.com/medicine/drug_formulation/active_ingredients
+2               what treats a urinary tract infection                           www.freebase.com/medicine/disease/treatments            www.freebase.com/medicine/disease/prevention_factors
+3    what year was whitesnake ( album ) released in ?                                  www.freebase.com/music/album/releases                       www.freebase.com/music/album/release_type
+4             what album is jefferson street found on                              www.freebase.com/music/release/track_list                    www.freebase.com/music/release_track/release
+
+2017-12-22 15:34:30,921 - MainProcess - __main__ - INFO - Loss: 0.952
+2017-12-22 15:34:30,992 - MainProcess - lib.metrics.accuracy - INFO - Accuracy: 0.8273858921161825 [8973 of 10845]
+2017-12-22 15:34:31,283 - MainProcess - lib.metrics.accuracy - INFO - Accuracy Top 3: 0.9375749193176579 [10168 of 10845]
+2017-12-22 15:34:31,577 - MainProcess - lib.metrics.accuracy - INFO - Accuracy Top 5: 0.9587828492392808 [10398 of 10845]
+2017-12-22 15:34:31,577 - MainProcess - __main__ - INFO - Epoch 18
+2017-12-22 15:34:57,626 - MainProcess - lib.checkpoint - INFO - Saving checkpoint 12m_22d_15h_34m_57s.pt
+2017-12-22 15:34:58,696 - MainProcess - lib.metrics.random_sample - INFO - Random Sample:
+
+Positive Samples:
+                                               Source                                                        Target                                                    Prediction
+0          what is the color of hamburg high school ?     www.freebase.com/education/educational_institution/colors     www.freebase.com/education/educational_institution/colors
+1  what 's the title track off of birthday girl <pad>                       www.freebase.com/music/recording/tracks                       www.freebase.com/music/recording/tracks
+2            what is an african-american studies book                      www.freebase.com/book/book_subject/works                      www.freebase.com/book/book_subject/works
+3     which asteroid group does 1623 vivian belong to  www.freebase.com/astronomy/asteroid/member_of_asteroid_group  www.freebase.com/astronomy/asteroid/member_of_asteroid_group
+4                 where is mungrisdale common located                www.freebase.com/location/location/containedby                www.freebase.com/location/location/containedby
+
+Negative Samples:
+                                                      Source                                                                         Target                                      Prediction
+0                 what is the genre of one hour fantasy girl                     www.freebase.com/media_common/netflix_title/netflix_genres            www.freebase.com/tv/tv_program/genre
+1                         what album was made by katie melua                                   www.freebase.com/music/composer/compositions             www.freebase.com/music/artist/album
+2  what 's the name of an album by boris the sprinkler <pad>                               www.freebase.com/music/album_release_type/albums             www.freebase.com/music/artist/album
+3                         name a music album from lara croft                               www.freebase.com/music/album_content_type/albums             www.freebase.com/music/genre/albums
+4                        which provence is zutphen located ?  www.freebase.com/base/aareas/schema/administrative_area/administrative_parent  www.freebase.com/location/location/containedby
+
+2017-12-22 15:34:58,699 - MainProcess - __main__ - INFO - Loss: 0.953
+2017-12-22 15:34:58,771 - MainProcess - lib.metrics.accuracy - INFO - Accuracy: 0.8269248501613646 [8968 of 10845]
+2017-12-22 15:34:59,062 - MainProcess - lib.metrics.accuracy - INFO - Accuracy Top 3: 0.9389580451821116 [10183 of 10845]
+2017-12-22 15:34:59,356 - MainProcess - lib.metrics.accuracy - INFO - Accuracy Top 5: 0.9594283079760259 [10405 of 10845]
+2017-12-22 15:34:59,357 - MainProcess - __main__ - INFO - Epoch 19
+2017-12-22 15:35:25,631 - MainProcess - lib.checkpoint - INFO - Saving checkpoint 12m_22d_15h_35m_25s.pt
+2017-12-22 15:35:26,783 - MainProcess - lib.metrics.random_sample - INFO - Random Sample:
+
+Positive Samples:
+                                                   Source                                                                 Target                                                             Prediction
+0                   what celestial object is 6726 suthers                   www.freebase.com/astronomy/celestial_object/category                   www.freebase.com/astronomy/celestial_object/category
+1  what 's a journal that deals with evolutionary biology  www.freebase.com/education/field_of_study/journals_in_this_discipline  www.freebase.com/education/field_of_study/journals_in_this_discipline
+2                      who is a parent of matthew asner ?                                 www.freebase.com/people/person/parents                                 www.freebase.com/people/person/parents
+3            who are the parents of margaret of england ?                                 www.freebase.com/people/person/parents                                 www.freebase.com/people/person/parents
+4                            who are people born in japan                    www.freebase.com/location/location/people_born_here                    www.freebase.com/location/location/people_born_here
+
+Negative Samples:
+                                                              Source                                                                           Target                                                  Prediction
+0                   which musical films were broadcasted in israel ?                                            www.freebase.com/tv/tv_genre/programs        www.freebase.com/film/film_genre/films_in_this_genre
+1  what was the name of a game version publisjhed by electronic arts                       www.freebase.com/cvg/cvg_publisher/game_versions_published  www.freebase.com/cvg/cvg_developer/game_versions_developed
+2                                                  what is eni <pad>  www.freebase.com/base/adultentertainment/adult_entertainer/specialises_in_fe...                 www.freebase.com/common/topic/notable_types
+3                                where is wes madiko originally from                                             www.freebase.com/music/artist/origin                  www.freebase.com/people/person/nationality
+4                            what genre includes paisley underground                                        www.freebase.com/music/genre/parent_genre                         www.freebase.com/music/artist/genre
+
+2017-12-22 15:35:26,786 - MainProcess - __main__ - INFO - Loss: 0.968
+2017-12-22 15:35:26,857 - MainProcess - lib.metrics.accuracy - INFO - Accuracy: 0.8260027662517289 [8958 of 10845]
+2017-12-22 15:35:27,156 - MainProcess - lib.metrics.accuracy - INFO - Accuracy Top 3: 0.9381281696634394 [10174 of 10845]
+2017-12-22 15:35:27,454 - MainProcess - lib.metrics.accuracy - INFO - Accuracy Top 5: 0.9590594744121715 [10401 of 10845]
+2017-12-22 15:35:27,454 - MainProcess - __main__ - INFO - Epoch 20
+2017-12-22 15:35:54,248 - MainProcess - lib.checkpoint - INFO - Saving checkpoint 12m_22d_15h_35m_54s.pt
+2017-12-22 15:35:55,325 - MainProcess - lib.metrics.random_sample - INFO - Random Sample:
+
+Positive Samples:
+                                                                            Source                                            Target                                        Prediction
+0                                   what genre of music is the album conspiritus ?                www.freebase.com/music/album/genre                www.freebase.com/music/album/genre
+1                                                   what type of film is venus 5 ?                  www.freebase.com/film/film/genre                  www.freebase.com/film/film/genre
+2                                       what content does bbc radio scotland air ?   www.freebase.com/broadcast/radio_station/format   www.freebase.com/broadcast/radio_station/format
+3                                      what is the subject of the book max weber ?       www.freebase.com/book/written_work/subjects       www.freebase.com/book/written_work/subjects
+4  who was the author editor of the book lord of the flies ( macmillan literatu...  www.freebase.com/book/book_edition/author_editor  www.freebase.com/book/book_edition/author_editor
+
+Negative Samples:
+                                                    Source                                                    Target                                                       Prediction
+0          what is the software for pwm ( window manager )                www.freebase.com/computer/software/license       www.freebase.com/computer/software_genre/software_in_genre
+1            what country did vodka factory originate from                        www.freebase.com/film/film/country  www.freebase.com/base/webvideo/internet_video/country_of_origin
+2                    the track energy is from what release            www.freebase.com/music/release_track/recording                     www.freebase.com/music/release_track/release
+3                 what is the beckomberga hospital used as  www.freebase.com/architecture/building/building_function                      www.freebase.com/common/topic/notable_types
+4  what is the nebula award for best novella a category of         www.freebase.com/award/award_category/category_of    www.freebase.com/award/award_category/disciplines_or_subjects
+
+2017-12-22 15:35:55,328 - MainProcess - __main__ - INFO - Loss: 0.968
+2017-12-22 15:35:55,399 - MainProcess - lib.metrics.accuracy - INFO - Accuracy: 0.823789764868603 [8934 of 10845]
+2017-12-22 15:35:55,688 - MainProcess - lib.metrics.accuracy - INFO - Accuracy Top 3: 0.9369294605809129 [10161 of 10845]
+2017-12-22 15:35:55,980 - MainProcess - lib.metrics.accuracy - INFO - Accuracy Top 5: 0.9576763485477179 [10386 of 10845]
+2017-12-22 15:35:55,980 - MainProcess - __main__ - INFO - Epoch 21
+2017-12-22 15:36:22,425 - MainProcess - lib.checkpoint - INFO - Saving checkpoint 12m_22d_15h_36m_22s.pt
+2017-12-22 15:36:23,577 - MainProcess - lib.metrics.random_sample - INFO - Random Sample:
+
+Positive Samples:
+                                                         Source                                                    Target                                                Prediction
+0                          what language was blue composed in ?               www.freebase.com/music/composition/language               www.freebase.com/music/composition/language
+1  who designed the film production of the best of john belushi      www.freebase.com/film/film/film_production_design_by      www.freebase.com/film/film/film_production_design_by
+2                   who produced the film the anniversary party                    www.freebase.com/film/film/produced_by                    www.freebase.com/film/film/produced_by
+3                        who is a well known drone music artist                      www.freebase.com/music/genre/artists                      www.freebase.com/music/genre/artists
+4                 doubleday ( publisher ) published what book ?  www.freebase.com/book/publishing_company/books_published  www.freebase.com/book/publishing_company/books_published
+
+Negative Samples:
+                                                                            Source                                                                           Target                                                                       Prediction
+0                                                  who 's an actor from pittsburgh                              www.freebase.com/location/location/people_born_here                   www.freebase.com/people/profession/people_with_this_profession
+1                                      what is an institution in dartmouth college  www.freebase.com/education/educational_institution/subsidiary_or_constituent...  www.freebase.com/education/educational_institution_campus/educational_instit...
+2                                       which places contains the zip code 17082 ?                                   www.freebase.com/location/location/containedby                                      www.freebase.com/location/location/contains
+3                                              what religion does yakushi-ji serve                              www.freebase.com/religion/place_of_worship/religion                                          www.freebase.com/people/person/religion
+4  which tracks are listed in the release kiss my wami 1997 ( disc 2 ) ? <pad> ...                                             www.freebase.com/music/release/track                                        www.freebase.com/music/release/track_list
+
+2017-12-22 15:36:23,580 - MainProcess - __main__ - INFO - Loss: 0.990
+2017-12-22 15:36:23,652 - MainProcess - lib.metrics.accuracy - INFO - Accuracy: 0.8225910557860765 [8921 of 10845]
+2017-12-22 15:36:23,941 - MainProcess - lib.metrics.accuracy - INFO - Accuracy Top 3: 0.9391424619640387 [10185 of 10845]
+2017-12-22 15:36:24,230 - MainProcess - lib.metrics.accuracy - INFO - Accuracy Top 5: 0.9598893499308437 [10410 of 10845]
+2017-12-22 15:36:24,230 - MainProcess - __main__ - INFO - Epoch 22
+2017-12-22 15:36:50,486 - MainProcess - lib.checkpoint - INFO - Saving checkpoint 12m_22d_15h_36m_50s.pt
+2017-12-22 15:36:51,556 - MainProcess - lib.metrics.random_sample - INFO - Random Sample:
+
+Positive Samples:
+                                               Source                                            Target                                        Prediction
+0                      where was théodore botrel born     www.freebase.com/people/person/place_of_birth     www.freebase.com/people/person/place_of_birth
+1                           what is a song by macabre               www.freebase.com/music/artist/track               www.freebase.com/music/artist/track
+2  what country was tape bound , volume 3 filmed in ?                www.freebase.com/film/film/country                www.freebase.com/film/film/country
+3          who published the game venus the flytrap ?       www.freebase.com/cvg/game_version/publisher       www.freebase.com/cvg/game_version/publisher
+4         which album was also released as an album ?  www.freebase.com/music/album_release_type/albums  www.freebase.com/music/album_release_type/albums
+
+Negative Samples:
+                                                               Source                                            Target                                   Prediction
+0                                   what was gerrit paape 's career ?       www.freebase.com/common/topic/notable_types    www.freebase.com/people/person/profession
+1                who authored personal recollections of joan of arc ?  www.freebase.com/book/book_edition/author_editor    www.freebase.com/book/written_work/author
+2             which airport does the airline air one services ? <pad>    www.freebase.com/aviation/airline/focus_cities       www.freebase.com/aviation/airline/hubs
+3                                       who composed dark horse <pad>       www.freebase.com/music/composition/lyricist  www.freebase.com/music/composition/composer
+4  what format was double easy : the u.s. singles released in ? <pad>         www.freebase.com/music/album/release_type        www.freebase.com/music/release/format
+
+2017-12-22 15:36:51,559 - MainProcess - __main__ - INFO - Loss: 0.977
+2017-12-22 15:36:51,632 - MainProcess - lib.metrics.accuracy - INFO - Accuracy: 0.8256339326878745 [8954 of 10845]
+2017-12-22 15:36:51,918 - MainProcess - lib.metrics.accuracy - INFO - Accuracy Top 3: 0.938865836791148 [10182 of 10845]
+2017-12-22 15:36:52,206 - MainProcess - lib.metrics.accuracy - INFO - Accuracy Top 5: 0.9584140156754265 [10394 of 10845]
+2017-12-22 15:36:52,206 - MainProcess - __main__ - INFO - Epoch 23
+2017-12-22 15:37:20,215 - MainProcess - lib.checkpoint - INFO - Saving checkpoint 12m_22d_15h_37m_20s.pt
+2017-12-22 15:37:21,391 - MainProcess - lib.metrics.random_sample - INFO - Random Sample:
+
+Positive Samples:
+                                        Source                                                  Target                                              Prediction
+0       what is disney magic a notable type of             www.freebase.com/common/topic/notable_types             www.freebase.com/common/topic/notable_types
+1  what woman was born in hoboken , new jersey     www.freebase.com/location/location/people_born_here     www.freebase.com/location/location/people_born_here
+2          what type of movie is aakhri insaaf                        www.freebase.com/film/film/genre                        www.freebase.com/film/film/genre
+3                        how did ruth hall die  www.freebase.com/people/deceased_person/cause_of_death  www.freebase.com/people/deceased_person/cause_of_death
+4  who was the lyricist that composed the fuse             www.freebase.com/music/composition/lyricist             www.freebase.com/music/composition/lyricist
+
+Negative Samples:
+                                             Source                                                         Target                                                                       Prediction
+0              who produced kamen rider : the first                www.freebase.com/film/film/production_companies                                           www.freebase.com/film/film/produced_by
+1            what was bill hosket , jr. 's position       www.freebase.com/basketball/basketball_player/position_s                             www.freebase.com/baseball/baseball_player/position_s
+2           whats the position that greg blue plays  www.freebase.com/american_football/football_player/position_s                             www.freebase.com/baseball/baseball_player/position_s
+3      what content does the genre heavy metal have                       www.freebase.com/broadcast/genre/content                                              www.freebase.com/music/artist/genre
+4  what show is yo gabba gabba ! the soundtrack for                   www.freebase.com/tv/tv_soundtrack/tv_program  www.freebase.com/base/saturdaynightlive/snl_musical_guest/episodes_as_musica...
+
+2017-12-22 15:37:21,395 - MainProcess - __main__ - INFO - Loss: 1.002
+2017-12-22 15:37:21,468 - MainProcess - lib.metrics.accuracy - INFO - Accuracy: 0.8277547256800368 [8977 of 10845]
+2017-12-22 15:37:21,759 - MainProcess - lib.metrics.accuracy - INFO - Accuracy Top 3: 0.9397879207007838 [10192 of 10845]
+2017-12-22 15:37:22,050 - MainProcess - lib.metrics.accuracy - INFO - Accuracy Top 5: 0.9607192254495159 [10419 of 10845]
+2017-12-22 15:37:22,050 - MainProcess - __main__ - INFO - Epoch 24
+2017-12-22 15:37:50,798 - MainProcess - lib.checkpoint - INFO - Saving checkpoint 12m_22d_15h_37m_50s.pt
+2017-12-22 15:37:51,954 - MainProcess - lib.metrics.random_sample - INFO - Random Sample:
+
+Positive Samples:
+                                                                  Source                                                    Target                                                Prediction
+0                                           where did arthur phillip die    www.freebase.com/people/deceased_person/place_of_death    www.freebase.com/people/deceased_person/place_of_death
+1  what category does mouse epithelium 0.1 injectable solution belong to  www.freebase.com/medicine/drug_formulation/drug_category  www.freebase.com/medicine/drug_formulation/drug_category
+2      who created the music album the blues collection 15 : be my guest                       www.freebase.com/music/album/artist                       www.freebase.com/music/album/artist
+3                                        which artist released monkism ?                       www.freebase.com/music/album/artist                       www.freebase.com/music/album/artist
+4                                       what is jim davidson birth place             www.freebase.com/people/person/place_of_birth             www.freebase.com/people/person/place_of_birth
+
+Negative Samples:
+                                                     Source                                            Target                                                 Prediction
+0                             what kind of site is a blog ?  www.freebase.com/internet/website_category/sites                 www.freebase.com/internet/website/category
+1  what is an ingredient in the dish hainanese chicken rice            www.freebase.com/food/dish/ingredients                    www.freebase.com/food/ingredient/dishes
+2                 what county is mysłakowo located in <pad>    www.freebase.com/location/location/containedby          www.freebase.com/location/hud_county_place/county
+3                           where is the uyarthiru 420 from                www.freebase.com/film/film/country                 www.freebase.com/people/person/nationality
+4                            which country locates djibouti    www.freebase.com/location/location/containedby  www.freebase.com/location/administrative_division/country
+
+2017-12-22 15:37:51,958 - MainProcess - __main__ - INFO - Loss: 0.984
+2017-12-22 15:37:52,037 - MainProcess - lib.metrics.accuracy - INFO - Accuracy: 0.822037805440295 [8915 of 10845]
+2017-12-22 15:37:52,337 - MainProcess - lib.metrics.accuracy - INFO - Accuracy Top 3: 0.9385892116182573 [10179 of 10845]
+2017-12-22 15:37:52,644 - MainProcess - lib.metrics.accuracy - INFO - Accuracy Top 5: 0.9586906408483172 [10397 of 10845]
+2017-12-22 15:37:52,644 - MainProcess - __main__ - INFO - Epoch 25

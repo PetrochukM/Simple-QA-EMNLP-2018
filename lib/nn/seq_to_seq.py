@@ -17,8 +17,6 @@ class SeqToSeq(nn.Module):
     def __init__(self,
                  input_vocab_size,
                  output_vocab_size,
-                 embeddings_encoder=None,
-                 embeddings_decoder=None,
                  embedding_size=100,
                  rnn_size=100,
                  n_layers=2,
@@ -31,21 +29,21 @@ class SeqToSeq(nn.Module):
             decoder (DecoderRNN): object of DecoderRNN
         """
         super(SeqToSeq, self).__init__()
+
         self.encoder = SeqEncoder(
             input_vocab_size,
-            embeddings=embeddings_encoder,
             embedding_size=embedding_size,
             rnn_size=rnn_size,
             n_layers=n_layers,
             rnn_cell=rnn_cell)
         self.decoder = SeqDecoder(
             output_vocab_size,
-            embeddings=embeddings_decoder,
             embedding_size=embedding_size,
             rnn_size=rnn_size,
             n_layers=n_layers,
             rnn_cell=rnn_cell,
             include_vocab=include_vocab)
+
         if tie_weights:
             self.decoder.embedding.weight = self.encoder.embedding.weight
 
@@ -72,6 +70,8 @@ class SeqToSeq(nn.Module):
         """
         encoder_outputs, encoder_hidden = self.encoder(source, source_lengths)
 
+        # NOTE: Decoder is set predict to target length due in order to have the same matrix size
+        # when computing the loss function.
         if target is not None:
             max_length = torch.max(target_lengths)
         else:
