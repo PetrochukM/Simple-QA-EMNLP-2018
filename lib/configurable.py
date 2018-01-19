@@ -249,6 +249,7 @@ def add_config(dict_):
     _check_configuration(parsed)
     _dict_merge(_configuration, parsed, overwrite=True)
     _configuration = _KeyListDictionary(_configuration)
+    logger.info('Configuration checked.')
 
 
 def log_config():

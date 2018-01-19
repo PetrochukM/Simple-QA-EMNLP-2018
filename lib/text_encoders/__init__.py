@@ -15,3 +15,5 @@ from lib.text_encoders.moses_encoder import MosesEncoder
 from lib.text_encoders.identity_encoder import IdentityEncoder
 from lib.text_encoders.subword_encoder import SubwordEncoder
 from lib.text_encoders.delimiter_encoder import DelimiterEncoder
+from lib.text_encoders.static_tokenizer_encoder import StaticTokenizerEncoder
+from lib.text_encoders.spacy_encoder import SpacyEncoder

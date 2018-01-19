@@ -43,7 +43,7 @@ class SeqToLabel(nn.Module):
     def flatten_parameters(self):
         self.encoder.rnn.flatten_parameters()
 
-    def forward(self, text, text_lengths):
+    def forward(self, text, text_lengths):  # TODO: Remove text_lengths no need for padding in RNN
         _, hidden = self.encoder(text, text_lengths)
         if self.encoder.rnn_cell == nn.LSTM:
             hidden = hidden[0]

@@ -16,6 +16,7 @@ import pandas as pd
 from lib.checkpoint import Checkpoint
 from lib.configurable import add_config
 from lib.configurable import configurable
+from lib.configurable import log_config
 from lib.datasets import simple_qa_predicate_preprocessed
 from lib.datasets import simple_qa_predicate
 from lib.metrics import get_accuracy
@@ -89,8 +90,10 @@ def train(
         get_pretrained_embedding=None,
         checkpoint_path=None,
         device=None):
-    is_cuda, checkpoint = setup_training(checkpoint_path, log_directory, device,
-                                         random_seed)  # Async minibatch allocation for speed
+    is_cuda, checkpoint = setup_training(
+        device, random_seed, checkpoint_path=checkpoint_path,
+        log_directory=log_directory)  # Async minibatch allocation for speed
+    log_config()
     # Reference: http://timdettmers.com/2015/03/09/deep-learning-hardware-guide/
     # TODO: look into cuda_async device=device
     cuda_async = lambda t: t.cuda(async=True) if is_cuda else t  # Use with tensors

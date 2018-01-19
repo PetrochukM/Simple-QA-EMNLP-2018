@@ -12,7 +12,6 @@ import torch
 import numpy as np
 
 from lib.text_encoders import PADDING_INDEX
-from lib.configurable import log_config
 
 logger = logging.getLogger(__name__)
 
@@ -220,8 +219,15 @@ def pad_batch(batch):
     return padded, lengths
 
 
-def setup_training(checkpoint_path, log_directory, device, random_seed):
-    """ Utility function to settup logger, hyperparameters, seed, device and checkpoint """
+def setup_training(device, random_seed, checkpoint_path=None, log_directory=None):
+    """ Utility function to settup logger, hyperparameters, seed, device and checkpoint 
+
+    Args:
+        device (int or None): Set the device (-1 = CPU, 0+ = GPU device ID)
+        random_seed (int or None): Set a random seed for reproducibility
+        checkpoint_path (str or None): Load checkpoint from  `checkpoint_path`
+        log_directory (str or None): Load recent checkpoint from `log_directory`
+    """
     # Prevent a circular dependency where Checkpoint imports utils and utils imports Checkpoint
     from lib.checkpoint import Checkpoint
 
@@ -238,26 +244,24 @@ def setup_training(checkpoint_path, log_directory, device, random_seed):
 
     logger.info('Device: %s', device)
 
+    logger.info('Seed: %s', random_seed)
     # Random Seed for reproducibility
     if random_seed is not None:
         random.seed(random_seed)
         torch.manual_seed(random_seed)
+        np.random.seed(random_seed)
         if is_cuda:
             torch.cuda.manual_seed(random_seed)
             torch.cuda.manual_seed_all(random_seed)
-        np.random.seed(random_seed)
         torch.backends.cudnn.deterministic = True
-
-    logger.info('Seed: %s', random_seed)
 
     # Load Checkpoint
     if checkpoint_path:
         checkpoint = Checkpoint(checkpoint_path, device)
-    else:
+    elif log_directory:
         checkpoint = Checkpoint.recent(log_directory, device)
-
-    # Log the global configuration before starting to train.
-    log_config()
+    else:
+        checkpoint = None
 
     return is_cuda, checkpoint
 

@@ -35,12 +35,13 @@ class Checkpoint(object):
                 return storage.cuda(device=self.device)
             return storage
 
-        data = torch.load(self.checkpoint_path, map_location=remap)
+        data = torch.load(self.checkpoint_path, map_location=remap, pickle_module=dill)
         # https://stackoverflow.com/questions/2535917/copy-kwargs-to-self
         for (k, v) in data.items():
             setattr(self, k, v)
 
-        if hasattr(self.model, 'flatten_parameters'):
+        if hasattr(self.model, 'flatten_parameters'
+                  ):  # NOTE: This should be recusive looking for any module with flatten_parameters
             self.model.flatten_parameters()  # make RNN parameters contiguous
 
     @classmethod
@@ -59,14 +60,11 @@ class Checkpoint(object):
         checkpoint_path = os.path.join(log_directory, all_checkpoints[0])
         return cls(checkpoint_path, device)
 
+    # TODO: Checkpoint save should be arbitrary and checkpoint predict can be broken up into utility functions?
+    # TODO: Consider saving as well a predict lambda
+    # The predict lambda takes the saved object with a model and encoders, and makes a prediction...
     @classmethod
-    def save(cls,
-             log_directory,
-             model,
-             optimizer,
-             input_text_encoder,
-             output_text_encoder,
-             device=None):
+    def save(cls, log_directory, save, device=None):
         """
         Saves the current model and related training parameters into a subdirectory of the
         checkpoint directory. The name of the subdirectory is the current local time in
@@ -74,10 +72,7 @@ class Checkpoint(object):
 
         Args:
             log_directory (str): path to the save directory
-            model
-            optimizer
-            input_text_encoder
-            output_text_encoder
+            object (dict): object to save
             device (int): give a device number to be appended to the end of the path
         """
         date_time = time.strftime('%mm_%dd_%Hh_%Mm_%Ss', time.localtime())
@@ -91,62 +86,4 @@ class Checkpoint(object):
 
         logger.info('Saving checkpoint %s', name)
 
-        torch.save(
-            {
-                'optimizer': optimizer,
-                'model': model,
-                'input_text_encoder': input_text_encoder,
-                'output_text_encoder': output_text_encoder,
-            },
-            path,
-            pickle_module=dill)
-
-    def predict(self, input_, batch_first=False, top_k=1):
-        """ Make prediction given `input_`."""
-        self.model.train(mode=False)
-
-        tensor = self.input_text_encoder.encode(input_)
-
-        # Create the batch
-        batch_source = tensor.unsqueeze(0)  # Batch size of 1
-        if not batch_first:
-            batch_source = batch_source.t_()
-        batch_source = Variable(batch_source.contiguous())
-        batch_source_length = torch.LongTensor([tensor.size()[0]])
-        if torch.cuda.is_available():
-            batch_source = batch_source.cuda()
-            batch_source_length = batch_source_length.cuda()
-
-        # Predict
-        output_batch = self.model(batch_source, batch_source_length)[0]
-        output_batch = output_batch.data
-        if len(output_batch.size()) > 1:
-            output_batch = output_batch.squeeze(1)  # Squeeze 1 batch
-
-        output_sequences = output_batch.topk(top_k, dim=len(output_batch.size()) - 1)[1]
-
-        # Decode and compute confidence
-        ret = []
-        for i in range(min(top_k, output_sequences.size()[-1])):
-            # Decoded
-            output_sequence = output_sequences[..., i]
-            if isinstance(output_sequence, int):
-                output_sequence = torch.LongTensor([output_sequence])
-            decoded = self.output_text_encoder.decode(output_sequence)
-
-            # Get Confidence
-            output_sequence_flat = output_sequence.view(-1)
-            output_batch_flat = output_batch.view(-1, output_batch.size()[-1])
-            log_confidence = []
-            for j, token_index in enumerate(output_sequence_flat):
-                log_confidence.append(output_batch_flat[j][token_index])
-            confidence = [math.exp(x) for x in log_confidence]
-
-            ret.append([decoded, confidence])
-
-        # Make sure not to have side affects
-        self.model.train(mode=True)
-        if top_k == 1:
-            return tuple(ret[0])
-        else:
-            return ret
+        torch.save(save, path, pickle_module=dill)
