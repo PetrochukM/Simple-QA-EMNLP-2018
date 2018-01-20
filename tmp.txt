@@ -1,52 +1,52 @@
-| Index | Similarity | Strategy | Preprocessed Subject Name | Predicted Alias | Considered Aliases | Question |
-| --- | --- | --- | --- | --- | --- | --- |
-| 0 | 0.0 | Wrong Span | PREPROCESSED | short | documentary film | ['documentary film'] | Name a short documentary film released in 2011 |
-| 1 | 0.722222 | Suffix | PREPROCESSED | red cloud 's war | the red | ['the red clouds war', 'red clouds war', 'the red clouds', 'clouds war', 'red clouds', 'the red'] | what was involved in the red clouds war? |
-| 2 | 0.75 | Wrong Span  PREPROCESSED | corporation nation | nation | ['nation book', 'corporation nation book', 'the corporation nation book', 'nation'] | what subject is the corporation nation book about |
-| 3 | 0.8 | Suffix | PREPROCESSED | peter 's point plantation | peters | ['peters point plantation', 'peters point', 'point plantation', 'peters'] | What is peters point plantation's architectural style |
-| 4 | 0.0555556 | Wrong Span | PREPROCESSED | album | aaron carter | ['aaron carter'] | Name an album released by aaron carter |
-| 5 | 1.0 | Similar | PREPROCESSED | pillows & prayers : cherry red 1982–1983 | pillows & prayers : cherry red 1982 - 1983 | ['pillows & prayers : cherry red 1982 - 1983'] | What is the name of the track list for the release pillows & prayers: cherry red 1982-1983? |
-| 6 | 0.5 | Wrong Span | PREPROCESSED | commune of luxembourg | luxembourg | ['luxembourg'] | which country is the commune of luxembourg in |
-| 7 | 0.764706 | Extra Article | PREPROCESSED | the hits album 6 | 6 | ['hits album 6', '6'] | what song was included in the hits album 6 |
-| 8 | 0.588235 | Wrong Span | PREPROCESSED | between two women | two women | ['two women'] | what is about between two women |
-| 9 | 0.782609 | Suffix | PREPROCESSED | battle of hudson 's bay | bay | ['battle of hudsons bay', 'of hudsons bay', 'battle of hudsons', 'the battle of hudsons bay', 'hudsons bay', 'did the battle of hudsons bay', 'battle of', 'bay'] | where did the battle of hudsons bay take place |
-| 10 | 0.0 | Wrong Span | PREPROCESSED | tablet | hypertension | ['hypertension'] | what is a tablet used to treat hypertension  |
-| 11 | 0.0 | Wrong Span | PREPROCESSED | compilation album | frank zappa | ['frank zappa'] | what compilation album did frank zappa release? |
-| 12 | 0.0 | Wrong Span | PREPROCESSED | soundtrack | anthony marinelli | ['anthony marinelli'] | What's a soundtrack written by anthony marinelli |
-| 13 | 0.0 | Wrong Span | PREPROCESSED | album | george canyon | ['george canyon'] | name an album by George Canyon |
-| 14 | 0.0 | Wrong Span | PREPROCESSED | album | portal | ['portal'] | What's an album by the band portal |
-| 15 | 0.785714 | Suffix | PREPROCESSED | megan cheng | megan | ['megan chengs', 'megan'] | whats  megan chengs ethnicity |
-| 16 | 0.705882 | Wrong Span | PREPROCESSED | martial arts film | martial arts | ['martial arts'] | what is the name of the netflix martial arts film? |
-| 17 | 0.0222222 | Wrong Span | PREPROCESSED | creedence clearwater revival | compilation album | ['compilation album'] | What is a compilation album by creedence clearwater revival |
-| 18 | 0.227273 | Wrong Span | PREPROCESSED | topical medication | medicine | ['medicine'] | Name a topical medicine |
-| 19 | 0.636364 | Wrong Span | PREPROCESSED | master | the master | ['the master'] | what is one of the master's powers  |
-| 20 | 0.0 | Other | PREPROCESSED | t - town | kearny | ['kearny'] | What newspaper circulates in the town of kearny |
-| 21 | 0.571429 | Suffix | PREPROCESSED | drums | drum | ['drum'] | which musician plays the drum kit |
-| 22 | 0.84375 | Suffix | PREPROCESSED | dimillo 's floating restaurant | restaurant | ['dimillos floating restaurant', 'dimillos floating', 'floating restaurant', 'dimillos', 'is dimillos floating restaurant', 'dimillos floating restaurant in', 'restaurant'] | what state is dimillos floating restaurant in? |
-| 23 | 0.0 | Wrong Span | PREPROCESSED | ragtime | denmark | ['denmark'] | who is the ragtime artist born in denmark? |
-| 24 | 0.8 | Similar, Extra Article | PREPROCESSED | the regatta mystery | mystery | ['regatta mystery', 'mystery'] | what theme is in the piece regatta mystery |
-| 25 | 0.0 | Wrong Span | PREPROCESSED | album | jack | ['jack dejohnrette', 'jack'] | What is the name of Jack DeJohnrette's album? |
-| 26 | 0.0 | Wrong Span | PREPROCESSED | bollywood | tamil | ['tamil'] | what bollywood Tamil film was released in 2004  |
-| 27 | 0.0 | Wrong Span | PREPROCESSED | animated cartoon | ducks | ['ducks'] | what animated cartoon was about ducks? |
-| 28 | 0.0 | Wrong Span | PREPROCESSED | photography | visual art | ['visual art'] | which artist uses photography as their preferred visual art form |
-| 29 | 0.761905 | Suffix | PREPROCESSED | this pud 's for you | for you | ['this puds for you comes', 'this puds for you', 'this puds for you comes from', 'puds for you comes', 'puds for you', 'this puds for', 'this puds', 'episode this puds for you comes', 'for you comes', 'puds for you comes from', 'episode this puds for you', 'for you'] | what is the series where the episode this puds for you comes from |
-| 30 | 0.826087 | Suffix | NORMALIZED | chet 's speech , part ii | , part ii | ['chets speech , part ii', 'speech , part ii', 'chets speech , part', 'chets speech ,', 'chets speech', ', part ii'] | who sings chets speech, part ii |
-| 31 | 0.764706 | Wrong Span | PREPROCESSED | large family car | family | ['large family', 'family'] | What car model is an example of a large family car? |
-| 32 | 0.761905 | Suffix | PREPROCESSED | men 's pommel horse | pommel horse | ['mens pommel horse', 'mens pommel', 'pommel horse'] | What olympic games featured mens pommel horse |
-| 33 | 0.0526316 | Wrong Span | NORMALIZED | soundtrack | s.cry.ed | ['s.cry.ed'] | What's the soundtrack for s.cry.ed |
-| 34 | 0.35 | Wrong Span | PREPROCESSED | sahara ( instrumental ) | sahara | ['sahara'] | who composed sahara (instrumental)? |
-| 35 | 0.0625 | Wrong Span | PREPROCESSED | compilation | cema | ['albumby cema', 'cema'] | what album is released as a compilation albumby CEMA |
-| 36 | 0.583333 | Wrong Span | PREPROCESSED | arabic name | arabic | ['arabic'] | What is a book that is about arabic name |
-| 37 | 0.73913 | Similar | PREPROCESSED | multiplayer video game | game | ['multiplayer game', 'game'] | What's a text based multiplayer game |
-| 38 | 0.75 | Extra Article | PREPROCESSED | the crystal city | crystal city | ['crystal city'] | what genre is crystal city |
-| 39 | 0.84 | Suffix | PREPROCESSED | men 's badminton , singles | singles | ['mens badminton , singles', 'badminton , singles', 'mens badminton', 'mens badminton ,', 'singles'] | what olympic games was mens badminton, singles apart of |
-| 40 | 0.0 | Wrong Span | PREPROCESSED | mercedes lackey | fantasy | ['fantasy'] | which fantasy series were written by mercedes lackey? |
-| 41 | 0.666667 | Similar | PREPROCESSED | brian o'shea | brian oshea | ['brian oshea'] | brian oshea performs what type of martial art |
-| 42 | 0.857143 | Similar | PREPROCESSED | u.s . office of war information | war | ['office of war information', 'office of war information help', 'the office of war information', 'war information', 'the office of war information help', 'of war information', 'office of war', 'war information help', 'of war information help', 'the office of war', 'office of war information help produce', 'war'] | which film did the office of war information help produce  |
-| 43 | 0.0 | Wrong Span | PREPROCESSED | album | sham 69 | ['sham 69'] | which album is released by Sham 69 |
-| 44 | 0.777778 | Wrong Span | NORMALIZED | lowthian bell | , 1st baronet | ['sir lowthian bell , 1st baronet', 'lowthian bell , 1st baronet', 'sir lowthian bell , 1st', 'sir lowthian bell ,', 'sir lowthian bell', 'bell , 1st baronet', 'sir lowthian', ', 1st baronet'] | what organization was founded by sir lowthian bell, 1st baronet |
-| 45 | 0.862069 | Suffix | PREPROCESSED | st . peter 's episcopal church | st . peters | ['st . peters episcopal church', 'st . peters episcopal', '. peters episcopal church', 'peters episcopal church', 'st . peters'] | what state and city is st. peters episcopal church located in? |
-| 46 | 0.851852 | Suffix | PREPROCESSED | richard scarry 's busytown | busytown | ['richard scarrys busytown', 'scarrys busytown', 'richard scarrys', 'busytown'] | what is a gameplay mode featured on richard scarrys busytown |
-| 47 | 0.0 | Wrong Span | PREPROCESSED | album | soil | ['soil'] | What's an album by soil |
-| 48 | 0.714286 | Similar | PREPROCESSED | texas a&m university school of law | texas wesleyan university | ['texas wesleyan university school of law', 'wesleyan university school of law', 'texas wesleyan university school of', 'texas wesleyan university school', 'university school of law', 'is texas wesleyan university school of law', 'texas wesleyan university'] | Where is texas wesleyan university school of law located? |
-| 49 | 0.535714 | Wrong Span | PREPROCESSED | public service announcement | public service | ['public service'] | What is the name of a public service announcement? |
+| Index | Max Similarity  | Bucket | Strategy | Preprocessed Subject Name | Predicted Alias | Considered Aliases | Question |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 0 | 0.705882 | Wrong Span | PREPROCESSED | pim fortuyn list | pim fortuyn | ['pim fortuyn'] | what ideology does the pim fortuyn list follow |
+| 1 | 0.0 | Wrong Span | NORMALIZED_PUNCTUATION_STEM | drug | cleaning | ['cleaning hands', 'for cleaning hands', 'cleaning'] | what drug is used for cleaning hands  |
+| 2 | 0.444444 | Wrong Span | PREPROCESSED | leather subculture | leather | ['leather'] | what's one event that celebrates the leather subculture |
+| 3 | 0.333333 | Wrong Span | PREPROCESSED | illinois river | rogue river | ['lower rogue river', 'rogue river'] | in which community does the illinois river confluence with the Lower Rogue river |
+| 4 | 0.764706 | Wrong Span, Extra Article | PREPROCESSED | need for speed | the need for speed | ['the need for speed'] | what type of film is the need for speed |
+| 5 | 0.0 | Wrong Span | PREPROCESSED | asteroid | geologist | ['geologist'] | which asteroid was names after an italian geologist? |
+| 6 | 0.0 | Wrong Span | PREPROCESSED | album | chico debarge | ['chico debarge'] | what is an album by Chico DeBarge? |
+| 7 | 1.0 | Punctuation | PREPROCESSED | unter null . | unter null | ['unter null'] | what type of book binding is unter null. |
+| 8 | 0.5 | Wrong Span | NORMALIZED_PUNCTUATION | k - pop | - pop music | ['k - pop music', '- pop music'] | Who is an artist of k-pop music? |
+| 9 | 0.0454545 | Wrong Span | PREPROCESSED | novel | vladimir nabokov | ['vladimir nabokov'] | Name a novel by Vladimir Nabokov |
+| 10 | 0.888889 | Similar | PREPROCESSED | millard s drexler | millard | ['millard drexler', 'drexler', 'millard'] | What organization did millard drexler found |
+| 11 | 0.0 | Wrong Span | PREPROCESSED | musical | israel | ['israel'] | which musical films were broadcasted in israel? |
+| 12 | 0.0 | Wrong Span | PREPROCESSED | live album | 3oh!3 | ['3oh!3'] | what is the name of the live album by 3oh!3 |
+| 13 | 0.5 | Wrong Span | PREPROCESSED | epic film | epic | ['epic'] | Name a 1936 epic film  |
+| 14 | 0.533333 | Wrong Span | PREPROCESSED | roy rogers restaurants | roy rogers | ['roy rogers'] | roy rogers restaurants in which industry? |
+| 15 | 0.0 | Wrong Span | PREPROCESSED | caucasian | babylon 5 | ['babylon 5'] | who is of caucasian race in babylon 5 |
+| 16 | 0.6 | Wrong Span | PREPROCESSED | painting | visual art | ['visual art painting', 'art painting', 'visual art'] | what is a visual art painting |
+| 17 | 0.0 | Wrong Span | PREPROCESSED | album | funk | ['koul funk', 'funk'] | what album was release by Koul Funk |
+| 18 | 0.0555556 | Wrong Span | PREPROCESSED | science | brian swimme | ['brian swimme'] | brian swimme wrote what book that dealt with  science |
+| 19 | 0.0 | Wrong Span | PREPROCESSED | animation | raoul servais | ['raoul servais'] | Which animation did Raoul Servais direct |
+| 20 | 0.333333 | Wrong Span | PREPROCESSED | working title films | films | ['films'] | what is the film from the production company working title films |
+| 21 | 0.0344828 | Wrong Span | PREPROCESSED | jerry bruckheimer | biographical film | ['biographical film'] | jerry bruckheimer was the producer of this biographical film.  |
+| 22 | 0.714286 | Similar | PREPROCESSED | godbout v longueuil ( city of ) | longueuil | ['godbout v. longueuil', 'godbout v.', 'v. longueuil', 'the godbout v. longueuil', 'godbout v. longueuil case', 'godbout', 'longueuil'] | what court handled the godbout v. longueuil case? |
+| 23 | 0.875 | Similar | PREPROCESSED | raymond a. meier | raymond | ['raymond meier', 'meier', 'was raymond meier', 'raymond'] | Which city was raymond meier born in |
+| 24 | 0.714286 | Wrong Span | PREPROCESSED | afterglow | the afterglow | ['the afterglow fil', 'the afterglow fil ,', 'afterglow fil', 'afterglow fil ,', 'the afterglow'] | who did the music for the afterglow fil, |
+| 25 | 0.0 | Wrong Span | PREPROCESSED | album | leo sayer | ['leo sayer'] | what is an album by leo sayer? |
+| 26 | 1.0 | Similar | PREPROCESSED | drums | drum | ['drum'] | who played the drum  in the Los Angeles rock quintet Rooney |
+| 27 | 0.625 | Wrong Span | PREPROCESSED | latin pop | pop music | ['latin pop music', 'pop music'] | who is an artist that creates latin pop music |
+| 28 | 0.0909091 | Wrong Span | PREPROCESSED | death eaters | harry potter | ['harry potter'] | which is the name of a death eater in harry potter? |
+| 29 | 0.62069 | Similar | NORMALIZED_PUNCTUATION | single - player video game | single - | ['single - player mode', 'single - player mode game', 'single - player', 'single -'] | what is a single-player mode game? |
+| 30 | 0.461538 | Wrong Span | PREPROCESSED | album | compilation album | ['compilation album'] | What is a compilation album from 2006  |
+| 31 | 0.047619 | Wrong Span | PREPROCESSED | studio album | arcangel | ['arcangel'] | What was a studio album recording for Arcángel |
+| 32 | 0.6 | Wrong Span | PREPROCESSED | saint | the saint | ['the saint novel', 'saint novel', 'the saint'] | What type of book is the saint novel? |
+| 33 | 0.5 | Wrong Span | PREPROCESSED | avila place | avila | ['avila'] | what western state does contain avila place |
+| 34 | 0.0357143 | Wrong Span | PREPROCESSED | north carolina | surrey | ['surrey county', 'surrey'] | What is a city in Surrey County, north carolina? |
+| 35 | 0.0 | Wrong Span | PREPROCESSED | album | johannes brahms | ['johannes brahms'] | What is an album written by Johannes Brahms |
+| 36 | 0.777778 | Wrong Span | PREPROCESSED | first battle of james island | james island | ['battle of james island', 'battle of james', 'of james island', 'james island'] | Name a soldier involved in the battle of james island. |
+| 37 | 0.642857 | Wrong Span | PREPROCESSED | plymouth | plymouth rock | ['plymouth rock'] | is there another attraction in plymouth other than plymouth rock |
+| 38 | 0.705882 | Wrong Span | PREPROCESSED | altered beast | beast | ['beast game', 'altered beast game', 'beast'] | who is the creator of the altered beast game |
+| 39 | 0.45 | Wrong Span | PREPROCESSED | the barefoot artist | barefoot | ['barefoot'] | which film created the barefoot artist  |
+| 40 | 0.352941 | Wrong Span | PREPROCESSED | pornographic actor | actor | ['actor'] | who is a pornographic actor |
+| 41 | 0.0 | Wrong Span | PREPROCESSED | album | century media | ['century media'] | which albums were released by the century media label? |
+| 42 | 0.5 | Wrong Span | PREPROCESSED | 8833 acer | acer | ['acer'] | what is a 8833 acer |
+| 43 | 1.0 | Similar | PREPROCESSED | cruisin ' | cruisin | ['cruisin'] | What release is cruisin on? |
+| 44 | 0.88 | Similar | NORMALIZED_PUNCTUATION_STEM | the wonderful wizard of ha 's | the wonderful | ['the wonderful wizard of', 'the wonderful wizard of has', 'the wonderful wizard', 'wonderful wizard of', 'wonderful wizard of has', 'wonderful wizard', 'wizard of', 'the wonderful'] | What film series is the wonderful wizard of has from? |
+| 45 | 0.842105 | Wrong Span, Extra Article | PREPROCESSED | tower of london | the tower of london | ['the tower of london'] | who recorded the tower of london |
+| 46 | 0.7 | Wrong Span | PREPROCESSED | outside in | outside | ['outside'] | Which genre is outside in associated with |
+| 47 | 0.4 | Wrong Span | PREPROCESSED | rca | rca records | ['rca records'] | Who is an artist  signed by rca records? |
+| 48 | 0.0 | Wrong Span | PREPROCESSED | action game | sega | ['sega'] | What's an action game made by sega |
+| 49 | 0.647059 | Wrong Span | PREPROCESSED | film adaptation | novel | ['novel film adaptation', 'novel'] | What's an example of a novel film adaptation |
