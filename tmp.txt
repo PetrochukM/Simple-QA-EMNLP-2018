@@ -1,54 +1,52 @@
-
-
-| Index | Similarity |  Index | Bucket | Predicted Subject | Shorter Predicted Subject Name | Correct Alias | Tag Confidence | Candidate Aliases | Question |
-| --- | --- |  --- | --- | --- | --- | --- | --- | --- | --- |
-| 0 | 0.590909 |  0 | Similar | the red clouds war | war | red cloud's war | [0.0, 0.01, 0.18, 0.01, 0.64, 0.75, 0.72, 0.86, 0.0] | nan | what was involved in the red clouds war? |
-| 1 | 0.35 |  1 | Misaligned | nation book | nation | corporation nation | [0.0, 0.07, 0.01, 0.31, 0.37, 0.97, 0.74, 0.02] | nan | what subject is the corporation nation book about |
-| 2 | 0.8 |  2 | Similar | peters point plantation | peters | peter's point plantation | [0.0, 0.0, 0.97, 0.68, 0.92, 0.0, 0.05, 0.01] | nan | What is peters point plantation's architectural style |
-| 3 | 0.782609 |  3 | Similar | battle of hudsons bay | bay | battle of hudson's bay | [0.01, 0.08, 0.02, 0.94, 0.48, 0.9, 0.95, 0.0, 0.01] | nan | where did the battle of hudsons bay take place |
-| 4 | 0.785714 |  4 | Similar | megan chengs | megan | megan cheng | [0.0, 0.0, 1.0, 0.97, 0.0] | nan | whats  megan chengs ethnicity |
-| 5 | 0.8 |  5 | Longer, Not in Question | regatta mystery | mystery | the regatta mystery | [0.0, 0.03, 0.01, 0.04, 0.08, 0.01, 0.97, 0.99] | nan | what theme is in the piece regatta mystery |
-| 6 | 0.0 |  6 | Wrong Span | jack dejohnrette | jack | album | [0.0, 0.01, 0.3, 0.27, 0.02, 0.88, 0.85, 0.01, 0.43, 0.0] | nan | What is the name of Jack DeJohnrette's album? |
-| 7 | 0.592593 |  7 | Smaller, Similar | this puds for you comes | for you | this pud's for you | [0.0, 0.0, 0.06, 0.06, 0.01, 0.06, 0.0, 0.91, 0.84, 0.6, 0.92, 0.47, 0.02] | nan | what is the series where the episode this puds for you comes from |
-| 8 | 0.73913 |  8 | Other | multiplayer game | game | multiplayer video game | [0.0, 0.01, 0.01, 0.39, 0.0, 0.95, 0.96] | nan | What's a text based multiplayer game |
-| 9 | 0.84 |  9 | Similar | mens badminton , singles | singles | men's badminton, singles | [0.0, 0.09, 0.11, 0.0, 0.93, 0.8, 0.37, 0.94, 0.0, 0.02] | nan | what olympic games was mens badminton, singles apart of |
-| 10 | 0.888889 |  10 | Longer, Not in Question | office of war information | war | u.s. office of war information | [0.0, 0.12, 0.03, 0.21, 0.79, 0.26, 0.85, 0.79, 0.22, 0.02] | nan | which film did the office of war information help produce  |
-| 11 | 0.482759 |  11 | Other | sir lowthian bell , 1st baronet | sir | lowthian bell | [0.0, 0.13, 0.01, 0.29, 0.0, 0.91, 0.64, 0.69, 0.38, 0.55, 0.86] | nan | what organization was founded by sir lowthian bell, 1st baronet |
-| 12 | 0.862069 |  12 | Similar | st . peters episcopal church | st peters | st. peter's episcopal church | [0.0, 0.12, 0.09, 0.14, 0.0, 0.95, 0.43, 0.67, 0.57, 0.95, 0.0, 0.01, 0.0] | nan | what state and city is st. peters episcopal church located in? |
-| 13 | 0.851852 |  13 | Similar | richard scarrys busytown | richard | richard scarry's busytown | [0.0, 0.01, 0.02, 0.13, 0.16, 0.04, 0.0, 0.95, 0.71, 0.93] | nan | what is a gameplay mode featured on richard scarrys busytown |
-| 14 | 0.72093 |  14 | Similar | texas wesleyan university school of law | school of law | texas a&m university school of law | [0.01, 0.0, 0.93, 0.74, 0.7, 0.73, 0.53, 0.94, 0.0, 0.0] | nan | Where is texas wesleyan university school of law located? |
-| 15 | 0.55 |  15 | Confidence | you find the animal | you | the animal | [0.0, 0.06, 0.11, 0.06, 0.94, 0.17, 0.71, 0.89, 0.01, 0.02] | nan | Which netflix genre can you find the animal under? |
-| 16 | 0.375 |  16 | Similar, Shorter | breton people | breton | bretons | [0.0, 0.03, 0.06, 0.01, 0.96, 0.72] | nan | Name one of the breton people |
-| 17 | 0.806452 |  17 | Similar | improvised explosive device | device | improvized explosive device | [0.0, 0.01, 0.07, 0.13, 0.02, 0.56, 0.09, 0.03, 0.84, 0.77, 0.86, 0.0] | nan | what is a type of disaster from a improvised explosive device? |
-| 18 | 0.5 |  18 | Confidence | indie album | album | indie | [0.0, 0.0, 0.88, 0.9] | nan | Name an indie album |
-| 19 | 0.846154 |  19 | Similar | david f. dodge | dodge | david dodge | [0.0, 0.1, 0.05, 0.05, 0.0, 0.98, 0.9, 0.99, 0.0, 0.0] | nan | which bay area city was david f. dodge born in  |
-| 20 | 0.24 |  20 | Wrong Span | lower rogue river | rogue river | illinois river | [0.01, 0.05, 0.24, 0.03, 0.02, 0.67, 0.5, 0.05, 0.1, 0.02, 0.85, 0.6, 0.86] | nan | in which community does the illinois river confluence with the Lower Rogue river |
-| 21 | 0.878049 |  21 | Similar | the national parks : americas best idea | idea | the national parks: america's best idea | [0.0, 0.01, 0.03, 0.0, 0.91, 0.8, 0.8, 0.55, 0.77, 0.7, 0.96] | nan | who produced the film the national parks: americas best idea |
-| 22 | 0.5 |  22 | Similar, Shorter, Confidence | k - pop music | pop music | k-pop | [0.0, 0.03, 0.04, 0.09, 0.0, 0.92, 0.55, 0.88, 0.94, 0.0] | nan | Who is an artist of k-pop music? |
-| 23 | 0.45 |  23 | Shorter, Confidence | visual art painting | visual art | painting | [0.0, 0.02, 0.01, 0.88, 0.57, 0.85] | nan | what is a visual art painting |
-| 24 | 0.666667 |  24 | Misaligned | good breakfast | breakfast | breakfast food | [0.0, 0.02, 0.11, 0.64, 0.96, 0.15] | nan | what's a good breakfast food |
-| 25 | 0.653846 |  25 | Similar | brothers in arms ' language | language | brothers in arms | [0.01, 0.0, 0.94, 0.45, 0.72, 0.45, 0.94, 0.0, 0.01, 0.0] | nan | What is brothers in arms' language filmed in? |
-| 26 | 0.625 |  26 | | latin pop music | pop music | latin pop | [0.0, 0.02, 0.01, 0.15, 0.02, 0.01, 0.53, 0.91, 0.94] | nan | who is an artist that creates latin pop music |
-| 27 | 0.8 |  27 | prince georges county | county | prince george's county | [0.0, 0.03, 0.01, 0.93, 0.83, 0.95] | nan | what is in prince georges county |
-| 28 | 0.466667 |  28 | single - player mode | single | single-player video game | [0.0, 0.02, 0.0, 0.98, 0.51, 0.8, 0.89, 0.23, 0.0] | nan | what is a single-player mode game? |
-| 29 | 0.8 |  29 | the godfathers revenge | revenge | the godfather's revenge | [0.0, 0.0, 0.02, 0.02, 0.01, 0.06, 0.0, 0.95, 0.89, 0.99] | nan | what is the genre for the book the godfathers revenge |
-| 30 | 0.785714 |  30 | kevin walshs | kevin | kevin walsh | [0.0, 0.0, 1.0, 0.99, 0.0] | nan | what is  kevin walshs nationality |
-| 31 | 0.0357143 |  31 | surrey county | surrey | north carolina | [0.0, 0.02, 0.05, 0.28, 0.0, 0.88, 0.87, 0.01, 0.33, 0.52, 0.0] | nan | What is a city in Surrey County, north carolina? |
-| 32 | 0.769231 |  32 | indie films | indie | indie film | [0.0, 0.0, 0.99, 0.43, 0.0] | nan | what are indie films? |
-| 33 | 0.793103 |  33 | battle of james island | battle | first battle of james island | [0.0, 0.02, 0.47, 0.02, 0.07, 0.02, 0.91, 0.45, 0.65, 0.84, 0.0] | nan | Name a soldier involved in the battle of james island. |
-| 34 | 0.666667 |  34 | woodys gone | gone | woody's gone | [0.0, 0.0, 0.98, 0.99] | nan | who recorded woodys gone |
-| 35 | 0.551724 |  35 | the realm of science fiction | science | science fiction | [0.0, 0.01, 0.09, 0.1, 0.02, 0.06, 0.1, 0.35, 0.45, 0.65, 0.15, 0.94, 0.41] | nan | what is an example of a book i the realm of science fiction |
-| 36 | 0.315789 |  36 | beast game | beast | altered beast | [0.0, 0.02, 0.07, 0.1, 0.01, 0.11, 0.02, 0.99, 0.94] | nan | who is the creator of the altered beast game |
-| 37 | 0.821429 |  37 | the wonderful wizard of | wizard | the wonderful wizard of ha's | [0.0, 0.03, 0.03, 0.0, 0.82, 0.77, 0.9, 0.64, 0.17, 0.02, 0.01] | nan | What film series is the wonderful wizard of has from? |
-| 38 | 0.83871 |  38 | do n't tell me 9what love can do ) | can do | don't tell me (what love can do) | [0.0, 0.03, 0.04, 0.77, 0.71, 0.7, 0.63, 0.59, 0.66, 0.68, 0.79, 0.76, 0.14, 0.03] | nan | Who composed "Don't Tell Me 9What Love Can Do)"? |
-| 39 | 0.727273 |  39 | novel film adaptation | novel | film adaptation | [0.0, 0.01, 0.03, 0.04, 0.04, 0.01, 0.97, 0.3, 0.27] | nan | What's an example of a novel film adaptation |
-| 40 | 1.0 |  40 | spike milligan milligan | milligan | spike milligan | [0.0, 0.04, 0.0, 0.91, 0.71, 0.94] | nan | what nationality is spike milligan milligan |
-| 41 | 0.0 |  41 | ten ton chicken | ten | jazz | [0.0, 0.68, 0.02, 0.03, 0.11, 0.0, 0.91, 0.59, 0.88] | nan | what jazz album is produced by ten ton chicken |
-| 42 | 0.0 |  42 | feel the noise of liar liar | feel the noise | drama | [0.0, 0.74, 0.44, 0.56, 0.43, 0.52, 0.49, 0.01, 0.01, 0.82] | nan | is feel the noise of liar liar considered a drama |
-| 43 | 0.65 |  43 | german variety show | variety | variety show | [0.0, 0.02, 0.05, 0.69, 0.71, 0.53] | nan | What's a german variety show |
-| 44 | 0.714286 |  44 | found on ass seen on tv | ass | ass seen on t.v. | [0.0, 0.23, 0.02, 0.46, 0.03, 0.19, 0.64, 0.33, 0.88, 0.38, 0.3, 0.55] | nan | what music would mostly accurately be found on ass seen on tv |
-| 45 | 0.594595 |  45 | the ハフルカムクライシス 6 : red eyes soundtrack | soundtrack | バブルガムクライシス 6: red eyes | [0.0, 0.16, 0.03, 0.01, 0.53, 0.78, 0.64, 0.51, 0.67, 0.7, 0.86] | nan | What tv program utilized the バブルガムクライシス 6: red eyes soundtrack |
-| 46 | 0.5 |  46 | christof lauer from bluebells | bluebells | christof lauer | [0.0, 0.02, 0.01, 0.59, 0.0, 0.82, 0.52, 0.18, 0.86] | nan | What's a song by christof lauer from bluebells |
-| 47 | 0.5 |  47 | main - belt minor planet | minor planet | minor planets | [0.0, 0.03, 0.07, 0.7, 0.34, 0.32, 0.6, 0.9, 0.01, 0.02, 0.23, 0.0] | nan | What is a main-belt minor planet discovered in 1999? |
-| 48 | 0.375 |  48 | somali people | somali | somalis | [0.0, 0.04, 0.23, 0.03, 0.01, 0.1, 0.02, 0.95, 0.83] | nan | Who's somebody that identifies with the somali people |
-| 49 | 0.8125 |  49 | zalman shazars | zalman | zalman shazar | [0.0, 0.0, 0.97, 0.93, 0.02, 0.17, 0.22] | nan | what is zalman shazars area of activism |
+| Index | Similarity | Strategy | Preprocessed Subject Name | Predicted Alias | Considered Aliases | Question |
+| --- | --- | --- | --- | --- | --- | --- |
+| 0 | 0.0 | Wrong Span | PREPROCESSED | short | documentary film | ['documentary film'] | Name a short documentary film released in 2011 |
+| 1 | 0.722222 | Suffix | PREPROCESSED | red cloud 's war | the red | ['the red clouds war', 'red clouds war', 'the red clouds', 'clouds war', 'red clouds', 'the red'] | what was involved in the red clouds war? |
+| 2 | 0.75 | Wrong Span  PREPROCESSED | corporation nation | nation | ['nation book', 'corporation nation book', 'the corporation nation book', 'nation'] | what subject is the corporation nation book about |
+| 3 | 0.8 | Suffix | PREPROCESSED | peter 's point plantation | peters | ['peters point plantation', 'peters point', 'point plantation', 'peters'] | What is peters point plantation's architectural style |
+| 4 | 0.0555556 | Wrong Span | PREPROCESSED | album | aaron carter | ['aaron carter'] | Name an album released by aaron carter |
+| 5 | 1.0 | Similar | PREPROCESSED | pillows & prayers : cherry red 1982–1983 | pillows & prayers : cherry red 1982 - 1983 | ['pillows & prayers : cherry red 1982 - 1983'] | What is the name of the track list for the release pillows & prayers: cherry red 1982-1983? |
+| 6 | 0.5 | Wrong Span | PREPROCESSED | commune of luxembourg | luxembourg | ['luxembourg'] | which country is the commune of luxembourg in |
+| 7 | 0.764706 | Extra Article | PREPROCESSED | the hits album 6 | 6 | ['hits album 6', '6'] | what song was included in the hits album 6 |
+| 8 | 0.588235 | Wrong Span | PREPROCESSED | between two women | two women | ['two women'] | what is about between two women |
+| 9 | 0.782609 | Suffix | PREPROCESSED | battle of hudson 's bay | bay | ['battle of hudsons bay', 'of hudsons bay', 'battle of hudsons', 'the battle of hudsons bay', 'hudsons bay', 'did the battle of hudsons bay', 'battle of', 'bay'] | where did the battle of hudsons bay take place |
+| 10 | 0.0 | Wrong Span | PREPROCESSED | tablet | hypertension | ['hypertension'] | what is a tablet used to treat hypertension  |
+| 11 | 0.0 | Wrong Span | PREPROCESSED | compilation album | frank zappa | ['frank zappa'] | what compilation album did frank zappa release? |
+| 12 | 0.0 | Wrong Span | PREPROCESSED | soundtrack | anthony marinelli | ['anthony marinelli'] | What's a soundtrack written by anthony marinelli |
+| 13 | 0.0 | Wrong Span | PREPROCESSED | album | george canyon | ['george canyon'] | name an album by George Canyon |
+| 14 | 0.0 | Wrong Span | PREPROCESSED | album | portal | ['portal'] | What's an album by the band portal |
+| 15 | 0.785714 | Suffix | PREPROCESSED | megan cheng | megan | ['megan chengs', 'megan'] | whats  megan chengs ethnicity |
+| 16 | 0.705882 | Wrong Span | PREPROCESSED | martial arts film | martial arts | ['martial arts'] | what is the name of the netflix martial arts film? |
+| 17 | 0.0222222 | Wrong Span | PREPROCESSED | creedence clearwater revival | compilation album | ['compilation album'] | What is a compilation album by creedence clearwater revival |
+| 18 | 0.227273 | Wrong Span | PREPROCESSED | topical medication | medicine | ['medicine'] | Name a topical medicine |
+| 19 | 0.636364 | Wrong Span | PREPROCESSED | master | the master | ['the master'] | what is one of the master's powers  |
+| 20 | 0.0 | Other | PREPROCESSED | t - town | kearny | ['kearny'] | What newspaper circulates in the town of kearny |
+| 21 | 0.571429 | Suffix | PREPROCESSED | drums | drum | ['drum'] | which musician plays the drum kit |
+| 22 | 0.84375 | Suffix | PREPROCESSED | dimillo 's floating restaurant | restaurant | ['dimillos floating restaurant', 'dimillos floating', 'floating restaurant', 'dimillos', 'is dimillos floating restaurant', 'dimillos floating restaurant in', 'restaurant'] | what state is dimillos floating restaurant in? |
+| 23 | 0.0 | Wrong Span | PREPROCESSED | ragtime | denmark | ['denmark'] | who is the ragtime artist born in denmark? |
+| 24 | 0.8 | Similar, Extra Article | PREPROCESSED | the regatta mystery | mystery | ['regatta mystery', 'mystery'] | what theme is in the piece regatta mystery |
+| 25 | 0.0 | Wrong Span | PREPROCESSED | album | jack | ['jack dejohnrette', 'jack'] | What is the name of Jack DeJohnrette's album? |
+| 26 | 0.0 | Wrong Span | PREPROCESSED | bollywood | tamil | ['tamil'] | what bollywood Tamil film was released in 2004  |
+| 27 | 0.0 | Wrong Span | PREPROCESSED | animated cartoon | ducks | ['ducks'] | what animated cartoon was about ducks? |
+| 28 | 0.0 | Wrong Span | PREPROCESSED | photography | visual art | ['visual art'] | which artist uses photography as their preferred visual art form |
+| 29 | 0.761905 | Suffix | PREPROCESSED | this pud 's for you | for you | ['this puds for you comes', 'this puds for you', 'this puds for you comes from', 'puds for you comes', 'puds for you', 'this puds for', 'this puds', 'episode this puds for you comes', 'for you comes', 'puds for you comes from', 'episode this puds for you', 'for you'] | what is the series where the episode this puds for you comes from |
+| 30 | 0.826087 | Suffix | NORMALIZED | chet 's speech , part ii | , part ii | ['chets speech , part ii', 'speech , part ii', 'chets speech , part', 'chets speech ,', 'chets speech', ', part ii'] | who sings chets speech, part ii |
+| 31 | 0.764706 | Wrong Span | PREPROCESSED | large family car | family | ['large family', 'family'] | What car model is an example of a large family car? |
+| 32 | 0.761905 | Suffix | PREPROCESSED | men 's pommel horse | pommel horse | ['mens pommel horse', 'mens pommel', 'pommel horse'] | What olympic games featured mens pommel horse |
+| 33 | 0.0526316 | Wrong Span | NORMALIZED | soundtrack | s.cry.ed | ['s.cry.ed'] | What's the soundtrack for s.cry.ed |
+| 34 | 0.35 | Wrong Span | PREPROCESSED | sahara ( instrumental ) | sahara | ['sahara'] | who composed sahara (instrumental)? |
+| 35 | 0.0625 | Wrong Span | PREPROCESSED | compilation | cema | ['albumby cema', 'cema'] | what album is released as a compilation albumby CEMA |
+| 36 | 0.583333 | Wrong Span | PREPROCESSED | arabic name | arabic | ['arabic'] | What is a book that is about arabic name |
+| 37 | 0.73913 | Similar | PREPROCESSED | multiplayer video game | game | ['multiplayer game', 'game'] | What's a text based multiplayer game |
+| 38 | 0.75 | Extra Article | PREPROCESSED | the crystal city | crystal city | ['crystal city'] | what genre is crystal city |
+| 39 | 0.84 | Suffix | PREPROCESSED | men 's badminton , singles | singles | ['mens badminton , singles', 'badminton , singles', 'mens badminton', 'mens badminton ,', 'singles'] | what olympic games was mens badminton, singles apart of |
+| 40 | 0.0 | Wrong Span | PREPROCESSED | mercedes lackey | fantasy | ['fantasy'] | which fantasy series were written by mercedes lackey? |
+| 41 | 0.666667 | Similar | PREPROCESSED | brian o'shea | brian oshea | ['brian oshea'] | brian oshea performs what type of martial art |
+| 42 | 0.857143 | Similar | PREPROCESSED | u.s . office of war information | war | ['office of war information', 'office of war information help', 'the office of war information', 'war information', 'the office of war information help', 'of war information', 'office of war', 'war information help', 'of war information help', 'the office of war', 'office of war information help produce', 'war'] | which film did the office of war information help produce  |
+| 43 | 0.0 | Wrong Span | PREPROCESSED | album | sham 69 | ['sham 69'] | which album is released by Sham 69 |
+| 44 | 0.777778 | Wrong Span | NORMALIZED | lowthian bell | , 1st baronet | ['sir lowthian bell , 1st baronet', 'lowthian bell , 1st baronet', 'sir lowthian bell , 1st', 'sir lowthian bell ,', 'sir lowthian bell', 'bell , 1st baronet', 'sir lowthian', ', 1st baronet'] | what organization was founded by sir lowthian bell, 1st baronet |
+| 45 | 0.862069 | Suffix | PREPROCESSED | st . peter 's episcopal church | st . peters | ['st . peters episcopal church', 'st . peters episcopal', '. peters episcopal church', 'peters episcopal church', 'st . peters'] | what state and city is st. peters episcopal church located in? |
+| 46 | 0.851852 | Suffix | PREPROCESSED | richard scarry 's busytown | busytown | ['richard scarrys busytown', 'scarrys busytown', 'richard scarrys', 'busytown'] | what is a gameplay mode featured on richard scarrys busytown |
+| 47 | 0.0 | Wrong Span | PREPROCESSED | album | soil | ['soil'] | What's an album by soil |
+| 48 | 0.714286 | Similar | PREPROCESSED | texas a&m university school of law | texas wesleyan university | ['texas wesleyan university school of law', 'wesleyan university school of law', 'texas wesleyan university school of', 'texas wesleyan university school', 'university school of law', 'is texas wesleyan university school of law', 'texas wesleyan university'] | Where is texas wesleyan university school of law located? |
+| 49 | 0.535714 | Wrong Span | PREPROCESSED | public service announcement | public service | ['public service'] | What is the name of a public service announcement? |
