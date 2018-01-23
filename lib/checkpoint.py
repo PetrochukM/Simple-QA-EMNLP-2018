@@ -87,3 +87,5 @@ class Checkpoint(object):
         logger.info('Saving checkpoint %s', name)
 
         torch.save(save, path, pickle_module=dill)
+
+        return path

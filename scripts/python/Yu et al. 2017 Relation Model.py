@@ -343,6 +343,9 @@ for epoch in range(epochs):
             cuda_async(question), cuda_async(false_relation), cuda_async(false_relation_word))
         labels = cuda(Variable(torch.ones(output_true.size()[0])))
         loss = criterion(output_true, output_false, labels)
+        print(output_true.size())
+        print(output_false.size())
+        print(labels.size())
 
         # Backward propagation
         loss.backward()
