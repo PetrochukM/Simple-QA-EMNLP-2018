@@ -86,7 +86,7 @@ data/**
 
 # Sensitive
 *.pass
-abc.py
-note.txt
+
+experiments/
 .pretrained_embeddings_cache/
-stanford*
+results/

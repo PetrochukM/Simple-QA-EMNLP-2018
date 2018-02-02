@@ -19,6 +19,7 @@ class SeqToLabel(nn.Module):
                  rnn_layers=1,
                  decode_dropout=0.0,
                  rnn_variational_dropout=0.0,
+                 rnn_dropout=0.0,
                  embedding_dropout=0.0):
         super().__init__()
 
@@ -31,6 +32,7 @@ class SeqToLabel(nn.Module):
             n_layers=rnn_layers,
             rnn_cell=rnn_cell,
             bidirectional=bidirectional,
+            rnn_dropout=rnn_dropout,
             freeze_embeddings=freeze_embeddings)
 
         self.out = nn.Sequential(
@@ -40,14 +42,13 @@ class SeqToLabel(nn.Module):
             nn.Dropout(p=decode_dropout),
             nn.Linear(rnn_size, output_vocab_size))
 
-    def flatten_parameters(self):
-        self.encoder.rnn.flatten_parameters()
-
-    def forward(self, text, text_lengths):  # TODO: Remove text_lengths no need for padding in RNN
-        _, hidden = self.encoder(text, text_lengths)
+    def forward(self, text, mask=None):
+        _, hidden = self.encoder(text)
         if self.encoder.rnn_cell == nn.LSTM:
             hidden = hidden[0]
 
         output = self.out(hidden[-1])
-        scores = F.log_softmax(output)
+        if mask is not None:
+            output = output * mask
+        scores = F.log_softmax(output, dim=1)
         return scores

@@ -1,9 +1,6 @@
 import logging
-import math
 import os
 import time
-
-from torch.autograd import Variable
 
 import dill
 import torch
@@ -11,6 +8,7 @@ import torch
 import lib.utils
 
 logger = logging.getLogger(__name__)
+import_time = time.time()
 
 
 class Checkpoint(object):
@@ -40,8 +38,8 @@ class Checkpoint(object):
         for (k, v) in data.items():
             setattr(self, k, v)
 
-        if hasattr(self.model, 'flatten_parameters'
-                  ):  # NOTE: This should be recusive looking for any module with flatten_parameters
+        # TODO: This should be recusive looking for any module with flatten_parameters
+        if hasattr(self.model, 'flatten_parameters'):
             self.model.flatten_parameters()  # make RNN parameters contiguous
 
     @classmethod
@@ -64,28 +62,27 @@ class Checkpoint(object):
     # TODO: Consider saving as well a predict lambda
     # The predict lambda takes the saved object with a model and encoders, and makes a prediction...
     @classmethod
-    def save(cls, log_directory, save, device=None):
+    def save(cls, folder, data, device=None):
         """
         Saves the current model and related training parameters into a subdirectory of the
-        checkpoint directory. The name of the subdirectory is the current local time in
-        M_D_H_M_S format.
+        checkpoint directory.
 
         Args:
-            log_directory (str): path to the save directory
+            folder (str): path to the save directory
             object (dict): object to save
             device (int): give a device number to be appended to the end of the path
         """
-        date_time = time.strftime('%mm_%dd_%Hh_%Mm_%Ss', time.localtime())
-        name = '%s_[%d]' % (date_time, device) if device else date_time
+        time_elapsed = int(time.time() - import_time)
+        name = '%d.%d' % (time_elapsed, device) if device else str(time_elapsed)
         name += '.pt'
-        path = os.path.join(log_directory, name)
+        path = os.path.join(folder, name)
 
         if os.path.exists(path):
             logger.error('Cannot save checkpoint; directory (%s) already exists.', path)
             return
 
-        logger.info('Saving checkpoint %s', name)
+        logger.info('Saving checkpoint: %s', path)
 
-        torch.save(save, path, pickle_module=dill)
+        torch.save(data, path, pickle_module=dill)
 
         return path

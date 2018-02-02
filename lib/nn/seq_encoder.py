@@ -1,7 +1,5 @@
 import logging
 
-from torch.autograd import Variable
-
 import torch
 import torch.nn as nn
 
@@ -93,13 +91,11 @@ class SeqEncoder(nn.Module):
         self.rnn_dropout = LockedDropout(p=rnn_dropout)
         self.embedding_dropout = nn.Dropout(p=embedding_dropout)
 
-    def forward(self, input_, lengths):
+    def forward(self, input_):
         """
         Args:
             input_: (torch.LongTensor [seq_len, batch_size]): variable containing the encoded
                 features of the input sequence
-            lengths: (torch.LongTensor [batch_size]): tensor containing the lengths of each input_
-                sequence
         Returns:
             outputs (torch.FloatTensor [batch_size, seq_len, rnn_size]): variable containing the
                 encoded features of the input sequence
@@ -108,10 +104,7 @@ class SeqEncoder(nn.Module):
         """
         embedded = self.embedding(input_)
         embedded = self.embedding_dropout(embedded)
-
-        embedded = nn.utils.rnn.pack_padded_sequence(embedded, lengths.tolist())
         output, hidden = self.rnn(embedded)
-        output, _ = nn.utils.rnn.pad_packed_sequence(output)
         output = self.rnn_dropout(output)
 
         # Encoder has one or two hidden states depending on LSTM or GRU

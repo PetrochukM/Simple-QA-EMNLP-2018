@@ -10,6 +10,7 @@
         "byref",
         "CDLL",
         "chmod",
+        "correspondence",
         "ctypes",
         "cuda",
         "dylib",
