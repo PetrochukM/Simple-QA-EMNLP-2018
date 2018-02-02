@@ -51,3 +51,7 @@ class LockedDropout(nn.Module):
         mask = Variable(m, requires_grad=False)
         mask = mask.expand_as(x)
         return x * mask
+
+    def __repr__(self):
+        return self.__class__.__name__ + '(' \
+            + 'p=' + str(self.p) + ')'

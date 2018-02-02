@@ -41,7 +41,7 @@ class BucketBatchSampler(BatchSampler):
         return iter(batches)
 
     def __len__(self):
-        if self.drop_last:
+        if self.drop_last:  # TODO: What is this doing here? Self.drop_last is never instantiated
             return len(self.sampler) // self.batch_size
         else:
             return (len(self.sampler) + self.batch_size - 1) // self.batch_size

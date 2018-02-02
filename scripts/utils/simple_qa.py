@@ -1,4 +1,5 @@
 import pandas as pd
+import os
 
 # Simple QA Dataset statistics
 # Num Test Rows: 21687
@@ -6,10 +7,15 @@ import pandas as pd
 # Num Train Rows: 75910
 # Total Rows: 108442
 
+# Get the path relative to the directory this file is in
+_directory_path = os.path.dirname(os.path.realpath(__file__))
 simple_qa = {
-    'train': '../../data/SimpleQuestions_v2/annotated_fb_data_train.txt',
-    'dev': '../../data/SimpleQuestions_v2/annotated_fb_data_valid.txt',
-    'test': '../../data/SimpleQuestions_v2/annotated_fb_data_test.txt',
+    'train':
+        os.path.join(_directory_path, '../../data/SimpleQuestions_v2/annotated_fb_data_train.txt'),
+    'dev':
+        os.path.join(_directory_path, '../../data/SimpleQuestions_v2/annotated_fb_data_valid.txt'),
+    'test':
+        os.path.join(_directory_path, '../../data/SimpleQuestions_v2/annotated_fb_data_test.txt'),
 }
 
 

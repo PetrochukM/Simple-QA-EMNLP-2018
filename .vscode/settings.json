@@ -3,7 +3,7 @@
   "files.autoSave": "onFocusChange",
   "editor.tabSize": 2,
   "editor.formatOnSave": true,
-  "python.formatting.provider": "yapf",
+  "python.formatting.provider": "autopep8",
   "editor.detectIndentation": false,
   "python.unitTest.pyTestEnabled": false,
   "python.linting.flake8Enabled": true,
@@ -49,9 +49,10 @@
     "build/**": true,
     "cover/**": true
   },
-  "python.pythonPath": "/usr/local/bin/python3.6",
+  "python.pythonPath": "/usr/bin/python3.6",
   "cSpell.words": [
     "bleu",
+    "correspondence",
     "functools",
     "itertools",
     "spacy",

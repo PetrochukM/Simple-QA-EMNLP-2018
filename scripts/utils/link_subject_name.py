@@ -24,8 +24,10 @@ def normalize_alias(s):
     if not isinstance(s, list):
         s = tokenize(str(s))
 
-    s = ' '.join([stem(t.strip().lower()) for t in s if t not in possesives])
-    return s
+    words = [t.strip().lower() for t in s]
+    words = [t for t in words if t not in possesives]
+    words = [stem(t) for t in words]
+    return ' '.join(words)
 
 
 def tokenize(s):
@@ -41,13 +43,14 @@ def get_alias_in_sentence(sentence, aliases):
         - lowercase the string
         - stem words
     """
-    aliases = sorted(aliases, key=lambda k: len(k), reverse=True)  # Sort by longest
+    aliases = sorted(
+        list(enumerate(aliases)), key=lambda k: len(k[1]), reverse=True)  # Sort by longest
     token_sentence = tokenize(sentence.lower())
     # Save the original index but get rid of the possesives
     token_sentence_no_poss = [(i, stem(t)) for i, t in enumerate(token_sentence)
                               if t not in possesives]
 
-    for alias in aliases:
+    for alias_index, alias in aliases:
         normalized_alias = normalize_alias(alias)
         token_alias = normalized_alias.split()
 
@@ -70,11 +73,11 @@ def get_alias_in_sentence(sentence, aliases):
                     assert normalized_alias == normalize_alias(
                         token_sentence[start_index:stop_index]), """Normalized linking failed."""
 
-                    return alias, start_index, stop_index
+                    return alias_index, start_index, stop_index
     return nan, nan, nan
 
 
-def add_subject_name(df, cursor, print_=False):
+def add_subject_name(df, cursor, print_=False, table='fb_name'):
     """
     Queries for potential aliases and links to the longest one referenced in the question.
 
@@ -91,7 +94,7 @@ def add_subject_name(df, cursor, print_=False):
     print_data = []
 
     for index, row in tqdm_notebook(df.iterrows(), total=df.shape[0]):
-        cursor.execute("SELECT alias FROM fb_name WHERE mid=%s", (row['subject'],))
+        cursor.execute("SELECT alias FROM " + table + " WHERE mid=%s", (row['subject'],))
         rows = cursor.fetchall()
 
         # No aliases found
@@ -105,14 +108,19 @@ def add_subject_name(df, cursor, print_=False):
                 print('Subject MID (%s) does not have aliases.' % row['subject'])
         else:
             aliases = [row[0].strip() for row in rows]
-            alias, start_index, stop_index = get_alias_in_sentence(row['question'], aliases)
-            if not isinstance(alias, str):
+            alias_index, start_index, stop_index = get_alias_in_sentence(row['question'], aliases)
+            if not isinstance(alias_index, int):
+                alias = nan
                 n_failed_no_subject_reference += 1
                 print_data.append({
                     'Question': row['question'],
                     'Subject': row['subject'],
                     'Aliases': aliases,
                 })
+            else:
+                alias = aliases[alias_index]
+                assert normalize_alias(alias) == normalize_alias(
+                    tokenize(row['question'].lower())[start_index:stop_index])
             subject_names.append(alias)
             subject_names_start_index.append(start_index)
             subject_names_stop_index.append(stop_index)

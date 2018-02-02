@@ -1,20 +1,57 @@
 from functools import lru_cache
 
-import atexit
 import ctypes
 import logging
 import logging.config
 import os
 import time
+import sys
 
 import random
 import torch
 import numpy as np
 
 from lib.text_encoders import PADDING_INDEX
-from lib.configurable import log_config
+from lib.datasets import Dataset
 
 logger = logging.getLogger(__name__)
+
+
+def resplit_datasets(dataset, other_dataset, random_seed=None, cut=None):
+    """ Deterministic shuffle and split algorithm. 
+
+    Given the same two datasets and the same `random_seed`, the split happens the same exact way
+    every call.
+    
+    Args:
+        dataset (lib.datasets.Dataset)
+        other_dataset (lib.datasets.Dataset)
+        random_seed (int, optional)
+        cut (float, optional): float between 0 and 1 to cut the dataset; otherwise, the same
+            proportions are kept.
+    Returns:
+        dataset (lib.datasets.Dataset)
+        other_dataset (lib.datasets.Dataset)
+    """
+    concat = dataset.rows + other_dataset.rows
+    # Reference:
+    # https://stackoverflow.com/questions/19306976/python-shuffling-with-a-parameter-to-get-the-same-result
+    # NOTE: Shuffle the same way every call of `shuffle_datasets` where the `random_seed` is given
+    random.Random(random_seed).shuffle(concat)
+    if cut is None:
+        return Dataset(concat[:len(dataset)]), Dataset(concat[len(dataset):])
+    else:
+        cut = max(min(round(len(concat) * cut), len(concat)), 0)
+        return Dataset(concat[:cut]), Dataset(concat[cut:])
+
+
+def config_logging():
+    """ Configure the root logger with basic settings.
+    """
+    logging.basicConfig(
+        format='[%(asctime)s][%(processName)s][%(name)s][%(levelname)s] %(message)s',
+        level=logging.INFO,
+        stream=sys.stdout)
 
 
 def get_root_path():
@@ -26,83 +63,74 @@ def get_root_path():
     return os.path.join(os.path.dirname(os.path.realpath(__file__)), '..')
 
 
-def get_log_directory_path(label='', parent_directory='logs/'):
+def new_experiment_folder(label='', parent_directory='experiments/'):
     """
-    Get a save directory that includes start time and execution time.
-
-    The execution time is used as the main sorting key to help distinguish between finished,
-    halted, and running experiments.
+    Get a experiment directory that includes start time.
     """
     start_time = time.time()
-    name = '0000.%s.%s' % (time.strftime('%m-%d_%H:%M:%S', time.localtime()), label)
+    name = '%s.%s' % (label, time.strftime('%m_%d_%H:%M:%S', time.localtime()))
     path = os.path.join(parent_directory, name)
-
-    def exit_handler():
-        if os.path.exists(path):
-            # Add runtime to the directory name sorting
-            difference = int(time.time() - start_time)
-            os.rename(path, path.replace('0000', '%04d' % difference))
-
-    atexit.register(exit_handler)
     os.makedirs(path)
+
+    # TODO: If the folder is empty then delete it after the execution finishes
+
     return path
 
 
-_init_logging_return = None
+# Reference:
+# https://stackoverflow.com/questions/8290397/how-to-split-an-iterable-in-constant-size-chunks
+def batch(iterable, n=1):
+    if not hasattr(iterable, '__len__'):
+        # Slow version if len is not defined
+        current_batch = []
+        for item in iterable:
+            current_batch.append(item)
+            if len(current_batch) == n:
+                yield current_batch
+                current_batch = []
+        if current_batch:
+            yield current_batch
+    else:
+        # Fast version is len is defined
+        l = len(iterable)
+        for ndx in range(0, l, n):
+            yield iterable[ndx:min(ndx + n, l)]
 
 
-def init_logging(log_directory):
-    """ Setup logging in log_directory.
 
-    Returns the same log_directory after init_logging is setup for the first time.
+# Reference: https://stackoverflow.com/questions/4675728/redirect-stdout-to-a-file-in-python
+class StreamFork(object):
+
+    def __init__(self, filename, stream):
+        self.stream = stream
+        self.file_ = open(filename, 'a')
+
+    @property
+    def closed(self):
+        return self.file_.closed and self.stream.closed
+
+    def write(self, message):
+        self.stream.write(message)
+        self.file_.write(message)
+
+    def __getattr__(self, attr):
+        return getattr(self.stream, attr)
+
+    def flush(self):
+        self.file_.flush()
+        self.stream.flush()
+
+    def close(self):
+        self.file_.close()
+        self.stream.close()
+
+
+def save_standard_streams(directory=''):
     """
-    global _init_logging_return
-    # Only configure logging if it has not been configured yet
-    if _init_logging_return is not None:
-        return _init_logging_return
-
-    logging.config.dictConfig({
-        'formatters': {
-            'simple': {
-                'format': '%(asctime)s - %(processName)s - %(name)s - %(levelname)s - %(message)s'
-            }
-        },
-        'root': {
-            'level': 'INFO',
-            'handlers': ['console', 'info_file_handler', 'error_file_handler']
-        },
-        'disable_existing_loggers': False,
-        'handlers': {
-            'console': {
-                'level': 'DEBUG',
-                'class': 'logging.StreamHandler',
-                'formatter': 'simple',
-                'stream': 'ext://sys.stdout'
-            },
-            'error_file_handler': {
-                'class': 'logging.handlers.RotatingFileHandler',
-                'encoding': 'utf8',
-                'filename': os.path.join(log_directory, "error.log"),
-                'backupCount': 2,
-                'level': 'ERROR',
-                'formatter': 'simple'
-            },
-            'info_file_handler': {
-                'class': 'logging.handlers.RotatingFileHandler',
-                'encoding': 'utf8',
-                'filename': os.path.join(log_directory, "info.log"),
-                'backupCount': 2,
-                'level': 'INFO',
-                'formatter': 'simple',
-                'maxBytes': 10485760
-            }
-        },
-        'version': 1
-    })
-
-    _init_logging_return = log_directory
-
-    return log_directory
+    Save stdout and stderr to a `{directory}/stdout.log` and `{directory}/stderr.log`.
+    """
+    sys.stdout = StreamFork(os.path.join(directory, 'stdout.log'), sys.stdout)
+    sys.stderr = StreamFork(os.path.join(directory, 'stderr.log'), sys.stderr)
 
 
 def device_default(device=None):
@@ -220,61 +248,34 @@ def pad_batch(batch):
     return padded, lengths
 
 
-def setup_training(checkpoint_path, log_directory, device, random_seed):
-    """ Utility function to settup logger, hyperparameters, seed, device and checkpoint """
-    # Prevent a circular dependency where Checkpoint imports utils and utils imports Checkpoint
-    from lib.checkpoint import Checkpoint
-
-    # Setup Device
-    device = device_default(device)
-
-    # Check if CUDA is used
-    is_cuda = torch.cuda.is_available() and device >= 0
-    if torch.cuda.is_available() and not is_cuda:
-        logger.warn('You have CUDA but are not using it. You are using your CPU.')
-
+def seed(random_seed, is_cuda=False):
+    """
+    Attempt to apply a `random_seed` is every possible library that may require it. Our goal is 
+    to make our software reporducible.
+    """
+    random.seed(random_seed)
+    torch.manual_seed(random_seed)
+    np.random.seed(random_seed)
     if is_cuda:
-        torch.cuda.set_device(device)
-
-    logger.info('Device: %s', device)
-
-    # Random Seed for reproducibility
-    if random_seed is not None:
-        random.seed(random_seed)
-        torch.manual_seed(random_seed)
-        if is_cuda:
-            torch.cuda.manual_seed(random_seed)
-            torch.cuda.manual_seed_all(random_seed)
-        np.random.seed(random_seed)
-        torch.backends.cudnn.deterministic = True
-
+        torch.cuda.manual_seed(random_seed)
+        torch.cuda.manual_seed_all(random_seed)
+    torch.backends.cudnn.deterministic = True
     logger.info('Seed: %s', random_seed)
 
-    # Load Checkpoint
-    if checkpoint_path:
-        checkpoint = Checkpoint(checkpoint_path, device)
-    else:
-        checkpoint = Checkpoint.recent(log_directory, device)
 
-    # Log the global configuration before starting to train.
-    log_config()
-
-    return is_cuda, checkpoint
-
-
-def torch_equals_ignore_index(target, prediction, ignore_index=None):
+def torch_equals_ignore_index(tensor, tensor_other, ignore_index=None):
     """
     Compute torch.equals with the optional mask parameter.
    
     Args:
-        ignore_index (int, optional): specifies a target index that is ignored
+        ignore_index (int, optional): specifies a tensor1 index that is ignored
     Returns:
         (bool) iff target and prediction are equal
     """
-    assert target.size() == prediction.size()
     if ignore_index is not None:
-        mask_arr = target.ne(ignore_index)
-        target = target.masked_select(mask_arr)
-        prediction = prediction.masked_select(mask_arr)
+        assert tensor.size() == tensor_other.size()
+        mask_arr = tensor.ne(ignore_index)
+        tensor = tensor.masked_select(mask_arr)
+        tensor_other = tensor_other.masked_select(mask_arr)
 
-    return torch.equal(target, prediction)
+    return torch.equal(tensor, tensor_other)

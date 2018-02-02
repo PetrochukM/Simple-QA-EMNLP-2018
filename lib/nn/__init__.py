@@ -4,3 +4,5 @@ from lib.nn.attention import Attention
 from lib.nn.seq_to_seq import SeqToSeq
 from lib.nn.seq_to_label import SeqToLabel
 from lib.nn.lock_dropout import LockedDropout
+from lib.nn.yu_model import YuModel
+from lib.nn.yu_model_entity import YuModelEntity

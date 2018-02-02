@@ -49,4 +49,5 @@ class StaticTokenizerEncoder(TextEncoder):
         return torch.LongTensor(vector)
 
     def decode(self, tensor):
-        return NotImplementedError
+        tokens = [self.itos[index] for index in tensor]
+        return ' '.join(tokens)

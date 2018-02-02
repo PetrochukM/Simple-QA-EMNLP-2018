@@ -7,6 +7,8 @@ from lib.utils import torch_equals_ignore_index
 
 logger = logging.getLogger(__name__)
 
+# TODO: Why require decoding? The original source can just be sent? Maybe overall the thing is incorreect.
+
 
 def print_random_sample(sources,
                         targets,
@@ -39,7 +41,7 @@ def print_random_sample(sources,
             target = output_text_encoder.decode(targets[i].squeeze(dim=0))
             prediction = output_text_encoder.decode(predictions[i])
             data.append([source, target, prediction])
-        ret += '\n%s Samples:\n%s\n' % (prefix, pd.DataFrame(
-            data, columns=['Source', 'Target', 'Prediction']))
+        ret += '\n%s Samples:\n%s\n' % (
+            prefix, pd.DataFrame(data, columns=['Source', 'Target', 'Prediction']))
 
     logger.info(ret)

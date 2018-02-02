@@ -1,22 +1,23 @@
 from torch.utils import data
 
+# TODO: Just use Pandas#DataFrame
+
 
 class Dataset(data.Dataset):
 
     def __init__(self, rows):
-        self.columns = set(rows[0].keys())
+        self.columns = set()
         for row in rows:
-            assert isinstance(row, object)
-            assert self.columns == set(row.keys())
+            self.columns.update(row.keys())
         self.rows = rows
 
     def __getitem__(self, key):
-        if isinstance(key, int):
-            return self.rows[key]
-        elif isinstance(key, str):
+        if isinstance(key, str):
+            if key not in self.columns:
+                raise AttributeError
             return [row[key] for row in self.rows]
         else:
-            raise AttributeError
+            return self.rows[key]
 
     def __len__(self):
         return len(self.rows)
