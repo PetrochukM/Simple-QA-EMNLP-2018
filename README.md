@@ -48,3 +48,7 @@ The goal of this repository is to add minimal overhead to these components of tr
 - [Improved Neural Relation Detection for Knowledge Base Question Answering - SOTA results](https://arxiv.org/pdf/1704.06194.pdf)
 - [Question Answering on Freebase via Relation Extraction and Textual Evidence](https://arxiv.org/abs/1603.00957)
 - [Comparative Study of CNN and RNN for Natural Language Processing](https://arxiv.org/abs/1702.01923)
+- [Knowledge-based Question Answering by Jointly Generating,Copying and Paraphrasing](http://dl.acm.org/citation.cfm?id=3133064)
+- [Open-domain Factoid Question Answering via Knowledge Graph Search](https://pdfs.semanticscholar.org/6414/5a8edf9add1156d97c489028539fa4c5c66c.pdf)
+- [Large-scale Simple Question Answering with Memory Networks](https://research.fb.com/wp-content/uploads/2016/11/large-scale_simple_question_answering_with_memory_networks.pdf?)
+- [Core Techniques of Question Answering Systems over Knowledge Bases: a Survey](https://hal.archives-ouvertes.fr/hal-01637143/document)
