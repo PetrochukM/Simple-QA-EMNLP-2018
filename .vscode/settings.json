@@ -3,7 +3,7 @@
   "files.autoSave": "onFocusChange",
   "editor.tabSize": 2,
   "editor.formatOnSave": true,
-  "python.formatting.provider": "autopep8",
+  "python.formatting.provider": "yapf",
   "editor.detectIndentation": false,
   "python.unitTest.pyTestEnabled": false,
   "python.linting.flake8Enabled": true,

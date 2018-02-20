@@ -92,10 +92,8 @@ def batch(iterable, n=1):
             yield current_batch
     else:
         # Fast version is len is defined
-        l = len(iterable)
-        for ndx in range(0, l, n):
-            yield iterable[ndx:min(ndx + n, l)]
-
+        for ndx in range(0, len(iterable), n):
+            yield iterable[ndx:min(ndx + n, len(iterable))]
 
 
 # Reference: https://stackoverflow.com/questions/4675728/redirect-stdout-to-a-file-in-python
@@ -198,8 +196,8 @@ def cuda_devices():
         if (not run(result, cuda.cuDeviceGet, ctypes.byref(device), i) or
                 not run(result, cuda.cuDeviceGet, ctypes.byref(device), i) or
                 not run(result, cuda.cuCtxCreate, ctypes.byref(context), 0, device) or
-                not run(result, cuda.cuMemGetInfo,
-                        ctypes.byref(free_memory), ctypes.byref(total_memory))):
+                not run(result, cuda.cuMemGetInfo, ctypes.byref(free_memory),
+                        ctypes.byref(total_memory))):
             continue
 
         percent_free_memory = float(free_memory.value) / total_memory.value
@@ -241,7 +239,6 @@ def pad_batch(batch):
     Returns
         list of torch.LongTensor and original lengths
     """
-    # PyTorch RNN requires batches to be sorted in decreasing length order
     lengths = [len(row) for row in batch]
     max_len = max(lengths)
     padded = [pad_tensor(row, max_len) for row in batch]

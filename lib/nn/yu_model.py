@@ -2,10 +2,12 @@ import torch
 import torch.nn as nn
 
 from lib.text_encoders import PADDING_INDEX
+from lib.configurable import configurable
 
 
 class YuModel(nn.Module):
 
+    @configurable
     def __init__(self,
                  relation_vocab_size,
                  relation_word_vocab_size,

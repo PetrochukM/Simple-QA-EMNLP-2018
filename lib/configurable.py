@@ -1,5 +1,16 @@
 """
 Manages a global namespaced configuration.
+
+TODO: Look into implementing configurable without decoraters:
+  - Trace all function calls and intercept the call
+  - Apply a decorator recursively too all modules in os.cwd()
+    import pkgutil
+    import os
+
+    for loader, module_name, is_pkg in pkgutil.walk_packages([os.getcwd()]):
+        print(module_name)
+
+    http://code.activestate.com/recipes/577742-apply-decorators-to-all-functions-in-a-module/
 """
 from functools import reduce
 from collections import defaultdict

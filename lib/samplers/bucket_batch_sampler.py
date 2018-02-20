@@ -23,13 +23,14 @@ class BucketBatchSampler(BatchSampler):
                  data_source,
                  sort_key,
                  batch_size,
-                 sort_key_noise=0.1,
+                 sort_key_noise=0.25,
                  last_batch_first=True,
-                 shuffle=True):
+                 shuffle=True,
+                 drop_last=False):
         self.last_batch_first = last_batch_first
         self.shuffle = shuffle
         super().__init__(
-            NoisySortedSampler(data_source, sort_key, sort_key_noise), batch_size, False)
+            NoisySortedSampler(data_source, sort_key, sort_key_noise), batch_size, drop_last)
 
     def __iter__(self):
         batches = list(super().__iter__())
@@ -37,11 +38,6 @@ class BucketBatchSampler(BatchSampler):
             last_batch = batches.pop()
         if self.shuffle:
             random.shuffle(batches)
-        batches.insert(0, last_batch)
+        if self.last_batch_first:
+            batches.insert(0, last_batch)
         return iter(batches)
-
-    def __len__(self):
-        if self.drop_last:  # TODO: What is this doing here? Self.drop_last is never instantiated
-            return len(self.sampler) // self.batch_size
-        else:
-            return (len(self.sampler) + self.batch_size - 1) // self.batch_size
