@@ -1,7 +1,7 @@
 import os
 
-FB2M_KG = '../../data/SimpleQuestions_v2/freebase-subsets/freebase-FB2M.txt'
-FB5M_KG = '../../data/SimpleQuestions_v2/freebase-subsets/freebase-FB5M.txt'
+FB2M_KG = '../data/SimpleQuestions_v2/freebase-subsets/freebase-FB2M.txt'
+FB5M_KG = '../data/SimpleQuestions_v2/freebase-subsets/freebase-FB5M.txt'
 
 # Get the path relative to the directory this file is in
 _directory_path = os.path.dirname(os.path.realpath(__file__))

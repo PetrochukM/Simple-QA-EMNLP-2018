@@ -9,7 +9,7 @@ def get_connection():
 
     # Get the path relative to the directory this file is in
     _directory_path = os.path.dirname(os.path.realpath(__file__))
-    pass_path = os.path.join(_directory_path, '../../.pass')
+    pass_path = os.path.join(_directory_path, '../.pass')
     for line in open(pass_path):
         split = line.strip().split('=')
         pass_[split[0]] = split[1]

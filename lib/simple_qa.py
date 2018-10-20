@@ -11,11 +11,11 @@ import os
 _directory_path = os.path.dirname(os.path.realpath(__file__))
 simple_qa = {
     'train':
-        os.path.join(_directory_path, '../../data/SimpleQuestions_v2/annotated_fb_data_train.txt'),
+        os.path.join(_directory_path, '../data/SimpleQuestions_v2/annotated_fb_data_train.txt'),
     'dev':
-        os.path.join(_directory_path, '../../data/SimpleQuestions_v2/annotated_fb_data_valid.txt'),
+        os.path.join(_directory_path, '../data/SimpleQuestions_v2/annotated_fb_data_valid.txt'),
     'test':
-        os.path.join(_directory_path, '../../data/SimpleQuestions_v2/annotated_fb_data_test.txt'),
+        os.path.join(_directory_path, '../data/SimpleQuestions_v2/annotated_fb_data_test.txt'),
 }
 
 
