@@ -3,7 +3,7 @@ import logging
 import torch
 import torch.nn as nn
 
-from lib.text_encoders import PADDING_INDEX
+from torchnlp.text_encoders import PADDING_INDEX
 from lib.configurable import configurable
 from lib.nn.lock_dropout import LockedDropout
 
@@ -23,7 +23,7 @@ class SeqEncoder(nn.Module):
 
         rnn_size (int):
             The number of recurrent units. Based on Nils et al., 2017, we choose the
-            default value of 128. <https://arxiv.org/pdf/1707.06799v1.pdf>. 
+            default value of 128. <https://arxiv.org/pdf/1707.06799v1.pdf>.
 
         embedding_dropout (float, optional):
             dropout probability for the input sequence
@@ -119,7 +119,7 @@ class SeqEncoder(nn.Module):
         """
         Without Bidirectional RNN, the size of the hidden state is (layers, batch, directions *
         rnn_size).
-        
+
         Bidirectional has a different shape (layers * directions, batch, rnn_size / 2). This
         function helps normalize the output.
 
@@ -130,5 +130,4 @@ class SeqEncoder(nn.Module):
         """
         if self.bidirectional:
             hidden = torch.cat([hidden[0:hidden.size(0):2], hidden[1:hidden.size(0):2]], 2)
-
         return hidden

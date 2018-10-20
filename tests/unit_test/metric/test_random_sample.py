@@ -2,14 +2,14 @@ import unittest
 
 from lib.metrics import print_random_sample
 from tests.lib.utils import get_batch
-from lib.text_encoders import WordEncoder
+from torchnlp.text_encoders import WhitespaceEncoder
 
 
 class TestPrintRandomSample(unittest.TestCase):
 
     def setUp(self):
-        self.output_text_encoder = WordEncoder(['a b c d e'], append_eos=False)
-        self.input_text_encoder = WordEncoder(['a b c d e'], append_eos=False)
+        self.output_text_encoder = WhitespaceEncoder(['a b c d e'], append_eos=False)
+        self.input_text_encoder = WhitespaceEncoder(['a b c d e'], append_eos=False)
         predictions = [
             self.output_text_encoder.encode('a b c d d').tolist(),
             self.output_text_encoder.encode('a a a a a').tolist(),

@@ -68,16 +68,16 @@ class TestSeqEncoder(unittest.TestCase):
         # Run
         for encoder, encoder_kwargs in self._encoders():
             # LSTM rnn cell has a different hidden state then GRU
-            encoder_output, encoder_hidden = encoder.forward(self.input, lengths)
+            encoder_output, encoder_hidden = encoder.forward(self.input)
 
             if encoder_kwargs['rnn_cell'] == 'lstm':
                 encoder_hidden = encoder_hidden[0]
 
             # Check sizes
-            self.assertEqual(encoder_hidden.size(), (encoder_kwargs['n_layers'], self.batch_size,
-                                                     self.rnn_size))
-            self.assertEqual(encoder_output.size(), (self.input_seq_len, self.batch_size,
-                                                     self.rnn_size))
+            self.assertEqual(encoder_hidden.size(),
+                             (encoder_kwargs['n_layers'], self.batch_size, self.rnn_size))
+            self.assertEqual(encoder_output.size(),
+                             (self.input_seq_len, self.batch_size, self.rnn_size))
 
             # Check types
             self.assertEqual(encoder_hidden.data.type(), 'torch.FloatTensor')

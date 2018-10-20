@@ -9,22 +9,19 @@ import random
 
 from torch.autograd import Variable
 from torch.nn.modules.loss import NLLLoss
-from torch.optim import Adam
 from torch.utils.data import DataLoader
+from torchnlp.datasets import Dataset
+from torchnlp.samplers import NoisySortedBatchSampler
+from torchnlp.text_encoders import PADDING_INDEX
+from torchnlp.text_encoders import WhitespaceEncoder
+from torchnlp.utils import pad_batch
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from lib.datasets.dataset import Dataset
-from lib.nn import SeqToSeq
-from lib.optim import Optimizer
-from lib.samplers import BucketBatchSampler
-from lib.text_encoders import PADDING_INDEX
-from lib.text_encoders import WordEncoder
 from lib.utils import device_default
 from lib.utils import get_root_path
-from lib.utils import pad_batch
 
 DATA_DIR = os.path.join(get_root_path(), 'data')
 
@@ -64,12 +61,12 @@ def random_dataset(input_key='input',
                    output_key='output',
                    input_generator=random_sequence,
                    output_generator=random_sequence,
-                   input_encoder=WordEncoder,
-                   output_encoder=WordEncoder,
+                   input_encoder=WhitespaceEncoder,
+                   output_encoder=WhitespaceEncoder,
                    size=random.randint(1, 100)):
     """
     Returns:
-        (lib.datasets.Dataset) dataset over random data
+        (torchnlp.datasets.Dataset) dataset over random data
     """
     rows = []
     for _ in range(size):
@@ -119,36 +116,6 @@ def get_test_data_path():
     return os.path.join(get_root_path(), 'tests/data/')
 
 
-def random_model(input_vocab_size,
-                 output_vocab_size,
-                 embedding_size=random.randint(1, 10),
-                 rnn_size=random.randint(1, 10),
-                 n_layers=random.randint(1, 10)):
-    """
-    Instantiate a model with random parameters
-
-    TODO: Consider picking any random model instead of seq_to_seq with random parameters
-
-    Returns:
-        (lib.nn.SeqToSeq) model instantiated with random paramaters
-    """
-    # Model modules
-    seq_to_seq = SeqToSeq(
-        input_vocab_size,
-        output_vocab_size,
-        embedding_size=embedding_size,
-        rnn_size=rnn_size,
-        n_layers=n_layers)
-
-    if torch.cuda.is_available():
-        seq_to_seq.cuda()
-
-    for param in seq_to_seq.parameters():
-        param.data.uniform_(-0.08, 0.08)
-
-    return seq_to_seq
-
-
 def random_iterator(device,
                     dataset,
                     input_encoder,
@@ -165,7 +132,8 @@ def random_iterator(device,
     Returns:
         (torchtext.data.Iterator) iterator over random data
     """
-    batch_sampler = BucketBatchSampler(dataset, lambda r: r[input_key].size()[0], batch_size)
+    batch_sampler = NoisySortedBatchSampler(dataset, batch_size, False,
+                                            lambda r: r[input_key].size()[0])
 
     def collate_fn(batch):
         """ list of tensors to a batch variable """
@@ -197,8 +165,8 @@ def random_iterator(device,
         if torch.cuda.is_available():
             input_, input_lengths = input_.cuda(async=True), input_lengths.cuda(async=True)
             output, output_lengths = output.cuda(async=True), output_lengths.cuda(async=True)
-        yield (Variable(input_, volatile=not train), input_lengths, Variable(
-            output, volatile=not train), output_lengths)
+        yield (Variable(input_, volatile=not train), input_lengths,
+               Variable(output, volatile=not train), output_lengths)
 
 
 @lru_cache(maxsize=1)
@@ -244,14 +212,6 @@ def random_args(train=True, batch_size=None):
         output_key=output_key,
         batch_size=batch_size,
         train=train)
-    model = random_model(
-        input_vocab_size=input_encoder.vocab_size,
-        output_vocab_size=output_encoder.vocab_size,
-        embedding_size=embedding_size,
-        rnn_size=rnn_size,
-        n_layers=n_layers)
-    params = filter(lambda p: p.requires_grad, model.parameters())
-    optimizer = Optimizer(Adam(params=params))
     # NOTE: +2 to include <s> and </s> for output tensor.
     mock_model = MockSeqToSeq(output_encoder.vocab_size, batch_size, n_layers, rnn_size,
                               output_seq_len + 2, train)
@@ -276,12 +236,6 @@ def random_args(train=True, batch_size=None):
         # torchtext.data.Iterator over `dataset`
         'iterator': iterator,
         'experiments_directory': os.path.join(get_root_path(), 'tests/experiments/'),
-        # NOTE: Random model used for testing checkpoints. Do not try to run this model because
-        # it may never generate an EOS token and stop.
-        # (lib.nn.seq_to_seq)
-        'model': model,
-        # (lib.optim.Optimizer)
-        'optimizer': optimizer,
         'criterion': criterion,  # TODO: Consider having a random loss function
         # NOTE: Mock model is used for testing evaluation. A random model cannot be
         # used to test it because it may never return an EOS token.
@@ -401,12 +355,16 @@ def get_random_batch(output_seq_len, input_seq_len, batch_size, output_field, in
     ])
     targets = torch.stack([
         torch.LongTensor(
-            [random.randint(0, len(output_field.vocab) - 1) for _ in range(output_seq_len)])
+            [random.randint(0,
+                            len(output_field.vocab) - 1)
+             for _ in range(output_seq_len)])
         for _ in range(batch_size)
     ])
     inputs = torch.stack([
         torch.LongTensor(
-            [random.randint(0, len(input_field.vocab) - 1) for _ in range(input_seq_len)])
+            [random.randint(0,
+                            len(input_field.vocab) - 1)
+             for _ in range(input_seq_len)])
         for _ in range(batch_size)
     ])
     outputs = outputs.transpose(0, 1).contiguous()
