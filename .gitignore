@@ -91,3 +91,4 @@ experiments/
 .pretrained_embeddings_cache/
 results/
 *.pkl
+.vscode
