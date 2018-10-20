@@ -1,0 +1,1109 @@
+[2018-02-02 07:59:28,846][MainProcess][__main__][INFO] Device: 0
+[2018-02-02 07:59:28,848][MainProcess][lib.utils][INFO] Seed: 123
+
+
+Num Training Data: 75729
+Train Sample:
+Num Development Data: 10816
+Development Sample:
+Text encoder vocab size: 6693
+Relation encoder vocab size: 1702
+
+
+[2018-02-02 07:59:52,362][MainProcess][lib.pretrained_embeddings][INFO] Loading vectors from ./../../.pretrained_embeddings_cache/wiki.en.vec.pt
+[2018-02-02 07:59:56,284][MainProcess][lib.configurable][INFO] Checking configuration...
+[2018-02-02 07:59:56,286][MainProcess][lib.configurable][WARNING] Path ['lib', 'optim', 'Optimizer', '__init__', 'max_grad_norm'] does not contain @configurable.
+NOTE: Due to Python remaining the __main__ module, this check can be ignored here.
+NOTE: _check_configuration can be ignored for external libraries.
+[2018-02-02 07:59:56,288][MainProcess][lib.configurable][INFO] Configuration checked.
+[2018-02-02 07:59:56,289][MainProcess][lib.configurable][INFO] Global configuration:
+[2018-02-02 07:59:56,290][MainProcess][root][INFO] {   'lib': {   'nn': {   'seq_to_label': {   'SeqToLabel': {   '__init__': {   'bidirectional': False,
+                                                                               'decode_dropout': 0.6,
+                                                                               'embedding_dropout': 0.6,
+                                                                               'embedding_size': 300,
+                                                                               'freeze_embeddings': True,
+                                                                               'rnn_cell': 'gru',
+                                                                               'rnn_dropout': 0.6,
+                                                                               'rnn_layers': 2,
+                                                                               'rnn_size': 346,
+                                                                               'rnn_variational_dropout': 0.6}}}},
+               'optim': {   'Optimizer': {'__init__': {'max_grad_norm': 3.42}},
+                            'adam': {'Adam': {'__init__': {'amsgrad': True}}}}}}
+[2018-02-02 08:00:10,127][MainProcess][lib.configurable][INFO] seq_to_label.SeqToLabel.__init__ was configured with:
+{   'bidirectional': False,
+    'decode_dropout': 0.6,
+    'embedding_dropout': 0.6,
+    'embedding_size': 300,
+    'freeze_embeddings': True,
+    'input_vocab_size': 6693,
+    'output_vocab_size': 1702,
+    'rnn_cell': 'gru',
+    'rnn_dropout': 0.6,
+    'rnn_layers': 2,
+    'rnn_size': 346,
+    'rnn_variational_dropout': 0.6}
+[2018-02-02 08:00:10,128][MainProcess][lib.configurable][INFO] seq_encoder.SeqEncoder.__init__ no config for: lib.nn.seq_encoder.SeqEncoder.__init__
+[2018-02-02 08:00:10,129][MainProcess][lib.configurable][INFO] seq_encoder.SeqEncoder.__init__ was configured with:
+{   'bidirectional': False,
+    'embedding_dropout': 0.6,
+    'embedding_size': 300,
+    'freeze_embeddings': True,
+    'n_layers': 2,
+    'rnn_cell': 'gru',
+    'rnn_dropout': 0.6,
+    'rnn_size': 346,
+    'rnn_variational_dropout': 0.6,
+    'vocab_size': 6693}
+[2018-02-02 08:00:12,966][MainProcess][lib.configurable][INFO] adam.Adam.__init__ was configured with:
+{'amsgrad': True, 'params': <filter object at 0x7f6e5fbbb898>}
+[2018-02-02 08:00:12,967][MainProcess][lib.configurable][INFO] optimizer.Optimizer.__init__ no config for: lib.optimizer.Optimizer.__init__
+[2018-02-02 08:00:12,968][MainProcess][lib.configurable][INFO] optimizer.Optimizer.__init__ was configured with:
+{'optim': <lib.optim.adam.Adam object at 0x7f6e0f520668>}
+[2018-02-02 08:00:21,720][MainProcess][lib.checkpoint][INFO] Loading checkpoints from ../../experiments/relation_classifier.02_01_23:06:08/621.pt onto device 0
+[2018-02-02 08:00:21,802][MainProcess][__main__][INFO] Epochs: 1
+[2018-02-02 08:00:21,803][MainProcess][__main__][INFO] Dataset split seed: 4105807325
+[2018-02-02 08:00:21,803][MainProcess][__main__][INFO] Train Dataset Size: 75729
+[2018-02-02 08:00:21,804][MainProcess][__main__][INFO] Dev Dataset Size: 10816
+[2018-02-02 08:00:21,804][MainProcess][__main__][INFO] Train Batch Size: 64
+[2018-02-02 08:00:21,805][MainProcess][__main__][INFO] Train Max Batch Size: 1024
+[2018-02-02 08:00:21,805][MainProcess][__main__][INFO] Total Parameters: 2104344
+[2018-02-02 08:00:21,806][MainProcess][__main__][INFO] Model:
+SeqToLabel(
+  (encoder): SeqEncoder(
+    (embedding): Embedding(6693, 300, padding_idx=0)
+    (rnn): GRU(300, 346, num_layers=2, dropout=0.6)
+    (rnn_dropout): LockedDropout(p=0.6)
+    (embedding_dropout): Dropout(p=0.6)
+  )
+  (out): Sequential(
+    (0): Linear(in_features=346, out_features=346)
+    (1): BatchNorm1d(346, eps=1e-05, momentum=0.1, affine=True)
+    (2): ReLU()
+    (3): Dropout(p=0.6)
+    (4): Linear(in_features=346, out_features=1702)
+  )
+)
+[2018-02-02 08:00:21,806][MainProcess][__main__][INFO] Epoch: 0
+[2018-02-02 08:00:21,807][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:00:28,251][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/31.pt
+
+[2018-02-02 08:00:28,826][MainProcess][__main__][INFO] NLLLoss: 1.247
+[2018-02-02 08:00:28,890][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.705159023668639 [7627 of 10816]
+[2018-02-02 08:00:28,896][MainProcess][__main__][INFO] Ran out of patience, increasing train batch size to: 128
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:02:06,008][MainProcess][lib.checkpoint][INFO] Loading checkpoints from ../../experiments/relation_classifier.02_01_23:06:08/621.pt onto device 0
+SeqToLabel(
+  (encoder): SeqEncoder(
+    (embedding): Embedding(6693, 300, padding_idx=0)
+    (rnn): GRU(300, 346, num_layers=2, dropout=0.6)
+    (rnn_dropout): LockedDropout(p=0.6)
+    (embedding_dropout): Dropout(p=0.6)
+  )
+  (out): Sequential(
+    (0): Linear(in_features=346, out_features=346)
+    (1): BatchNorm1d(346, eps=1e-05, momentum=0.1, affine=True)
+    (2): ReLU()
+    (3): Dropout(p=0.6)
+    (4): Linear(in_features=346, out_features=1702)
+  )
+)
+[2018-02-02 08:02:06,084][MainProcess][__main__][INFO] Epochs: 1
+[2018-02-02 08:02:06,085][MainProcess][__main__][INFO] Dataset split seed: 4105807325
+[2018-02-02 08:02:06,086][MainProcess][__main__][INFO] Train Dataset Size: 75729
+[2018-02-02 08:02:06,087][MainProcess][__main__][INFO] Dev Dataset Size: 10816
+[2018-02-02 08:02:06,087][MainProcess][__main__][INFO] Train Batch Size: 64
+[2018-02-02 08:02:06,088][MainProcess][__main__][INFO] Train Max Batch Size: 1024
+[2018-02-02 08:02:06,088][MainProcess][__main__][INFO] Total Parameters: 2104344
+[2018-02-02 08:02:06,089][MainProcess][__main__][INFO] Model:
+SeqToLabel(
+  (encoder): SeqEncoder(
+    (embedding): Embedding(6693, 300, padding_idx=0)
+    (rnn): GRU(300, 346, num_layers=2, dropout=0.6)
+    (rnn_dropout): LockedDropout(p=0.6)
+    (embedding_dropout): Dropout(p=0.6)
+  )
+  (out): Sequential(
+    (0): Linear(in_features=346, out_features=346)
+    (1): BatchNorm1d(346, eps=1e-05, momentum=0.1, affine=True)
+    (2): ReLU()
+    (3): Dropout(p=0.6)
+    (4): Linear(in_features=346, out_features=1702)
+  )
+)
+[2018-02-02 08:02:06,090][MainProcess][__main__][INFO] Epoch: 0
+[2018-02-02 08:02:06,090][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:07:53,666][MainProcess][lib.checkpoint][INFO] Loading checkpoints from ../../experiments/relation_classifier.02_01_23:06:08/8637.pt onto device 0
+SeqToLabel(
+  (encoder): SeqEncoder(
+    (embedding): Embedding(6693, 300, padding_idx=0)
+    (rnn): GRU(300, 246, dropout=0.2216258417401059, bidirectional=True)
+    (rnn_dropout): LockedDropout(p=0.6)
+    (embedding_dropout): Dropout(p=0.266889100634)
+  )
+  (out): Sequential(
+    (0): Linear(in_features=492, out_features=492)
+    (1): BatchNorm1d(492, eps=1e-05, momentum=0.1, affine=True)
+    (2): ReLU()
+    (3): Dropout(p=0.682487949249)
+    (4): Linear(in_features=492, out_features=1702)
+  )
+)
+[2018-02-02 08:07:53,740][MainProcess][__main__][INFO] Epochs: 1
+[2018-02-02 08:07:53,742][MainProcess][__main__][INFO] Dataset split seed: 1588531420
+[2018-02-02 08:07:53,744][MainProcess][__main__][INFO] Train Dataset Size: 75729
+[2018-02-02 08:07:53,746][MainProcess][__main__][INFO] Dev Dataset Size: 10816
+[2018-02-02 08:07:53,747][MainProcess][__main__][INFO] Train Batch Size: 256
+[2018-02-02 08:07:53,747][MainProcess][__main__][INFO] Train Max Batch Size: 1024
+[2018-02-02 08:07:53,748][MainProcess][__main__][INFO] Total Parameters: 1891474
+[2018-02-02 08:07:53,749][MainProcess][__main__][INFO] Model:
+SeqToLabel(
+  (encoder): SeqEncoder(
+    (embedding): Embedding(6693, 300, padding_idx=0)
+    (rnn): GRU(300, 246, dropout=0.2216258417401059, bidirectional=True)
+    (rnn_dropout): LockedDropout(p=0.6)
+    (embedding_dropout): Dropout(p=0.266889100634)
+  )
+  (out): Sequential(
+    (0): Linear(in_features=492, out_features=492)
+    (1): BatchNorm1d(492, eps=1e-05, momentum=0.1, affine=True)
+    (2): ReLU()
+    (3): Dropout(p=0.682487949249)
+    (4): Linear(in_features=492, out_features=1702)
+  )
+)
+[2018-02-02 08:07:53,750][MainProcess][__main__][INFO] Epoch: 0
+[2018-02-02 08:07:53,750][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:07:56,578][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/480.pt
+
+[2018-02-02 08:07:56,983][MainProcess][__main__][INFO] NLLLoss: 0.990
+[2018-02-02 08:07:57,047][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.7938239644970414 [8586 of 10816]
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:09:18,672][MainProcess][lib.configurable][INFO] Checking configuration...
+[2018-02-02 08:09:18,674][MainProcess][lib.configurable][WARNING] Path ['lib', 'optim', 'Optimizer', '__init__', 'max_grad_norm'] does not contain @configurable.
+NOTE: Due to Python remaining the __main__ module, this check can be ignored here.
+NOTE: _check_configuration can be ignored for external libraries.
+[2018-02-02 08:09:18,677][MainProcess][lib.configurable][INFO] Configuration checked.
+[2018-02-02 08:09:18,678][MainProcess][lib.configurable][INFO] Global configuration:
+[2018-02-02 08:09:18,680][MainProcess][root][INFO] {   'lib': {   'nn': {   'seq_to_label': {   'SeqToLabel': {   '__init__': {   'bidirectional': True,
+                                                                               'decode_dropout': 0.6,
+                                                                               'embedding_dropout': 0.26,
+                                                                               'embedding_size': 300,
+                                                                               'freeze_embeddings': True,
+                                                                               'rnn_cell': 'gru',
+                                                                               'rnn_dropout': 0.6,
+                                                                               'rnn_layers': 1,
+                                                                               'rnn_size': 492,
+                                                                               'rnn_variational_dropout': 0.22}}}},
+               'optim': {   'Optimizer': {'__init__': {'max_grad_norm': 2.82}},
+                            'adam': {'Adam': {'__init__': {'amsgrad': True}}}}}}
+[2018-02-02 08:09:21,262][MainProcess][lib.checkpoint][INFO] Loading checkpoints from ../../experiments/relation_classifier.02_01_23:06:08/8672.pt onto device 0
+SeqToLabel(
+  (encoder): SeqEncoder(
+    (embedding): Embedding(6693, 300, padding_idx=0)
+    (rnn): GRU(300, 246, dropout=0.2216258417401059, bidirectional=True)
+    (rnn_dropout): LockedDropout(p=0.6)
+    (embedding_dropout): Dropout(p=0.266889100634)
+  )
+  (out): Sequential(
+    (0): Linear(in_features=492, out_features=492)
+    (1): BatchNorm1d(492, eps=1e-05, momentum=0.1, affine=True)
+    (2): ReLU()
+    (3): Dropout(p=0.682487949249)
+    (4): Linear(in_features=492, out_features=1702)
+  )
+)
+[2018-02-02 08:09:21,350][MainProcess][__main__][INFO] Epochs: 1
+[2018-02-02 08:09:21,351][MainProcess][__main__][INFO] Dataset split seed: 1588531420
+[2018-02-02 08:09:21,352][MainProcess][__main__][INFO] Train Dataset Size: 75729
+[2018-02-02 08:09:21,353][MainProcess][__main__][INFO] Dev Dataset Size: 10816
+[2018-02-02 08:09:21,353][MainProcess][__main__][INFO] Train Batch Size: 1024
+[2018-02-02 08:09:21,354][MainProcess][__main__][INFO] Train Max Batch Size: 1024
+[2018-02-02 08:09:21,355][MainProcess][__main__][INFO] Total Parameters: 1891474
+[2018-02-02 08:09:21,356][MainProcess][__main__][INFO] Model:
+SeqToLabel(
+  (encoder): SeqEncoder(
+    (embedding): Embedding(6693, 300, padding_idx=0)
+    (rnn): GRU(300, 246, dropout=0.2216258417401059, bidirectional=True)
+    (rnn_dropout): LockedDropout(p=0.6)
+    (embedding_dropout): Dropout(p=0.266889100634)
+  )
+  (out): Sequential(
+    (0): Linear(in_features=492, out_features=492)
+    (1): BatchNorm1d(492, eps=1e-05, momentum=0.1, affine=True)
+    (2): ReLU()
+    (3): Dropout(p=0.682487949249)
+    (4): Linear(in_features=492, out_features=1702)
+  )
+)
+[2018-02-02 08:09:21,356][MainProcess][__main__][INFO] Epoch: 0
+[2018-02-02 08:09:21,357][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:09:23,540][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/567.pt
+
+[2018-02-02 08:09:23,924][MainProcess][__main__][INFO] NLLLoss: 1.356
+[2018-02-02 08:09:23,988][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.7130177514792899 [7712 of 10816]
+[2018-02-02 08:09:23,994][MainProcess][__main__][INFO] Ran out of patience, increasing train batch size to: 1024
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:22:07,365][MainProcess][lib.configurable][INFO] Checking configuration...
+[2018-02-02 08:22:07,368][MainProcess][lib.configurable][WARNING] Path ['lib', 'optim', 'Optimizer', '__init__', 'max_grad_norm'] does not contain @configurable.
+NOTE: Due to Python remaining the __main__ module, this check can be ignored here.
+NOTE: _check_configuration can be ignored for external libraries.
+[2018-02-02 08:22:07,370][MainProcess][lib.configurable][INFO] Configuration checked.
+[2018-02-02 08:22:07,372][MainProcess][lib.configurable][INFO] Global configuration:
+[2018-02-02 08:22:07,373][MainProcess][root][INFO] {   'lib': {   'nn': {   'seq_to_label': {   'SeqToLabel': {   '__init__': {   'bidirectional': True,
+                                                                               'decode_dropout': 0.68,
+                                                                               'embedding_dropout': 0.26,
+                                                                               'embedding_size': 300,
+                                                                               'freeze_embeddings': True,
+                                                                               'rnn_cell': 'gru',
+                                                                               'rnn_dropout': 0.6,
+                                                                               'rnn_layers': 1,
+                                                                               'rnn_size': 492,
+                                                                               'rnn_variational_dropout': 0.22}}}},
+               'optim': {   'Optimizer': {'__init__': {'max_grad_norm': 2.82}},
+                            'adam': {'Adam': {'__init__': {'amsgrad': True}}}}}}
+[2018-02-02 08:22:17,145][MainProcess][lib.checkpoint][INFO] Loading checkpoints from ../../experiments/relation_classifier.02_01_23:06:08/8672.pt onto device 0
+SeqToLabel(
+  (encoder): SeqEncoder(
+    (embedding): Embedding(6693, 300, padding_idx=0)
+    (rnn): GRU(300, 246, dropout=0.2216258417401059, bidirectional=True)
+    (rnn_dropout): LockedDropout(p=0.6)
+    (embedding_dropout): Dropout(p=0.266889100634)
+  )
+  (out): Sequential(
+    (0): Linear(in_features=492, out_features=492)
+    (1): BatchNorm1d(492, eps=1e-05, momentum=0.1, affine=True)
+    (2): ReLU()
+    (3): Dropout(p=0.682487949249)
+    (4): Linear(in_features=492, out_features=1702)
+  )
+)
+[2018-02-02 08:22:17,276][MainProcess][__main__][INFO] Epochs: 1
+[2018-02-02 08:22:17,278][MainProcess][__main__][INFO] Dataset split seed: 1588531420
+[2018-02-02 08:22:17,280][MainProcess][__main__][INFO] Train Dataset Size: 75729
+[2018-02-02 08:22:17,282][MainProcess][__main__][INFO] Dev Dataset Size: 10816
+[2018-02-02 08:22:17,284][MainProcess][__main__][INFO] Train Batch Size: 1024
+[2018-02-02 08:22:17,286][MainProcess][__main__][INFO] Train Max Batch Size: 1024
+[2018-02-02 08:22:17,289][MainProcess][__main__][INFO] Total Parameters: 1891474
+[2018-02-02 08:22:17,292][MainProcess][__main__][INFO] Model:
+SeqToLabel(
+  (encoder): SeqEncoder(
+    (embedding): Embedding(6693, 300, padding_idx=0)
+    (rnn): GRU(300, 246, dropout=0.2216258417401059, bidirectional=True)
+    (rnn_dropout): LockedDropout(p=0.6)
+    (embedding_dropout): Dropout(p=0.266889100634)
+  )
+  (out): Sequential(
+    (0): Linear(in_features=492, out_features=492)
+    (1): BatchNorm1d(492, eps=1e-05, momentum=0.1, affine=True)
+    (2): ReLU()
+    (3): Dropout(p=0.682487949249)
+    (4): Linear(in_features=492, out_features=1702)
+  )
+)
+[2018-02-02 08:22:17,295][MainProcess][__main__][INFO] Epoch: 0
+[2018-02-02 08:22:17,298][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:22:19,945][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/1343.pt
+
+[2018-02-02 08:22:20,361][MainProcess][__main__][INFO] NLLLoss: 1.357
+[2018-02-02 08:22:20,427][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.7069156804733728 [7646 of 10816]
+[2018-02-02 08:22:20,432][MainProcess][__main__][INFO] Ran out of patience, increasing train batch size to: 1024
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:24:46,927][MainProcess][lib.checkpoint][INFO] Loading checkpoints from ../../experiments/relation_classifier.02_01_23:06:08/8672.pt onto device 0
+
+[2018-02-02 08:24:47,260][MainProcess][__main__][INFO] NLLLoss: 6.861
+[2018-02-02 08:24:47,329][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.18389423076923078 [1989 of 10816]
+[2018-02-02 08:26:42,558][MainProcess][lib.checkpoint][INFO] Loading checkpoints from ../../experiments/relation_classifier.02_01_23:06:08/8658.pt onto device 0
+
+[2018-02-02 08:26:43,053][MainProcess][__main__][INFO] NLLLoss: 6.821
+[2018-02-02 08:26:43,116][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.18500369822485208 [2001 of 10816]
+[2018-02-02 08:27:35,275][MainProcess][lib.configurable][INFO] Checking configuration...
+[2018-02-02 08:27:35,277][MainProcess][lib.configurable][WARNING] Path ['lib', 'optim', 'Optimizer', '__init__', 'max_grad_norm'] does not contain @configurable.
+NOTE: Due to Python remaining the __main__ module, this check can be ignored here.
+NOTE: _check_configuration can be ignored for external libraries.
+[2018-02-02 08:27:35,279][MainProcess][lib.configurable][INFO] Configuration checked.
+[2018-02-02 08:27:35,280][MainProcess][lib.configurable][INFO] Global configuration:
+[2018-02-02 08:27:35,281][MainProcess][root][INFO] {   'lib': {   'nn': {   'seq_to_label': {   'SeqToLabel': {   '__init__': {   'bidirectional': True,
+                                                                               'decode_dropout': 0.68,
+                                                                               'embedding_dropout': 0.26,
+                                                                               'embedding_size': 300,
+                                                                               'freeze_embeddings': True,
+                                                                               'rnn_cell': 'gru',
+                                                                               'rnn_dropout': 0.6,
+                                                                               'rnn_layers': 1,
+                                                                               'rnn_size': 492,
+                                                                               'rnn_variational_dropout': 0.22}}}},
+               'optim': {   'Optimizer': {'__init__': {'max_grad_norm': 2.82}},
+                            'adam': {'Adam': {'__init__': {'amsgrad': True}}}}}}
+[2018-02-02 08:27:36,931][MainProcess][lib.configurable][INFO] seq_to_label.SeqToLabel.__init__ was configured with:
+{   'bidirectional': True,
+    'decode_dropout': 0.68,
+    'embedding_dropout': 0.26,
+    'embedding_size': 300,
+    'freeze_embeddings': True,
+    'input_vocab_size': 6693,
+    'output_vocab_size': 1702,
+    'rnn_cell': 'gru',
+    'rnn_dropout': 0.6,
+    'rnn_layers': 1,
+    'rnn_size': 492,
+    'rnn_variational_dropout': 0.22}
+[2018-02-02 08:27:36,933][MainProcess][lib.configurable][INFO] seq_encoder.SeqEncoder.__init__ no config for: lib.nn.seq_encoder.SeqEncoder.__init__
+[2018-02-02 08:27:36,933][MainProcess][lib.configurable][INFO] seq_encoder.SeqEncoder.__init__ was configured with:
+{   'bidirectional': True,
+    'embedding_dropout': 0.26,
+    'embedding_size': 300,
+    'freeze_embeddings': True,
+    'n_layers': 1,
+    'rnn_cell': 'gru',
+    'rnn_dropout': 0.6,
+    'rnn_size': 492,
+    'rnn_variational_dropout': 0.22,
+    'vocab_size': 6693}
+[2018-02-02 08:27:37,114][MainProcess][lib.configurable][INFO] adam.Adam.__init__ was configured with:
+{'amsgrad': True, 'params': <filter object at 0x7f6e0f52b1d0>}
+[2018-02-02 08:27:37,115][MainProcess][lib.configurable][INFO] adam.Adam.__init__ was configured with:
+{'amsgrad': True, 'params': <filter object at 0x7f6e0f52b1d0>}
+[2018-02-02 08:27:37,115][MainProcess][lib.configurable][INFO] adam.Adam.__init__ was configured with:
+{'amsgrad': True, 'params': <filter object at 0x7f6e0f52b1d0>}
+[2018-02-02 08:27:37,116][MainProcess][lib.configurable][INFO] adam.Adam.__init__ was configured with:
+{'amsgrad': True, 'params': <filter object at 0x7f6e0f52b1d0>}
+[2018-02-02 08:27:37,117][MainProcess][lib.configurable][INFO] optimizer.Optimizer.__init__ no config for: lib.optimizer.Optimizer.__init__
+[2018-02-02 08:27:37,118][MainProcess][lib.configurable][INFO] optimizer.Optimizer.__init__ was configured with:
+{'optim': <lib.optim.adam.Adam object at 0x7f6e0f52b4a8>}
+[2018-02-02 08:27:37,118][MainProcess][__main__][INFO] Epochs: 30
+[2018-02-02 08:27:37,119][MainProcess][__main__][INFO] Train Dataset Size: 75729
+[2018-02-02 08:27:37,120][MainProcess][__main__][INFO] Dev Dataset Size: 10816
+[2018-02-02 08:27:37,120][MainProcess][__main__][INFO] Train Batch Size: 64
+[2018-02-02 08:27:37,121][MainProcess][__main__][INFO] Train Max Batch Size: 1024
+[2018-02-02 08:27:37,121][MainProcess][__main__][INFO] Total Parameters: 1891474
+[2018-02-02 08:27:37,122][MainProcess][__main__][INFO] Model:
+SeqToLabel(
+  (encoder): SeqEncoder(
+    (embedding): Embedding(6693, 300, padding_idx=0)
+    (rnn): GRU(300, 246, dropout=0.22, bidirectional=True)
+    (rnn_dropout): LockedDropout(p=0.6)
+    (embedding_dropout): Dropout(p=0.26)
+  )
+  (out): Sequential(
+    (0): Linear(in_features=492, out_features=492)
+    (1): BatchNorm1d(492, eps=1e-05, momentum=0.1, affine=True)
+    (2): ReLU()
+    (3): Dropout(p=0.68)
+    (4): Linear(in_features=492, out_features=1702)
+  )
+)
+[2018-02-02 08:27:37,123][MainProcess][__main__][INFO] Epoch: 0
+[2018-02-02 08:27:37,123][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:27:42,818][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/1666.pt
+
+[2018-02-02 08:27:43,201][MainProcess][__main__][INFO] NLLLoss: 1.047
+[2018-02-02 08:27:43,266][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.8214681952662722 [8885 of 10816]
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:27:43,271][MainProcess][__main__][INFO] Epoch: 1
+[2018-02-02 08:27:43,272][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:27:48,931][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/1672.pt
+
+[2018-02-02 08:27:49,306][MainProcess][__main__][INFO] NLLLoss: 0.813
+[2018-02-02 08:27:49,369][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.8527181952662722 [9223 of 10816]
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:27:49,374][MainProcess][__main__][INFO] Epoch: 2
+[2018-02-02 08:27:49,375][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:27:54,825][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/1678.pt
+
+[2018-02-02 08:27:55,335][MainProcess][__main__][INFO] NLLLoss: 0.751
+[2018-02-02 08:27:55,396][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.8571560650887574 [9271 of 10816]
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:27:55,402][MainProcess][__main__][INFO] Epoch: 3
+[2018-02-02 08:27:55,403][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:28:01,322][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/1684.pt
+
+[2018-02-02 08:28:01,696][MainProcess][__main__][INFO] NLLLoss: 0.704
+[2018-02-02 08:28:01,759][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.8702847633136095 [9413 of 10816]
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:28:01,765][MainProcess][__main__][INFO] Epoch: 4
+[2018-02-02 08:28:01,765][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:28:07,756][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/1691.pt
+
+[2018-02-02 08:28:08,131][MainProcess][__main__][INFO] NLLLoss: 0.690
+[2018-02-02 08:28:08,192][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.871301775147929 [9424 of 10816]
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:28:08,197][MainProcess][__main__][INFO] Epoch: 5
+[2018-02-02 08:28:08,198][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:28:13,715][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/1697.pt
+
+[2018-02-02 08:28:14,224][MainProcess][__main__][INFO] NLLLoss: 0.676
+[2018-02-02 08:28:14,285][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.8725036982248521 [9437 of 10816]
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:28:14,290][MainProcess][__main__][INFO] Epoch: 6
+[2018-02-02 08:28:14,291][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:28:19,793][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/1703.pt
+
+[2018-02-02 08:28:20,163][MainProcess][__main__][INFO] NLLLoss: 0.675
+[2018-02-02 08:28:20,223][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.8717640532544378 [9429 of 10816]
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:28:20,228][MainProcess][__main__][INFO] Epoch: 7
+[2018-02-02 08:28:20,229][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:28:25,850][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/1709.pt
+
+[2018-02-02 08:28:26,236][MainProcess][__main__][INFO] NLLLoss: 0.659
+[2018-02-02 08:28:26,297][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.8784208579881657 [9501 of 10816]
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:28:26,302][MainProcess][__main__][INFO] Epoch: 8
+[2018-02-02 08:28:26,304][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:28:32,098][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/1715.pt
+
+[2018-02-02 08:28:32,606][MainProcess][__main__][INFO] NLLLoss: 0.668
+[2018-02-02 08:28:32,666][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.8763868343195266 [9479 of 10816]
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:28:32,672][MainProcess][__main__][INFO] Epoch: 9
+[2018-02-02 08:28:32,672][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:28:38,291][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/1721.pt
+
+[2018-02-02 08:28:38,659][MainProcess][__main__][INFO] NLLLoss: 0.659
+[2018-02-02 08:28:38,719][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.8808247041420119 [9527 of 10816]
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:28:38,724][MainProcess][__main__][INFO] Epoch: 10
+[2018-02-02 08:28:38,725][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:28:44,346][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/1727.pt
+
+[2018-02-02 08:28:44,718][MainProcess][__main__][INFO] NLLLoss: 0.663
+[2018-02-02 08:28:44,782][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.8772189349112426 [9488 of 10816]
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:28:44,789][MainProcess][__main__][INFO] Epoch: 11
+[2018-02-02 08:28:44,790][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:28:50,494][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/1734.pt
+
+[2018-02-02 08:28:50,996][MainProcess][__main__][INFO] NLLLoss: 0.664
+[2018-02-02 08:28:51,057][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.875832100591716 [9473 of 10816]
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:28:51,062][MainProcess][__main__][INFO] Epoch: 12
+[2018-02-02 08:28:51,064][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:28:56,531][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/1740.pt
+
+[2018-02-02 08:28:56,897][MainProcess][__main__][INFO] NLLLoss: 0.663
+[2018-02-02 08:28:56,957][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.8775887573964497 [9492 of 10816]
+[2018-02-02 08:28:56,962][MainProcess][__main__][INFO] Ran out of patience, increasing train batch size to: 128
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:28:56,963][MainProcess][__main__][INFO] Epoch: 13
+[2018-02-02 08:28:56,964][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:29:00,306][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/1743.pt
+
+[2018-02-02 08:29:00,681][MainProcess][__main__][INFO] NLLLoss: 0.659
+[2018-02-02 08:29:00,741][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.8799926035502958 [9518 of 10816]
+[2018-02-02 08:29:00,747][MainProcess][__main__][INFO] Ran out of patience, increasing train batch size to: 256
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:29:00,748][MainProcess][__main__][INFO] Epoch: 14
+[2018-02-02 08:29:00,749][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:29:03,092][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/1746.pt
+
+[2018-02-02 08:29:03,628][MainProcess][__main__][INFO] NLLLoss: 0.662
+[2018-02-02 08:29:03,692][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.8824889053254438 [9545 of 10816]
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:29:03,697][MainProcess][__main__][INFO] Epoch: 15
+[2018-02-02 08:29:03,699][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:29:05,921][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/1749.pt
+
+[2018-02-02 08:29:06,298][MainProcess][__main__][INFO] NLLLoss: 0.662
+[2018-02-02 08:29:06,361][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.8811020710059172 [9530 of 10816]
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:29:06,366][MainProcess][__main__][INFO] Epoch: 16
+[2018-02-02 08:29:06,367][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:29:08,504][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/1752.pt
+
+[2018-02-02 08:29:08,907][MainProcess][__main__][INFO] NLLLoss: 0.667
+[2018-02-02 08:29:08,968][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.8812869822485208 [9532 of 10816]
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:29:08,974][MainProcess][__main__][INFO] Epoch: 17
+[2018-02-02 08:29:08,974][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:29:11,200][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/1754.pt
+
+[2018-02-02 08:29:11,750][MainProcess][__main__][INFO] NLLLoss: 0.672
+[2018-02-02 08:29:11,813][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.881194526627219 [9531 of 10816]
+[2018-02-02 08:29:11,818][MainProcess][__main__][INFO] Ran out of patience, increasing train batch size to: 512
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:29:11,819][MainProcess][__main__][INFO] Epoch: 18
+[2018-02-02 08:29:11,820][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:29:13,604][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/1757.pt
+
+[2018-02-02 08:29:13,994][MainProcess][__main__][INFO] NLLLoss: 0.673
+[2018-02-02 08:29:14,056][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.8819341715976331 [9539 of 10816]
+[2018-02-02 08:29:14,061][MainProcess][__main__][INFO] Ran out of patience, increasing train batch size to: 1024
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:29:14,064][MainProcess][__main__][INFO] Epoch: 19
+[2018-02-02 08:29:14,065][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:29:15,654][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/1759.pt
+
+[2018-02-02 08:29:16,243][MainProcess][__main__][INFO] NLLLoss: 0.675
+[2018-02-02 08:29:16,308][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.8816568047337278 [9536 of 10816]
+[2018-02-02 08:29:16,319][MainProcess][__main__][INFO] Ran out of patience, increasing train batch size to: 1024
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:29:16,320][MainProcess][__main__][INFO] Epoch: 20
+[2018-02-02 08:29:16,321][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:29:18,060][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/1761.pt
+
+[2018-02-02 08:29:18,437][MainProcess][__main__][INFO] NLLLoss: 0.674
+[2018-02-02 08:29:18,498][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.881194526627219 [9531 of 10816]
+[2018-02-02 08:29:18,503][MainProcess][__main__][INFO] Ran out of patience, increasing train batch size to: 1024
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:29:18,504][MainProcess][__main__][INFO] Epoch: 21
+[2018-02-02 08:29:18,504][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:29:20,089][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/1763.pt
+
+[2018-02-02 08:29:20,639][MainProcess][__main__][INFO] NLLLoss: 0.672
+[2018-02-02 08:29:20,701][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.8820266272189349 [9540 of 10816]
+[2018-02-02 08:29:20,706][MainProcess][__main__][INFO] Ran out of patience, increasing train batch size to: 1024
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:29:20,707][MainProcess][__main__][INFO] Epoch: 22
+[2018-02-02 08:29:20,708][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:29:22,251][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/1765.pt
+
+[2018-02-02 08:29:22,700][MainProcess][__main__][INFO] NLLLoss: 0.671
+[2018-02-02 08:29:22,761][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.8820266272189349 [9540 of 10816]
+[2018-02-02 08:29:22,767][MainProcess][__main__][INFO] Ran out of patience, increasing train batch size to: 1024
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:29:22,768][MainProcess][__main__][INFO] Epoch: 23
+[2018-02-02 08:29:22,768][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:29:24,695][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/1768.pt
+
+[2018-02-02 08:29:25,340][MainProcess][__main__][INFO] NLLLoss: 0.675
+[2018-02-02 08:29:25,411][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.8808247041420119 [9527 of 10816]
+[2018-02-02 08:29:25,418][MainProcess][__main__][INFO] Ran out of patience, increasing train batch size to: 1024
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:29:25,421][MainProcess][__main__][INFO] Epoch: 24
+[2018-02-02 08:29:25,421][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:29:27,054][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/1770.pt
+
+[2018-02-02 08:29:27,544][MainProcess][__main__][INFO] NLLLoss: 0.673
+[2018-02-02 08:29:27,612][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.8812869822485208 [9532 of 10816]
+[2018-02-02 08:29:27,617][MainProcess][__main__][INFO] Ran out of patience, increasing train batch size to: 1024
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:29:27,618][MainProcess][__main__][INFO] Epoch: 25
+[2018-02-02 08:29:27,620][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:29:29,216][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/1772.pt
+
+[2018-02-02 08:29:29,584][MainProcess][__main__][INFO] NLLLoss: 0.674
+[2018-02-02 08:29:29,643][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.8819341715976331 [9539 of 10816]
+[2018-02-02 08:29:29,649][MainProcess][__main__][INFO] Ran out of patience, increasing train batch size to: 1024
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:29:29,650][MainProcess][__main__][INFO] Epoch: 26
+[2018-02-02 08:29:29,651][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:29:31,138][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/1774.pt
+
+[2018-02-02 08:29:31,686][MainProcess][__main__][INFO] NLLLoss: 0.674
+[2018-02-02 08:29:31,745][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.8822115384615384 [9542 of 10816]
+[2018-02-02 08:29:31,750][MainProcess][__main__][INFO] Ran out of patience, increasing train batch size to: 1024
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:29:31,752][MainProcess][__main__][INFO] Epoch: 27
+[2018-02-02 08:29:31,753][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:29:33,247][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/1776.pt
+
+[2018-02-02 08:29:33,631][MainProcess][__main__][INFO] NLLLoss: 0.676
+[2018-02-02 08:29:33,693][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.8818417159763313 [9538 of 10816]
+[2018-02-02 08:29:33,699][MainProcess][__main__][INFO] Ran out of patience, increasing train batch size to: 1024
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:29:33,699][MainProcess][__main__][INFO] Epoch: 28
+[2018-02-02 08:29:33,700][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:29:35,200][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/1778.pt
+
+[2018-02-02 08:29:35,791][MainProcess][__main__][INFO] NLLLoss: 0.678
+[2018-02-02 08:29:35,850][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.8819341715976331 [9539 of 10816]
+[2018-02-02 08:29:35,855][MainProcess][__main__][INFO] Ran out of patience, increasing train batch size to: 1024
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:29:35,856][MainProcess][__main__][INFO] Epoch: 29
+[2018-02-02 08:29:35,857][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:29:37,397][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/1780.pt
+
+[2018-02-02 08:29:37,810][MainProcess][__main__][INFO] NLLLoss: 0.678
+[2018-02-02 08:29:37,873][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.8814718934911243 [9534 of 10816]
+[2018-02-02 08:29:37,879][MainProcess][__main__][INFO] Ran out of patience, increasing train batch size to: 1024
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:38:41,601][MainProcess][lib.checkpoint][INFO] Loading checkpoints from ../../experiments/relation_classifier.02_02_07:59:28/1746.pt onto device 0
+[2018-02-02 08:38:49,189][MainProcess][lib.checkpoint][INFO] Loading checkpoints from ../../experiments/relation_classifier.02_02_07:59:28/1746.pt onto device 0
+[2018-02-02 08:38:49,246][MainProcess][__main__][INFO] Epochs: 1
+[2018-02-02 08:38:49,248][MainProcess][__main__][INFO] Train Dataset Size: 75729
+[2018-02-02 08:38:49,248][MainProcess][__main__][INFO] Dev Dataset Size: 10816
+[2018-02-02 08:38:49,249][MainProcess][__main__][INFO] Train Batch Size: 256
+[2018-02-02 08:38:49,249][MainProcess][__main__][INFO] Train Max Batch Size: 1024
+[2018-02-02 08:38:49,250][MainProcess][__main__][INFO] Total Parameters: 1891474
+[2018-02-02 08:38:49,250][MainProcess][__main__][INFO] Model:
+SeqToLabel(
+  (encoder): SeqEncoder(
+    (embedding): Embedding(6693, 300, padding_idx=0)
+    (rnn): GRU(300, 246, dropout=0.22, bidirectional=True)
+    (rnn_dropout): LockedDropout(p=0.6)
+    (embedding_dropout): Dropout(p=0.26)
+  )
+  (out): Sequential(
+    (0): Linear(in_features=492, out_features=492)
+    (1): BatchNorm1d(492, eps=1e-05, momentum=0.1, affine=True)
+    (2): ReLU()
+    (3): Dropout(p=0.68)
+    (4): Linear(in_features=492, out_features=1702)
+  )
+)
+[2018-02-02 08:38:49,251][MainProcess][__main__][INFO] Epoch: 0
+[2018-02-02 08:38:49,252][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:38:51,592][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/2335.pt
+
+[2018-02-02 08:38:52,116][MainProcess][__main__][INFO] NLLLoss: 0.665
+[2018-02-02 08:38:52,179][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.8812869822485208 [9532 of 10816]
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:40:41,023][MainProcess][lib.configurable][INFO] Checking configuration...
+[2018-02-02 08:40:41,025][MainProcess][lib.configurable][WARNING] Path ['lib', 'optim', 'Optimizer', '__init__', 'max_grad_norm'] does not contain @configurable.
+NOTE: Due to Python remaining the __main__ module, this check can be ignored here.
+NOTE: _check_configuration can be ignored for external libraries.
+[2018-02-02 08:40:41,026][MainProcess][lib.configurable][INFO] Configuration checked.
+[2018-02-02 08:40:41,026][MainProcess][lib.configurable][INFO] Global configuration:
+[2018-02-02 08:40:41,027][MainProcess][root][INFO] {   'lib': {   'nn': {   'seq_to_label': {   'SeqToLabel': {   '__init__': {   'bidirectional': True,
+                                                                               'decode_dropout': 0.68,
+                                                                               'embedding_dropout': 0.26,
+                                                                               'embedding_size': 300,
+                                                                               'freeze_embeddings': True,
+                                                                               'rnn_cell': 'gru',
+                                                                               'rnn_dropout': 0.22,
+                                                                               'rnn_layers': 1,
+                                                                               'rnn_size': 492,
+                                                                               'rnn_variational_dropout': 0.22}}}},
+               'optim': {   'Optimizer': {'__init__': {'max_grad_norm': 2.82}},
+                            'adam': {'Adam': {'__init__': {'amsgrad': True}}}}}}
+[2018-02-02 08:40:42,842][MainProcess][lib.checkpoint][INFO] Loading checkpoints from ../../experiments/relation_classifier.02_02_07:59:28/1746.pt onto device 0
+[2018-02-02 08:40:42,896][MainProcess][__main__][INFO] Epochs: 1
+[2018-02-02 08:40:42,897][MainProcess][__main__][INFO] Train Dataset Size: 75729
+[2018-02-02 08:40:42,898][MainProcess][__main__][INFO] Dev Dataset Size: 10816
+[2018-02-02 08:40:42,898][MainProcess][__main__][INFO] Train Batch Size: 256
+[2018-02-02 08:40:42,899][MainProcess][__main__][INFO] Train Max Batch Size: 1024
+[2018-02-02 08:40:42,900][MainProcess][__main__][INFO] Total Parameters: 1891474
+[2018-02-02 08:40:42,900][MainProcess][__main__][INFO] Model:
+SeqToLabel(
+  (encoder): SeqEncoder(
+    (embedding): Embedding(6693, 300, padding_idx=0)
+    (rnn): GRU(300, 246, dropout=0.22, bidirectional=True)
+    (rnn_dropout): LockedDropout(p=0.6)
+    (embedding_dropout): Dropout(p=0.26)
+  )
+  (out): Sequential(
+    (0): Linear(in_features=492, out_features=492)
+    (1): BatchNorm1d(492, eps=1e-05, momentum=0.1, affine=True)
+    (2): ReLU()
+    (3): Dropout(p=0.68)
+    (4): Linear(in_features=492, out_features=1702)
+  )
+)
+[2018-02-02 08:40:42,901][MainProcess][__main__][INFO] Epoch: 0
+[2018-02-02 08:40:42,901][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:40:45,230][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/2448.pt
+
+[2018-02-02 08:40:45,601][MainProcess][__main__][INFO] NLLLoss: 0.663
+[2018-02-02 08:40:45,664][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.8817492603550295 [9537 of 10816]
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:40:54,097][MainProcess][lib.configurable][INFO] seq_to_label.SeqToLabel.__init__ was configured with:
+{   'bidirectional': True,
+    'decode_dropout': 0.68,
+    'embedding_dropout': 0.26,
+    'embedding_size': 300,
+    'freeze_embeddings': True,
+    'input_vocab_size': 6693,
+    'output_vocab_size': 1702,
+    'rnn_cell': 'gru',
+    'rnn_dropout': 0.22,
+    'rnn_layers': 1,
+    'rnn_size': 492,
+    'rnn_variational_dropout': 0.22}
+[2018-02-02 08:40:54,098][MainProcess][lib.configurable][INFO] seq_encoder.SeqEncoder.__init__ no config for: lib.nn.seq_encoder.SeqEncoder.__init__
+[2018-02-02 08:40:54,099][MainProcess][lib.configurable][INFO] seq_encoder.SeqEncoder.__init__ was configured with:
+{   'bidirectional': True,
+    'embedding_dropout': 0.26,
+    'embedding_size': 300,
+    'freeze_embeddings': True,
+    'n_layers': 1,
+    'rnn_cell': 'gru',
+    'rnn_dropout': 0.22,
+    'rnn_size': 492,
+    'rnn_variational_dropout': 0.22,
+    'vocab_size': 6693}
+[2018-02-02 08:40:54,268][MainProcess][lib.configurable][INFO] adam.Adam.__init__ was configured with:
+{'amsgrad': True, 'params': <filter object at 0x7f6e0f520780>}
+[2018-02-02 08:40:54,270][MainProcess][lib.configurable][INFO] adam.Adam.__init__ was configured with:
+{'amsgrad': True, 'params': <filter object at 0x7f6e0f520780>}
+[2018-02-02 08:40:54,273][MainProcess][lib.configurable][INFO] adam.Adam.__init__ was configured with:
+{'amsgrad': True, 'params': <filter object at 0x7f6e0f520780>}
+[2018-02-02 08:40:54,275][MainProcess][lib.configurable][INFO] adam.Adam.__init__ was configured with:
+{'amsgrad': True, 'params': <filter object at 0x7f6e0f520780>}
+[2018-02-02 08:40:54,277][MainProcess][lib.configurable][INFO] adam.Adam.__init__ was configured with:
+{'amsgrad': True, 'params': <filter object at 0x7f6e0f520780>}
+[2018-02-02 08:40:54,279][MainProcess][lib.configurable][INFO] optimizer.Optimizer.__init__ no config for: lib.optimizer.Optimizer.__init__
+[2018-02-02 08:40:54,281][MainProcess][lib.configurable][INFO] optimizer.Optimizer.__init__ was configured with:
+{'optim': <lib.optim.adam.Adam object at 0x7f6e0f520518>}
+[2018-02-02 08:40:54,282][MainProcess][__main__][INFO] Epochs: 30
+[2018-02-02 08:40:54,284][MainProcess][__main__][INFO] Train Dataset Size: 75729
+[2018-02-02 08:40:54,285][MainProcess][__main__][INFO] Dev Dataset Size: 10816
+[2018-02-02 08:40:54,286][MainProcess][__main__][INFO] Train Batch Size: 64
+[2018-02-02 08:40:54,286][MainProcess][__main__][INFO] Train Max Batch Size: 1024
+[2018-02-02 08:40:54,287][MainProcess][__main__][INFO] Total Parameters: 1891474
+[2018-02-02 08:40:54,288][MainProcess][__main__][INFO] Model:
+SeqToLabel(
+  (encoder): SeqEncoder(
+    (embedding): Embedding(6693, 300, padding_idx=0)
+    (rnn): GRU(300, 246, dropout=0.22, bidirectional=True)
+    (rnn_dropout): LockedDropout(p=0.22)
+    (embedding_dropout): Dropout(p=0.26)
+  )
+  (out): Sequential(
+    (0): Linear(in_features=492, out_features=492)
+    (1): BatchNorm1d(492, eps=1e-05, momentum=0.1, affine=True)
+    (2): ReLU()
+    (3): Dropout(p=0.68)
+    (4): Linear(in_features=492, out_features=1702)
+  )
+)
+[2018-02-02 08:40:54,288][MainProcess][__main__][INFO] Epoch: 0
+[2018-02-02 08:40:54,289][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:40:59,902][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/2463.pt
+
+[2018-02-02 08:41:00,275][MainProcess][__main__][INFO] NLLLoss: 1.044
+[2018-02-02 08:41:00,339][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.8220229289940828 [8891 of 10816]
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:41:00,344][MainProcess][__main__][INFO] Epoch: 1
+[2018-02-02 08:41:00,346][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:41:06,141][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/2469.pt
+
+[2018-02-02 08:41:06,511][MainProcess][__main__][INFO] NLLLoss: 0.811
+[2018-02-02 08:41:06,576][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.853180473372781 [9228 of 10816]
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:41:06,582][MainProcess][__main__][INFO] Epoch: 2
+[2018-02-02 08:41:06,582][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:41:12,522][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/2476.pt
+
+[2018-02-02 08:41:12,893][MainProcess][__main__][INFO] NLLLoss: 0.738
+[2018-02-02 08:41:12,952][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.8619637573964497 [9323 of 10816]
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:41:12,957][MainProcess][__main__][INFO] Epoch: 3
+[2018-02-02 08:41:12,958][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:41:18,587][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/2482.pt
+
+[2018-02-02 08:41:18,955][MainProcess][__main__][INFO] NLLLoss: 0.711
+[2018-02-02 08:41:19,013][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.8639977810650887 [9345 of 10816]
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:41:19,019][MainProcess][__main__][INFO] Epoch: 4
+[2018-02-02 08:41:19,020][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:41:24,460][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/2488.pt
+
+[2018-02-02 08:41:24,825][MainProcess][__main__][INFO] NLLLoss: 0.686
+[2018-02-02 08:41:24,883][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.8720414201183432 [9432 of 10816]
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:41:24,888][MainProcess][__main__][INFO] Epoch: 5
+[2018-02-02 08:41:24,889][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:41:30,419][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/2493.pt
+
+[2018-02-02 08:41:30,783][MainProcess][__main__][INFO] NLLLoss: 0.679
+[2018-02-02 08:41:30,842][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.8726886094674556 [9439 of 10816]
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:41:30,847][MainProcess][__main__][INFO] Epoch: 6
+[2018-02-02 08:41:30,848][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:41:36,275][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/2499.pt
+
+[2018-02-02 08:41:36,651][MainProcess][__main__][INFO] NLLLoss: 0.669
+[2018-02-02 08:41:36,711][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.8725961538461539 [9438 of 10816]
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:41:36,717][MainProcess][__main__][INFO] Epoch: 7
+[2018-02-02 08:41:36,718][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:41:42,180][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/2505.pt
+
+[2018-02-02 08:41:42,539][MainProcess][__main__][INFO] NLLLoss: 0.669
+[2018-02-02 08:41:42,603][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.8718565088757396 [9430 of 10816]
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:41:42,608][MainProcess][__main__][INFO] Epoch: 8
+[2018-02-02 08:41:42,610][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:41:48,224][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/2511.pt
+
+[2018-02-02 08:41:48,609][MainProcess][__main__][INFO] NLLLoss: 0.662
+[2018-02-02 08:41:48,669][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.8748150887573964 [9462 of 10816]
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:41:48,674][MainProcess][__main__][INFO] Epoch: 9
+[2018-02-02 08:41:48,675][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:41:54,072][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/2517.pt
+
+[2018-02-02 08:41:54,429][MainProcess][__main__][INFO] NLLLoss: 0.660
+[2018-02-02 08:41:54,487][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.8767566568047337 [9483 of 10816]
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:41:54,493][MainProcess][__main__][INFO] Epoch: 10
+[2018-02-02 08:41:54,495][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:41:59,903][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/2523.pt
+
+[2018-02-02 08:42:00,262][MainProcess][__main__][INFO] NLLLoss: 0.656
+[2018-02-02 08:42:00,322][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.8784208579881657 [9501 of 10816]
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:42:00,327][MainProcess][__main__][INFO] Epoch: 11
+[2018-02-02 08:42:00,328][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:42:05,846][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/2529.pt
+
+[2018-02-02 08:42:06,343][MainProcess][__main__][INFO] NLLLoss: 0.657
+[2018-02-02 08:42:06,403][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.8799001479289941 [9517 of 10816]
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:42:06,408][MainProcess][__main__][INFO] Epoch: 12
+[2018-02-02 08:42:06,409][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:42:11,851][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/2535.pt
+
+[2018-02-02 08:42:12,234][MainProcess][__main__][INFO] NLLLoss: 0.664
+[2018-02-02 08:42:12,294][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.8805473372781065 [9524 of 10816]
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:42:12,299][MainProcess][__main__][INFO] Epoch: 13
+[2018-02-02 08:42:12,300][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:42:17,707][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/2541.pt
+
+[2018-02-02 08:42:18,066][MainProcess][__main__][INFO] NLLLoss: 0.666
+[2018-02-02 08:42:18,124][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.8799001479289941 [9517 of 10816]
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:42:18,129][MainProcess][__main__][INFO] Epoch: 14
+[2018-02-02 08:42:18,130][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:42:23,707][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/2547.pt
+
+[2018-02-02 08:42:24,080][MainProcess][__main__][INFO] NLLLoss: 0.667
+[2018-02-02 08:42:24,141][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.8792529585798816 [9510 of 10816]
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:42:24,147][MainProcess][__main__][INFO] Epoch: 15
+[2018-02-02 08:42:24,149][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:42:29,654][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/2553.pt
+
+[2018-02-02 08:42:30,011][MainProcess][__main__][INFO] NLLLoss: 0.673
+[2018-02-02 08:42:30,072][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.8788831360946746 [9506 of 10816]
+[2018-02-02 08:42:30,077][MainProcess][__main__][INFO] Ran out of patience, increasing train batch size to: 128
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:42:30,078][MainProcess][__main__][INFO] Epoch: 16
+[2018-02-02 08:42:30,080][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:42:33,811][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/2557.pt
+
+[2018-02-02 08:42:34,179][MainProcess][__main__][INFO] NLLLoss: 0.667
+[2018-02-02 08:42:34,237][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.8792529585798816 [9510 of 10816]
+[2018-02-02 08:42:34,242][MainProcess][__main__][INFO] Ran out of patience, increasing train batch size to: 256
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:42:34,243][MainProcess][__main__][INFO] Epoch: 17
+[2018-02-02 08:42:34,243][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:42:36,432][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/2559.pt
+
+[2018-02-02 08:42:36,942][MainProcess][__main__][INFO] NLLLoss: 0.670
+[2018-02-02 08:42:37,001][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.881194526627219 [9531 of 10816]
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:42:37,006][MainProcess][__main__][INFO] Epoch: 18
+[2018-02-02 08:42:37,007][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:42:39,152][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/2562.pt
+
+[2018-02-02 08:42:39,520][MainProcess][__main__][INFO] NLLLoss: 0.671
+[2018-02-02 08:42:39,582][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.8823039940828402 [9543 of 10816]
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:42:39,587][MainProcess][__main__][INFO] Epoch: 19
+[2018-02-02 08:42:39,588][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:42:41,732][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/2565.pt
+
+[2018-02-02 08:42:42,094][MainProcess][__main__][INFO] NLLLoss: 0.673
+[2018-02-02 08:42:42,153][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.882396449704142 [9544 of 10816]
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:42:42,158][MainProcess][__main__][INFO] Epoch: 20
+[2018-02-02 08:42:42,158][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:42:44,398][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/2567.pt
+
+[2018-02-02 08:42:44,898][MainProcess][__main__][INFO] NLLLoss: 0.676
+[2018-02-02 08:42:44,957][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.8800850591715976 [9519 of 10816]
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:42:44,963][MainProcess][__main__][INFO] Epoch: 21
+[2018-02-02 08:42:44,963][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:42:47,089][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/2570.pt
+
+[2018-02-02 08:42:47,470][MainProcess][__main__][INFO] NLLLoss: 0.677
+[2018-02-02 08:42:47,534][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.8807322485207101 [9526 of 10816]
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:42:47,541][MainProcess][__main__][INFO] Epoch: 22
+[2018-02-02 08:42:47,542][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:42:49,768][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/2573.pt
+
+[2018-02-02 08:42:50,138][MainProcess][__main__][INFO] NLLLoss: 0.680
+[2018-02-02 08:42:50,199][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.8804548816568047 [9523 of 10816]
+[2018-02-02 08:42:50,204][MainProcess][__main__][INFO] Ran out of patience, increasing train batch size to: 512
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:42:50,207][MainProcess][__main__][INFO] Epoch: 23
+[2018-02-02 08:42:50,208][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:42:52,106][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/2575.pt
+
+[2018-02-02 08:42:52,705][MainProcess][__main__][INFO] NLLLoss: 0.684
+[2018-02-02 08:42:52,765][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.8814718934911243 [9534 of 10816]
+[2018-02-02 08:42:52,771][MainProcess][__main__][INFO] Ran out of patience, increasing train batch size to: 1024
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:42:52,772][MainProcess][__main__][INFO] Epoch: 24
+[2018-02-02 08:42:52,772][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:42:54,296][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/2577.pt
+
+[2018-02-02 08:42:54,672][MainProcess][__main__][INFO] NLLLoss: 0.683
+[2018-02-02 08:42:54,732][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.8817492603550295 [9537 of 10816]
+[2018-02-02 08:42:54,738][MainProcess][__main__][INFO] Ran out of patience, increasing train batch size to: 1024
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:42:54,739][MainProcess][__main__][INFO] Epoch: 25
+[2018-02-02 08:42:54,739][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:42:56,404][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/2579.pt
+
+[2018-02-02 08:42:57,039][MainProcess][__main__][INFO] NLLLoss: 0.686
+[2018-02-02 08:42:57,108][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.8819341715976331 [9539 of 10816]
+[2018-02-02 08:42:57,113][MainProcess][__main__][INFO] Ran out of patience, increasing train batch size to: 1024
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:42:57,116][MainProcess][__main__][INFO] Epoch: 26
+[2018-02-02 08:42:57,117][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:42:58,786][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/2582.pt
+
+[2018-02-02 08:42:59,321][MainProcess][__main__][INFO] NLLLoss: 0.688
+[2018-02-02 08:42:59,382][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.8820266272189349 [9540 of 10816]
+[2018-02-02 08:42:59,388][MainProcess][__main__][INFO] Ran out of patience, increasing train batch size to: 1024
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:42:59,389][MainProcess][__main__][INFO] Epoch: 27
+[2018-02-02 08:42:59,391][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:43:01,275][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/2584.pt
+
+[2018-02-02 08:43:01,669][MainProcess][__main__][INFO] NLLLoss: 0.686
+[2018-02-02 08:43:01,736][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.8813794378698225 [9533 of 10816]
+[2018-02-02 08:43:01,743][MainProcess][__main__][INFO] Ran out of patience, increasing train batch size to: 1024
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:43:01,745][MainProcess][__main__][INFO] Epoch: 28
+[2018-02-02 08:43:01,748][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:43:03,243][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/2586.pt
+
+[2018-02-02 08:43:03,772][MainProcess][__main__][INFO] NLLLoss: 0.688
+[2018-02-02 08:43:03,831][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.882396449704142 [9544 of 10816]
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 08:43:03,836][MainProcess][__main__][INFO] Epoch: 29
+[2018-02-02 08:43:03,837][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 08:43:05,288][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/2588.pt
+
+[2018-02-02 08:43:05,660][MainProcess][__main__][INFO] NLLLoss: 0.688
+[2018-02-02 08:43:05,721][MainProcess][lib.metrics.accuracy][INFO] Accuracy: 0.881194526627219 [9531 of 10816]
+––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+[2018-02-02 10:50:39,714][MainProcess][lib.configurable][INFO] Checking configuration...
+[2018-02-02 10:50:39,717][MainProcess][lib.configurable][INFO] Configuration checked.
+[2018-02-02 10:50:39,718][MainProcess][lib.configurable][INFO] seq_to_label.SeqToLabel.__init__ was configured with:
+{   'bidirectional': False,
+    'decode_dropout': 0.43460034710730261,
+    'embedding_dropout': 0.19096236931835375,
+    'embedding_size': 300,
+    'freeze_embeddings': False,
+    'input_vocab_size': 6693,
+    'output_vocab_size': 1702,
+    'rnn_cell': 'lstm',
+    'rnn_dropout': 0.075906968706972625,
+    'rnn_layers': 2,
+    'rnn_size': 492,
+    'rnn_variational_dropout': 0.79343591404703995}
+[2018-02-02 10:50:39,719][MainProcess][lib.configurable][INFO] seq_encoder.SeqEncoder.__init__ no config for: lib.nn.seq_encoder.SeqEncoder.__init__
+[2018-02-02 10:50:39,720][MainProcess][lib.configurable][INFO] seq_encoder.SeqEncoder.__init__ was configured with:
+{   'bidirectional': False,
+    'embedding_dropout': 0.19096236931835375,
+    'embedding_size': 300,
+    'freeze_embeddings': False,
+    'n_layers': 2,
+    'rnn_cell': 'lstm',
+    'rnn_dropout': 0.075906968706972625,
+    'rnn_size': 492,
+    'rnn_variational_dropout': 0.79343591404703995,
+    'vocab_size': 6693}
+[2018-02-02 10:50:40,137][MainProcess][lib.configurable][INFO] adam.Adam.__init__ was configured with:
+{'amsgrad': True, 'params': <filter object at 0x7f6cc80799e8>}
+[2018-02-02 10:50:40,138][MainProcess][lib.configurable][INFO] adam.Adam.__init__ was configured with:
+{'amsgrad': True, 'params': <filter object at 0x7f6cc80799e8>}
+[2018-02-02 10:50:40,138][MainProcess][lib.configurable][INFO] adam.Adam.__init__ was configured with:
+{'amsgrad': True, 'params': <filter object at 0x7f6cc80799e8>}
+[2018-02-02 10:50:40,139][MainProcess][lib.configurable][INFO] adam.Adam.__init__ was configured with:
+{'amsgrad': True, 'params': <filter object at 0x7f6cc80799e8>}
+[2018-02-02 10:50:40,140][MainProcess][lib.configurable][INFO] adam.Adam.__init__ was configured with:
+{'amsgrad': True, 'params': <filter object at 0x7f6cc80799e8>}
+[2018-02-02 10:50:40,141][MainProcess][lib.configurable][INFO] optimizer.Optimizer.__init__ was configured with:
+{   'max_grad_norm': 2.9881245033126995,
+    'optim': <lib.optim.adam.Adam object at 0x7f6c9f1e5e10>}
+[2018-02-02 10:50:40,141][MainProcess][__main__][INFO] Epochs: 1
+[2018-02-02 10:50:40,143][MainProcess][__main__][INFO] Train Dataset Size: 75729
+[2018-02-02 10:50:40,143][MainProcess][__main__][INFO] Dev Dataset Size: 10816
+[2018-02-02 10:50:40,144][MainProcess][__main__][INFO] Train Batch Size: 64
+[2018-02-02 10:50:40,144][MainProcess][__main__][INFO] Train Max Batch Size: 1024
+[2018-02-02 10:50:40,145][MainProcess][__main__][INFO] Total Parameters: 6593566
+[2018-02-02 10:50:40,146][MainProcess][__main__][INFO] Model:
+SeqToLabel(
+  (encoder): SeqEncoder(
+    (embedding): Embedding(6693, 300, padding_idx=0)
+    (rnn): LSTM(300, 492, num_layers=2, dropout=0.79343591404704)
+    (rnn_dropout): LockedDropout(p=0.075906968707)
+    (embedding_dropout): Dropout(p=0.190962369318)
+  )
+  (out): Sequential(
+    (0): Linear(in_features=492, out_features=492)
+    (1): BatchNorm1d(492, eps=1e-05, momentum=0.1, affine=True)
+    (2): ReLU()
+    (3): Dropout(p=0.434600347107)
+    (4): Linear(in_features=492, out_features=1702)
+  )
+)
+[2018-02-02 10:50:40,147][MainProcess][__main__][INFO] Epoch: 0
+[2018-02-02 10:50:40,147][MainProcess][__main__][INFO] Training...
+
+[2018-02-02 10:51:02,142][MainProcess][lib.checkpoint][INFO] Saving checkpoint: ../../experiments/relation_classifier.02_02_07:59:28/10265.pt
