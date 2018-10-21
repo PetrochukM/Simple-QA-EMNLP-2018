@@ -7,7 +7,7 @@ We present new evidence that this benchmark can be nearly solved by standard met
 
 ## Example
 
-<p align="center"><img width="100%" src="https://github.com/PetrochukM/Simple-QA-EMNLP-2018/blob/master/preview.svg" /></p>
+![Preview of the software](https://github.com/PetrochukM/Simple-QA-EMNLP-2018/blob/master/preview.png)
 
 ## Structure
 
@@ -65,7 +65,7 @@ python -m pip install -r requirements.txt
 
 * The FB2M and FB5M subsets of Freebase KG can complete 7,188,636 and 7,688,234 graph queries respectively; therefore, the FB5M subset is 6.9% larger than the FB2M subset. Also, the FB5M dataset only contains 3.98M entities. This contradicts the statement that "FB5M, is much larger with about 5M entities" (Bordes et al., 2015). 
 * FB5M and FB2M contain 4,322,266 and 3,654,470 duplicate grouped facts respectively. 
-* FB2M is not a subset of FB5M, 1 atomic fact is in FB2M that is not in FB5M: ``(01g4wmh, music/album/acquire_webpage, 02q5zps)``
+* FB2M is not a subset of FB5M, 1 atomic fact is in FB2M that is not in FB5M: ``(01g4wmh, music/album/acquire_webpage, 02q5zps)``.
 * FB5M and FB2M do not contain the answer for 24 and 36 examples in SimpleQuestions dataset respectively; therefore, those examples are unanswerable.
 
 ## Other Important Papers
