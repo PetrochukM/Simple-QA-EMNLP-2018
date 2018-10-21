@@ -1,45 +1,74 @@
-# Question Answering Research
+# Simple-QA-EMNLP-2018
 
-## Synopsis
+Code for my EMNLP 2018 paper "SimpleQuestions Nearly Solved: A New Upperbound and Baseline Approach".
 
-Project to build an end to end question answering system in multiple languages with industry
-precision of 95% and a 90% recall. 
+The SimpleQuestions dataset is one of the most commonly used benchmarks for studying single-relation factoid questions.
+We present new evidence that this benchmark can be nearly solved by standard methods. First we show that ambiguity in the data bounds performance on this benchmark at 83.4%; there are often multiple answers that cannot be disambiguated from the linguistic signal alone. Second we introduce a baseline that sets a new state-of-the-art performance level at 78.1% accuracy, despite using standard methods.
 
-## Design Goal
+## Example
 
-Overall this repository is built on top of PyTorch; therefore, it will follow PyTorch's design
-footsteps. As O’Reilly Data Show Podcast explained, this means, "PyTorch is designed to be
-intuitive, linear in thought and easy to use. When you execute a line of code, it gets executed.
-There isn’t an asynchronous view of the world".
+![Preview of the software](https://github.com/PetrochukM/Simple-QA-EMNLP-2018/blob/master/preview.png)
 
-In NLP deep learning, areas of research typically include datasets, models and training procedure.
-The goal of this repository is to add minimal overhead to these components of training.
+## Structure
 
-## TODO
+```bash
+.
+├── /notebooks/                          
+│   ├── /Simple QA End-To-End/           # Experimenting with components of the end-to-end QA pipeline
+│   ├── /Simple QA Models                # Experimenting with various neural models
+│   ├── /Simple QA KG to PostgreSQL DB   # Scripts used to populate postgreSQL
+│   ├── /Simple QA Numbers               # Scripts for computing and verifying various numbers
+├── /pretrained_models/                   
+├── /lib/                                # Various utility functionality
+├── /tests/                               
+├── .flake8                               
+└── requirements.txt                     # Required python packages
+```
 
-- [x] Add classification model for Simple Questions predicate
-- [x] Add a CLI and different hyperparameter configurations to train script
-- [ ] Recreate the Simple Questions using the new Simple Questions names
-- [x] Import notebooks for Simple Questions end to end
-- [ ] Add CRF model for Simple Questions objects
-- [ ] Remove dependencies from the tests/ folder 
-- [ ] Consider adding iterators that wrap collate_fn, dataloaders, and prepare data think about
-      how to not introduce overhead with that for different types of iterators
-- [ ] Fix the seq_to_label model and remove the relation_classifier
-- [ ] Add credits to everyone who code has been copied from
+## Prerequisites
 
-## Important GitHub repositories
-- https://github.com/zihangdai/cfo
-- https://github.com/Gorov/SimpleQuestions-EntityLinking
-- https://github.com/yinwenpeng/KBQA_IBM
-- https://github.com/yinwenpeng/KBQA_IBM_New
-- https://github.com/WDAqua/teafacto
-- https://github.com/syxu828/QuestionAnsweringOverFB
-- https://github.com/facebook/MemNN
-- https://github.com/castorini/BuboQA
+This repository requires Python 3.5 or greater and PostgreSQL.
+
+## Installation
+
+* Clone the repository and cd into it
+```
+git clone https://github.com/PetrochukM/Simple-QA-EMNLP-2018.git
+cd Simple-QA-EMNLP-2018
+```
+
+* Install the required packages
+```
+python -m pip install -r requirements.txt
+```
+
+* Create and populate a PostgreSQL table named ``fb_two_subject_name`` with ``notebooks/Simple QA KG to PostgreSQL DB/fb_two_subject_name.csv.gz``
+
+* Download the SimpleQuestions v2 dataset from [Facebook Research](https://research.fb.com/downloads/babi/). Use the notebook at ``Simple-QA-EMNLP-2018/notebooks/Simple QA KG to PostgreSQL DB/FB5M & FB2M KG to DB.ipynb`` to create and populate a PostgreSQL table. 
+
+* Your Done! Feel free to run ``Simple-QA-EMNLP-2018/notebooks/Simple QA End-To-End``.
+
+## Citation
+
+```
+@article{Petrochuk2018SimpleQuestionsNS,
+  title={SimpleQuestions Nearly Solved: A New Upperbound and Baseline Approach},
+  author={Michael Petrochuk and Luke S. Zettlemoyer},
+  journal={CoRR},
+  year={2018},
+  volume={abs/1804.08798}
+}
+```
+
+## Notes
+
+* The FB2M and FB5M subsets of Freebase KG can complete 7,188,636 and 7,688,234 graph queries respectively; therefore, the FB5M subset is 6.9% larger than the FB2M subset. Also, the FB5M dataset only contains 3.98M entities. This is in contrast to, "FB5M, is much larger with about 5M entities". (Bordes et al., 2015). 
+* FB5M and FB2M contain 4,322,266 and 3,654,470 duplicate grouped facts respectively. 
+* FB2M is not a subset of FB5M, 1 atomic fact is in FB2M that is not in FB5M: ``(01g4wmh, music/album/acquire_webpage, 02q5zps)``
+* FB5M and FB2M do not contain the answer for 24 and 36 examples in SimpleQuestions dataset respectively; therefore, those examples are unanswerable.
 
 
-## Important papers
+## Other Important Papers
 - [Conditional Focused Neural Question Answering with Large-scale Knowledge Bases](https://www.aclweb.org/anthology/P/P16/P16-1076.pdf)
 - [Simple Question Answering by Attentive Convolutional Neural Network - SOTA results](https://arxiv.org/abs/1606.03391)
 - [Character-Level Question Answering with Attention](https://arxiv.org/abs/1604.00727)
@@ -52,3 +81,13 @@ The goal of this repository is to add minimal overhead to these components of tr
 - [Open-domain Factoid Question Answering via Knowledge Graph Search](https://pdfs.semanticscholar.org/6414/5a8edf9add1156d97c489028539fa4c5c66c.pdf)
 - [Large-scale Simple Question Answering with Memory Networks](https://research.fb.com/wp-content/uploads/2016/11/large-scale_simple_question_answering_with_memory_networks.pdf?)
 - [Core Techniques of Question Answering Systems over Knowledge Bases: a Survey](https://hal.archives-ouvertes.fr/hal-01637143/document)
+
+## Other Important GitHub Repositories
+- https://github.com/zihangdai/cfo
+- https://github.com/Gorov/SimpleQuestions-EntityLinking
+- https://github.com/yinwenpeng/KBQA_IBM
+- https://github.com/yinwenpeng/KBQA_IBM_New
+- https://github.com/WDAqua/teafacto
+- https://github.com/syxu828/QuestionAnsweringOverFB
+- https://github.com/facebook/MemNN
+- https://github.com/castorini/BuboQA
