@@ -2,8 +2,7 @@
 
 This is the code for the EMNLP 2018 paper "SimpleQuestions Nearly Solved: A New Upperbound and Baseline Approach".
 
-The SimpleQuestions dataset is one of the most commonly used benchmarks for studying single-relation factoid questions.
-We present new evidence that this benchmark can be nearly solved by standard methods. First we show that ambiguity in the data bounds performance on this benchmark at 83.4%; there are often multiple answers that cannot be disambiguated from the linguistic signal alone. Second we introduce a baseline that sets a new state-of-the-art performance level at 78.1% accuracy,  using only standard methods.
+The SimpleQuestions dataset is one of the most commonly used benchmarks for studying single-relation factoid questions. First we show that ambiguity in the data bounds performance on this benchmark at 83.4%; there are often multiple answers that cannot be disambiguated from the question alone. Second we introduce a baseline that sets a new state-of-the-art performance level at 78.1% accuracy,  using only standard methods.
 
 ## Example
 
