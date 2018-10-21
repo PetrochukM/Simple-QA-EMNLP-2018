@@ -1,16 +1,31 @@
 import logging
 import logging.config
 import os
-import time
-import sys
-
 import random
-import torch
+import sys
+import time
+
 import numpy as np
+import pandas as pd
+import psycopg2
+import psycopg2.extras
+import torch
 
 from torchnlp.datasets import Dataset
 
 logger = logging.getLogger(__name__)
+
+FB2M_KG = '../data/SimpleQuestions_v2/freebase-subsets/freebase-FB2M.txt'
+FB5M_KG = '../data/SimpleQuestions_v2/freebase-subsets/freebase-FB5M.txt'
+
+# Get the path relative to the directory this file is in
+_directory_path = os.path.dirname(os.path.realpath(__file__))
+FB2M_KG = os.path.realpath(os.path.join(_directory_path, FB2M_KG))
+FB5M_KG = os.path.realpath(os.path.join(_directory_path, FB5M_KG))
+
+FB2M_KG_TABLE = 'fb_two_kg'
+FB5M_KG_TABLE = 'fb_five_kg'
+FB2M_NAME_TABLE = 'fb_two_subject_name'
 
 
 def resplit_datasets(dataset, other_dataset, random_seed=None, cut=None):
@@ -177,3 +192,42 @@ def torch_equals_ignore_index(tensor, tensor_other, ignore_index=None):
         tensor_other = tensor_other.masked_select(mask_arr)
 
     return torch.equal(tensor, tensor_other)
+
+
+def get_connection():
+    # Load .env file
+    pass_ = {}
+
+    # Get the path relative to the directory this file is in
+    _directory_path = os.path.dirname(os.path.realpath(__file__))
+    pass_path = os.path.join(_directory_path, '../.pass')
+    for line in open(pass_path):
+        split = line.strip().split('=')
+        pass_[split[0]] = split[1]
+
+    # Connect
+    return psycopg2.connect(
+        dbname=pass_['DB_NAME'],
+        port=pass_['DB_PORT'],
+        user=pass_['DB_USER'],
+        host=pass_['DB_HOST'],
+        password=pass_['DB_PASS'])
+
+
+def format_pipe_table(*args, **kwargs):
+    # Rows is a dictionary of keys
+    df = pd.DataFrame(*args, **kwargs)
+    ret = ''
+
+    columns = ['Index'] + list(df.columns.values)
+
+    # Header
+    ret += '| ' + ' | '.join(columns) + ' |\n'
+    ret += '| ' + ' | '.join(['---' for _ in columns]) + ' |\n'
+
+    # Add values
+    for index, row in df.iterrows():
+        values = [index] + list(row)
+        values = [str(v) for v in values]
+        ret += '| ' + ' | '.join(values) + ' |\n'
+    return ret
