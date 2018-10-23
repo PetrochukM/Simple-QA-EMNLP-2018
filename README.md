@@ -1,8 +1,8 @@
 # Simple-QA-EMNLP-2018
 
-This is the code for the EMNLP 2018 paper ("SimpleQuestions Nearly Solved: A New Upperbound and Baseline Approach")[https://arxiv.org/pdf/1804.08798.pdf].
+This is the code for the EMNLP 2018 paper ["SimpleQuestions Nearly Solved: A New Upperbound and Baseline Approach"](https://arxiv.org/pdf/1804.08798.pdf).
 
-The SimpleQuestions dataset is one of the most commonly used benchmarks for studying single-relation factoid questions. First we show that ambiguity in the data bounds performance on this benchmark at (83.4%)[https://github.com/PetrochukM/Simple-QA-EMNLP-2018/blob/master/notebooks/Simple%20QA%20Numbers/HYPOTHESIS%20-%20Accuracy%20Upperbound.ipynb]; there are often multiple answers that cannot be disambiguated from the question alone. Second we introduce a baseline that sets a new state-of-the-art performance level at (78.1% accuracy)[https://github.com/PetrochukM/Simple-QA-EMNLP-2018/blob/master/notebooks/Simple%20QA%20End-To-End/Step%203%20-%20Predict%20Relation%20and%20Finish.ipynb],  using only standard methods.
+The SimpleQuestions dataset is one of the most commonly used benchmarks for studying single-relation factoid questions. First we show that ambiguity in the data bounds performance on this benchmark at [83.4%](https://github.com/PetrochukM/Simple-QA-EMNLP-2018/blob/master/notebooks/Simple%20QA%20Numbers/HYPOTHESIS%20-%20Accuracy%20Upperbound.ipynb); there are often multiple answers that cannot be disambiguated from the question alone. Second we introduce a baseline that sets a new state-of-the-art performance level at [78.1% accuracy](https://github.com/PetrochukM/Simple-QA-EMNLP-2018/blob/master/notebooks/Simple%20QA%20End-To-End/Step%203%20-%20Predict%20Relation%20and%20Finish.ipynb),  using only standard methods.
 
 ## Example
 
