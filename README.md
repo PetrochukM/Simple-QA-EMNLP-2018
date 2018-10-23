@@ -1,4 +1,4 @@
-# Simple-QA-EMNLP-2018
+# Simple Question Answering — EMNLP 2018
 
 This is the code for the EMNLP 2018 paper ["SimpleQuestions Nearly Solved: A New Upperbound and Baseline Approach"](https://arxiv.org/pdf/1804.08798.pdf).
 
