@@ -2,8 +2,6 @@
 
 This is the code for the EMNLP 2018 paper ["SimpleQuestions Nearly Solved: A New Upperbound and Baseline Approach"](https://arxiv.org/pdf/1804.08798.pdf).
 
-----------------------
-
 On the SimpleQuestions dataset task, one of the most commonly used benchmarks for studying single-relation factoid questions, we:
 
 1. Show that ambiguity in the data bounds performance on this benchmark at [83.4%](https://github.com/PetrochukM/Simple-QA-EMNLP-2018/blob/master/notebooks/Simple%20QA%20Numbers/HYPOTHESIS%20-%20Accuracy%20Upperbound.ipynb); there are often multiple answers that cannot be disambiguated from the question alone.
