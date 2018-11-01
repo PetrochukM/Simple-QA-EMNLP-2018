@@ -1,6 +1,6 @@
 # Simple Question Answering — EMNLP 2018
 
-This is the code for the EMNLP 2018 paper ["SimpleQuestions Nearly Solved: A New Upperbound and Baseline Approach"](https://arxiv.org/pdf/1804.08798.pdf).
+This is the code for the EMNLP 2018 paper ["SimpleQuestions Nearly Solved: A New Upperbound and Baseline Approach"](http://aclweb.org/anthology/D18-1051).
 
 On the SimpleQuestions dataset task, one of the most commonly used benchmarks for studying single-relation factoid questions, we:
 
