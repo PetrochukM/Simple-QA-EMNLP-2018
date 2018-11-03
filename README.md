@@ -51,6 +51,10 @@ python -m pip install -r requirements.txt
 
 * You're done! Feel free to run ``Simple-QA-EMNLP-2018/notebooks/Simple QA End-To-End``.
 
+## Slides 
+
+The [slides](https://docs.google.com/presentation/d/1G7TF4RgG3AoBsuJRYKV9_uLFhOStgmxH8ceLjywhwRU/edit?usp=sharing) used for our EMNLP talk.
+
 ## Citation
 
 ```
