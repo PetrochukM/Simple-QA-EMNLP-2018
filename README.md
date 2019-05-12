@@ -47,6 +47,23 @@ python -m pip install -r requirements.txt
 
 * Create and populate a PostgreSQL table named ``fb_two_subject_name`` with ``notebooks/Simple QA KG to PostgreSQL DB/fb_two_subject_name.csv.gz``
 
+* Create a ``.pass`` file using the below template:
+
+  ```
+  DB_NAME=
+  DB_PORT=
+  DB_USER=
+  DB_HOST=
+  DB_PASS=
+  ```
+  
+  Such that:
+  - DB_NAME: the database name
+  - DB_USER: user name used to authenticate
+  - DB_PASS: password used to authenticate
+  - DB_HOST: database host address
+  - DB_PORT: connection port number (typically 5432)
+
 * Download the SimpleQuestions v2 dataset from [Facebook Research](https://research.fb.com/downloads/babi/). Use the notebook at ``Simple-QA-EMNLP-2018/notebooks/Simple QA KG to PostgreSQL DB/FB5M & FB2M KG to DB.ipynb`` to create and populate a PostgreSQL table. 
 
 * You're done! Feel free to run ``Simple-QA-EMNLP-2018/notebooks/Simple QA End-To-End``.
